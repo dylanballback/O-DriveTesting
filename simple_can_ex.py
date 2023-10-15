@@ -53,8 +53,7 @@ def get_pos_vel():
 
 
 try:
-    while (True):
-        set_vel(10)
+    set_vel(1)
 
 except KeyboardInterrupt:
     bus.shutdown()
