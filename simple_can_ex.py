@@ -51,10 +51,14 @@ def get_pos_vel():
             return print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
 
+a = 1
 
 try:
-    set_vel(2)
-    get_pos_vel()
+    while True:
+        if a == 1:
+            set_vel(2)
+        a = a + 1
+        get_pos_vel()
 
 except KeyboardInterrupt:
     bus.shutdown()
