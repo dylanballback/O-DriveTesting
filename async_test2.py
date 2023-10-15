@@ -1,8 +1,7 @@
-import asyncio
 import can
 import struct
-import signal
 import threading
+import time
 
 node_id = 0 # must match `<odrv>.axis0.config.can.node_id`. The default is 0.
 
@@ -29,6 +28,59 @@ for msg in bus:
 
 #Don't change the code above
 #-----------------------------------------------------------------------------
+
+# Set velocity function to vel_set turns/s
+def set_vel():
+    while True:
+        for vel_set in range(11):
+            bus.send(can.Message(
+                arbitration_id=(node_id << 5 | 0x0d),
+                data=struct.pack('<ff', float(vel_set), 0.0),
+                is_extended_id=False
+            ))
+            time.sleep(0.25)
+        for vel_set in range(10, -1, -1):
+            bus.send(can.Message(
+                arbitration_id=(node_id << 5 | 0x0d),
+                data=struct.pack('<ff', float(vel_set), 0.0),
+                is_extended_id=False
+            ))
+            time.sleep(0.25)
+
+# Print encoder feedback
+def get_pos_vel():
+    while True:
+        for msg in bus:
+            if msg.arbitration_id == (node_id << 5 | 0x09):
+                pos, vel = struct.unpack('<ff', bytes(msg.data))
+                print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+
+# Create two threads to run set_vel and get_pos_vel concurrently
+vel_thread = threading.Thread(target=set_vel)
+pos_thread = threading.Thread(target=get_pos_vel)
+
+# Start both threads
+vel_thread.start()
+pos_thread.start()
+
+# Wait for both threads to finish (you may need to manually stop them if needed)
+# vel_thread.join()
+# pos_thread.join()
+
+
+
+
+
+
+
+
+#-----------------------------------------------------------------------------
+
+
+#Example where you can go from 0 to 10 at 0.25 second increments while recieving pos and velocity commands at the same time:
+"""
+
+
 import can
 import struct
 import threading
@@ -83,48 +135,5 @@ pos_thread.start()
 # Wait for both threads to finish
 vel_thread.join()
 pos_thread.join()
-
-
-
-
-
-"""
-# Set velocity function to vel_set turns/s
-async def set_vel(vel_set):
-    bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0d),  # 0x0d: Set_Input_Vel
-        data=struct.pack('<ff', float(vel_set), 0.0),  # velocity, torque feedforward
-        is_extended_id=False
-    ))
-
-# Print encoder feedback
-async def get_pos_vel():
-    while True:
-        for msg in bus:
-            if msg.arbitration_id == (node_id << 5 | 0x09):  # 0x09: Get_Encoder_Estimates
-                pos, vel = struct.unpack('<ff', bytes(msg.data))
-                print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
-
-async def print_and_set_velocity():
-    for value in range(0, 11):
-        print(value)
-        await set_vel(value)  # Set velocity from 0 to 10 in 0.25-second increments
-        await asyncio.sleep(0.25)
-
-    for value in range(10, -1, -1):
-        print(value)
-        await set_vel(value)  # Set velocity from 10 to 0 in 0.25-second increments
-        await asyncio.sleep(0.25)
-
-async def main():
-    await asyncio.gather(
-        get_pos_vel(),  # Continuously run get_pos_vel
-        print_and_set_velocity()  # Print and set velocity
-    )
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-
 
 """
