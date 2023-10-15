@@ -2,9 +2,31 @@ import asyncio
 import can
 import struct
 
-# Example values for node_id and bus, you should replace them with your actual values
-node_id = 1
-bus = can.interface.Bus(channel='can0', bustype='socketcan')
+node_id = 0 # must match `<odrv>.axis0.config.can.node_id`. The default is 0.
+
+bus = can.interface.Bus("can0", bustype="socketcan")
+
+# Flush CAN RX buffer so there are no more old pending messages
+while not (bus.recv(timeout=0) is None): pass
+
+# Put axis into closed loop control state
+bus.send(can.Message(
+    arbitration_id=(node_id << 5 | 0x07), # 0x07: Set_Axis_State
+    data=struct.pack('<I', 8), # 8: AxisState.CLOSED_LOOP_CONTROL
+    is_extended_id=False
+))
+
+# Wait for axis to enter closed loop control by scanning heartbeat messages
+for msg in bus:
+    if msg.arbitration_id == (node_id << 5 | 0x01): # 0x01: Heartbeat
+        error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
+        if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
+            break
+
+
+
+#Don't change the code above
+#-----------------------------------------------------------------------------
 
 # Set velocity function to vel_set turns/s
 async def set_vel(vel_set):
@@ -22,7 +44,6 @@ async def get_pos_vel():
                 pos, vel = struct.unpack('<ff', bytes(msg.data))
                 print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
-# This task runs the print_values and set_vel concurrently
 async def print_values_and_set_vel():
     value = 0
     step = 0.25
@@ -31,17 +52,13 @@ async def print_values_and_set_vel():
         print(value)
         await set_vel(value)  # Set velocity with the current value
         value += step
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.25)
 
 async def main():
-    # Create a task for get_pos_vel to run continuously in the background
-    background_task = asyncio.create_task(get_pos_vel())
-    
-    # Run print_values_and_set_vel
-    await print_values_and_set_vel()
-    
-    # Cancel the background_task when print_values_and_set_vel completes
-    background_task.cancel()
+    await asyncio.gather(
+        get_pos_vel(),  # Continuously run get_pos_vel
+        print_values_and_set_vel()  # Print values and set velocity every 0.25 seconds
+    )
 
 if __name__ == "__main__":
     asyncio.run(main())
