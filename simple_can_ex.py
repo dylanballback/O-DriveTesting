@@ -52,4 +52,4 @@ def get_pos_vel():
 
 
 set_vel(10)
-get_pos_vel()
+#get_pos_vel()
