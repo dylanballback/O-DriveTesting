@@ -2,6 +2,7 @@ import asyncio
 import can
 import struct
 import signal
+import threading
 
 node_id = 0 # must match `<odrv>.axis0.config.can.node_id`. The default is 0.
 
@@ -31,7 +32,7 @@ for msg in bus:
 
 
 # Set velocity function to vel_set turns/s
-async def set_vel(vel_set):
+def set_vel(vel_set):
     bus.send(can.Message(
         arbitration_id=(node_id << 5 | 0x0d),  # 0x0d: Set_Input_Vel
         data=struct.pack('<ff', float(vel_set), 0.0),  # velocity, torque feedforward
@@ -39,35 +40,36 @@ async def set_vel(vel_set):
     ))
 
 # Print encoder feedback
-async def get_pos_vel():
+def get_pos_vel():
     while True:
         for msg in bus:
             if msg.arbitration_id == (node_id << 5 | 0x09):  # 0x09: Get_Encoder_Estimates
                 pos, vel = struct.unpack('<ff', bytes(msg.data))
                 print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
-async def main():
-    while True:
-        await get_pos_vel()  # Continuously run get_pos_vel
+def main():
+    # Create and start threads for get_pos_vel and set_vel functions
+    get_pos_vel_thread = threading.Thread(target=get_pos_vel)
+    get_pos_vel_thread.daemon = True  # Allow program to exit if only this thread is running
+    get_pos_vel_thread.start()
 
-        for value in range(0, 11):
-            print(value)
-            await set_vel(value)  # Set velocity from 0 to 10 in 0.25-second increments
-            await asyncio.sleep(0.25)
+    value = 0
+    step = 0.25
 
-        for value in range(10, -1, -1):
-            print(value)
-            await set_vel(value)  # Set velocity from 10 to 0 in 0.25-second increments
-            await asyncio.sleep(0.25)
+    while value <= 10:
+        print(value)
+        set_vel(value)  # Set velocity from 0 to 10 in 0.25-second increments
+        value += step
+        time.sleep(0.25)
 
-def handle_keyboard_interrupt(signal, frame):
-    print("Keyboard interrupt detected. Closing the CAN connection.")
-    bus.shutdown()
-    exit(0)
+    while value >= 0:
+        print(value)
+        set_vel(value)  # Set velocity from 10 to 0 in 0.25-second increments
+        value -= step
+        time.sleep(0.25)
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, handle_keyboard_interrupt)
-    asyncio.run(main())
+    main()
 
 
 
