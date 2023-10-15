@@ -51,7 +51,5 @@ def get_pos_vel():
             return print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
 
-set_vel(1)
-
-#while True: 
-#    get_pos_vel()
+set_vel(10)
+get_pos_vel()
