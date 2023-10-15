@@ -38,7 +38,7 @@ for msg in bus:
 def set_vel(vel_set):
     bus.send(can.Message(
         arbitration_id=(node_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-        data=struct.pack('<ff', set_vel, 0.0), # 1.0: velocity, 0.0: torque feedforward
+        data=struct.pack('<ff', float(set_vel), 0.0), # 1.0: velocity, 0.0: torque feedforward
         is_extended_id=False
     ))
 
