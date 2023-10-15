@@ -1,5 +1,6 @@
 sudo /sbin/ip link set can0 down
 sudo ip link set can0 type can restart-ms 100
+ip link set can0 type can restart
 
 #echo("Reset was Succesful")
 
