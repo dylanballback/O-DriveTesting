@@ -57,14 +57,15 @@ def get_pos_vel():
 
 set_vel_prev = 0
 
+set_vel_value = 10
 
 try:
     while True:
-        if set_vel != set_vel_prev:
+        if set_vel_value != set_vel_prev:
             set_vel_prev= set_vel
-            set_vel(10)
-        a = a + 1
-        get_pos_vel()
+            set_vel(set_vel_value)
+        else:
+            get_pos_vel()
 
 except KeyboardInterrupt:
     bus.shutdown()
