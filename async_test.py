@@ -1,15 +1,4 @@
-"""
-Minimal example for controlling an ODrive via the CANSimple protocol.
-
-Puts the ODrive into closed loop control mode, sends a velocity setpoint of 1.0
-and then prints the encoder feedback.
-
-Assumes that the ODrive is already configured for velocity control.
-
-See https://docs.odriverobotics.com/v/latest/manual/can-protocol.html for protocol
-documentation.
-"""
-
+import asyncio
 import can
 import struct
 
@@ -35,45 +24,36 @@ for msg in bus:
             break
 
 # Set velocity function to vel_set turns/s
-def set_vel(vel_set):
+async def set_vel(vel_set):
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-        data=struct.pack('<ff', float(vel_set), 0.0), # 1.0: velocity, 0.0: torque feedforward
+        arbitration_id=(node_id << 5 | 0x0d),  # 0x0d: Set_Input_Vel
+        data=struct.pack('<ff', float(vel_set), 0.0),  # 1.0: velocity, 0.0: torque feedforward
         is_extended_id=False
     ))
 
-
 # Print encoder feedback
-def get_pos_vel():
+async def get_pos_vel():
     for msg in bus:
-        if msg.arbitration_id == (node_id << 5 | 0x09): # 0x09: Get_Encoder_Estimates
+        if msg.arbitration_id == (node_id << 5 | 0x09):  # 0x09: Get_Encoder_Estimates
             pos, vel = struct.unpack('<ff', bytes(msg.data))
-            return print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+            print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+            return  # To exit the loop
 
+async def print_values_and_set_vel():
+    value = 0
+    step = 0.25
 
+    while value <= 10:
+        print(value)
+        await set_vel(value)  # Set velocity with the current value
+        value += step
+        await asyncio.sleep(1)
 
-
-
-
-set_vel_prev = 0
-
-
-try:
-    while True:
-        if set_vel != set_vel_prev:
-            set_vel_prev= set_vel
-            set_vel(10)
-        a = a + 1
+async def main():
+    await asyncio.gather(
+        print_values_and_set_vel(),
         get_pos_vel()
+    )
 
-except KeyboardInterrupt:
-    bus.shutdown()
-
-
-#
-#while True:
-#    set_vel(10)
-
-
-
-#get_pos_vel()
+if __name__ == "__main__":
+    asyncio.run(main())
