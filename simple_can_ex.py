@@ -34,15 +34,23 @@ for msg in bus:
         if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
             break
 
-# Set velocity to 1.0 turns/s
-bus.send(can.Message(
-    arbitration_id=(node_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-    data=struct.pack('<ff', 250.0, 0.0), # 1.0: velocity, 0.0: torque feedforward
-    is_extended_id=False
-))
+# Set velocity function to vel_set turns/s
+def set_vel(vel_set)
+    bus.send(can.Message(
+        arbitration_id=(node_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
+        data=struct.pack('<ff', set_vel, 0.0), # 1.0: velocity, 0.0: torque feedforward
+        is_extended_id=False
+    ))
+
 
 # Print encoder feedback
-for msg in bus:
-    if msg.arbitration_id == (node_id << 5 | 0x09): # 0x09: Get_Encoder_Estimates
-        pos, vel = struct.unpack('<ff', bytes(msg.data))
-        print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+def get_pos_vel():
+    for msg in bus:
+        if msg.arbitration_id == (node_id << 5 | 0x09): # 0x09: Get_Encoder_Estimates
+            pos, vel = struct.unpack('<ff', bytes(msg.data))
+            return print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+
+
+while True: 
+    set_vel(10)
+    get_pos_vel()
