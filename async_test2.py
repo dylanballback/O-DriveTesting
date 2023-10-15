@@ -1,6 +1,7 @@
 import asyncio
 import can
 import struct
+import signal
 
 node_id = 0 # must match `<odrv>.axis0.config.can.node_id`. The default is 0.
 
