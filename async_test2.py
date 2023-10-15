@@ -28,6 +28,7 @@ for msg in bus:
 #Don't change the code above
 #-----------------------------------------------------------------------------
 
+
 # Set velocity function to vel_set turns/s
 async def set_vel(vel_set):
     bus.send(can.Message(
@@ -58,8 +59,15 @@ async def main():
             await set_vel(value)  # Set velocity from 10 to 0 in 0.25-second increments
             await asyncio.sleep(0.25)
 
+def handle_keyboard_interrupt(signal, frame):
+    print("Keyboard interrupt detected. Closing the CAN connection.")
+    bus.shutdown()
+    exit(0)
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, handle_keyboard_interrupt)
     asyncio.run(main())
+
 
 
 
