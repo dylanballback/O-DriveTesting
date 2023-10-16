@@ -55,12 +55,16 @@ alpha = 0.98
 
 # Global flag to manage threads
 running = True
+# Shared variable to store current set motor velocity
+current_set_velocity = 0.0
 
 # Set motor velocity to sin wave
 def set_vel():
+    global current_set_velocity
     t = 0
     while running:
         velocity = math.sin(t)
+        current_set_velocity = velocity
         bus.send(can.Message(
             arbitration_id=(node_id << 5 | 0x0d),
             data=struct.pack('<ff', float(velocity), 0.0),
@@ -68,6 +72,11 @@ def set_vel():
         ))
         t += 0.1
         time.sleep(0.1)
+
+# Print encoder feedback and IMU roll angle
+def get_pos_vel_and_imu_roll():
+    global previous_time, current_set_velocity  # Add current_set_velocity here
+
 
 # Print encoder feedback and IMU roll angle
 def get_pos_vel_and_imu_roll():
@@ -94,7 +103,8 @@ def get_pos_vel_and_imu_roll():
         msg = bus.recv(timeout=0.01)
         if msg and msg.arbitration_id == (node_id << 5 | 0x09):
             pos, vel = struct.unpack('<ff', bytes(msg.data))
-            print(f"Roll: {angle_roll:.2f} degrees, IMU Speed: {read_count/10:.2f} Hz, pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+            print(f"Roll: {angle_roll:.2f} degrees, IMU Speed: {read_count/10:.2f} Hz, Set Vel: {current_set_velocity:.3f} [turns/s], pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+
 
             read_count += 1
             if time.time() - last_print_time >= 10:
