@@ -16,7 +16,7 @@ sensor.accel_range = adafruit_lsm9ds1.ACCELRANGE_2G
 sensor.gyro_scale = adafruit_lsm9ds1.GYROSCALE_245DPS
 
 # Calibration period (in seconds)
-calibration_duration = 5  # Adjust this as needed
+calibration_duration = 15  # Adjust this as needed
 
 print("Calibrating LSM9DS1. Please keep the sensor stable...")
 calibration_data = {"gyro_total": [0, 0, 0], "sample_count": 0}
@@ -70,7 +70,8 @@ while True:
     angle_pitch = alpha * pitch_gyro + (1 - alpha) * pitch_acc
     angle_roll = alpha * roll_gyro + (1 - alpha) * roll_acc
 
-    print("Pitch: {:.2f} degrees, Roll: {:.2f} degrees".format(angle_pitch, angle_roll))
+    #print("Pitch: {:.2f} degrees, Roll: {:.2f} degrees".format(angle_pitch, angle_roll))
+    print(" Roll: {:.2f} degrees".format(angle_roll))
 
     previous_time = current_time
 
