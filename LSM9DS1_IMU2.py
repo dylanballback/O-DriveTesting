@@ -49,6 +49,5 @@ while True:
     roll = (180 / 3.141592) * (math.atan2(accel_y, accel_z))
     yaw = (180 / 3.141592) * (math.atan2(accel_z, accel_x))
 
-    print("Pitch: {:.2f} degrees".format(pitch))
-    print("Roll: {:.2f} degrees".format(roll))
-    print("Yaw: {:.2f} degrees".format(yaw))
+    print("Pitch: {:.2f} degrees, Roll: {:.2f} degrees, Yaw: {:.2f} degrees".format(pitch, roll, yaw))
+
