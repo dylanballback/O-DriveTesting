@@ -7,8 +7,7 @@ import time
 # Initialize the I2C bus
 i2c = board.I2C()  # uses board.SCL and board.SDA
 
-# Initialize the LSM9DS1 sensor
-sensor = adafruit_lsm9ds1.LSM9DS1(i2c)
+sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
 
 # Optional: Set the sensor to your preferred settings
 sensor.accel_range = adafruit_lsm9ds1.ACCELRANGE_2G
