@@ -31,9 +31,10 @@ print_lock = threading.Lock()
 
 imu_read_count = 0
 imu_rate_time = time.monotonic()
+imu_read_rate = 0.0
 
 def read_and_print_roll():
-    global previous_time, angle_pitch, angle_roll, imu_read_count, imu_rate_time
+    global previous_time, angle_pitch, angle_roll, imu_read_count, imu_rate_time, imu_read_rate
 
     while True:
         # IMU data reading and processing
@@ -51,12 +52,13 @@ def read_and_print_roll():
 
         imu_read_count += 1
         elapsed = time.monotonic() - imu_rate_time
-        if elapsed >= 1.0:
+        if elapsed >= 10.0:
             imu_read_rate = imu_read_count / elapsed
             imu_read_count = 0
             imu_rate_time = time.monotonic()
-            with print_lock:
-                print(f"Roll Angle: {angle_roll:.2f}°, IMU Rate: {imu_read_rate:.2f}Hz", end=", ")
+
+        with print_lock:
+            print(f"Roll Angle: {angle_roll:.2f}°, IMU Rate: {imu_read_rate:.2f}Hz", end=", ")
 
 def set_vel(velocity):
     while True:
