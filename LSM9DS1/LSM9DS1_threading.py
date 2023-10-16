@@ -5,6 +5,11 @@ import math
 import time
 import threading
 
+# Declare previous_time, angle_pitch, and angle_roll as global variables
+global previous_time
+global angle_pitch
+global angle_roll
+
 # Initialize the I2C bus
 i2c = board.I2C()  # uses board.SCL and board.SDA
 
@@ -42,10 +47,7 @@ print("Calibration complete. Begin reading angles...")
 angle_pitch = 0.0
 angle_roll = 0.0
 
-# Declare previous_time, angle_pitch, and angle_roll as global variables
-global previous_time
-global angle_pitch
-global angle_roll
+
 
 previous_time = time.monotonic()
 angle_pitch = 0.0
