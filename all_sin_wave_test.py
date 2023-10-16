@@ -7,6 +7,15 @@ import board
 import busio
 import adafruit_lsm9ds1
 
+
+"""
+This program is to test collecting IMU data, IMU collection speed, Encoder data, and setting the O-Drive motor to velocities in a sin wave with an amplitude of 10. 
+
+Then printing out the Roll, IMU Speed (every 10 seconds it recaluates), then the set velocity, the actual motor position, and the actual motor velocity
+
+"""
+
+
 node_id = 0
 
 def initialize_imu():
