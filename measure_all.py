@@ -27,14 +27,18 @@ for msg in bus:
         if state == 8:
             break
 
-print_lock = threading.Lock()
-
 imu_read_count = 0
 imu_rate_time = time.monotonic()
 imu_read_rate = 0.0
+shared_data = {
+    "roll": 0.0,
+    "imu_rate": 0.0,
+    "pos": 0.0,
+    "vel": 0.0
+}
 
 def read_and_print_roll():
-    global previous_time, angle_pitch, angle_roll, imu_read_count, imu_rate_time, imu_read_rate
+    global previous_time, angle_pitch, angle_roll, imu_read_count, imu_rate_time
 
     while True:
         # IMU data reading and processing
@@ -57,8 +61,8 @@ def read_and_print_roll():
             imu_read_count = 0
             imu_rate_time = time.monotonic()
 
-        with print_lock:
-            print(f"Roll Angle: {angle_roll:.2f}°, IMU Rate: {imu_read_rate:.2f}Hz", end=", ")
+        shared_data["roll"] = angle_roll
+        shared_data["imu_rate"] = imu_read_rate
 
 def set_vel(velocity):
     while True:
@@ -76,15 +80,22 @@ def get_pos_vel():
         for msg in bus:
             if msg.arbitration_id == (node_id << 5 | 0x09):
                 pos, vel = struct.unpack('<ff', bytes(msg.data))
-                with print_lock:
-                    print(f"Motor Pos: {pos:.3f} [turns], Vel: {vel:.3f} [turns/s]")
+                shared_data["pos"] = pos
+                shared_data["vel"] = vel
+
+def printer_thread():
+    while True:
+        print(f"Roll Angle: {shared_data['roll']:.2f}°, IMU Rate: {shared_data['imu_rate']:.2f}Hz, Motor Pos: {shared_data['pos']:.3f} [turns], Vel: {shared_data['vel']:.3f} [turns/s]")
+        time.sleep(0.1)
 
 # Create threads
 imu_thread = threading.Thread(target=read_and_print_roll)
 vel_thread = threading.Thread(target=set_vel, args=(10,))
 pos_thread = threading.Thread(target=get_pos_vel)
+print_thread = threading.Thread(target=printer_thread)
 
 # Start threads
 imu_thread.start()
 vel_thread.start()
 pos_thread.start()
+print_thread.start()
