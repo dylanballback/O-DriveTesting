@@ -1,4 +1,3 @@
-
 import can
 import struct
 import threading
@@ -8,15 +7,45 @@ import board
 import busio
 import adafruit_lsm9ds1
 
-# CAN Setup
-node_id = 0  # Default
-bus = can.interface.Bus("can0", bustype="socketcan")
-while not (bus.recv(timeout=0) is None): pass  # Flush CAN RX buffer
-bus.send(can.Message(arbitration_id=(node_id << 5 | 0x07), data=struct.pack('<I', 8), is_extended_id=False))
+node_id = 0
 
-# IMU Setup
-i2c = board.I2C()
-sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+def initialize_imu():
+    """
+    Initializes the IMU sensor and returns it.
+    """
+    i2c = board.I2C()
+    sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+    sensor.accel_range = adafruit_lsm9ds1.ACCELRANGE_2G
+    sensor.gyro_scale = adafruit_lsm9ds1.GYROSCALE_245DPS
+    return sensor
+
+def calibrate_imu(sensor, calibration_duration=15):
+    """
+    Calibrates the IMU sensor over the specified duration and returns the calibration data.
+    """
+    print("Calibrating LSM9DS1. Please keep the sensor stable...")
+    calibration_data = {"gyro_total": [0, 0, 0], "sample_count": 0}
+
+    start_time = time.monotonic()
+    while time.monotonic() - start_time < calibration_duration:
+        gyro_x, gyro_y, gyro_z = sensor.gyro
+        calibration_data["gyro_total"][0] += gyro_x
+        calibration_data["gyro_total"][1] += gyro_y
+        calibration_data["gyro_total"][2] += gyro_z
+        calibration_data["sample_count"] += 1
+
+    # Calculate the average gyro readings during calibration
+    calibration_data["gyro_total"][0] /= calibration_data["sample_count"]
+    calibration_data["gyro_total"][1] /= calibration_data["sample_count"]
+    calibration_data["gyro_total"][2] /= calibration_data["sample_count"]
+
+    print("Calibration complete.")
+    return calibration_data
+
+sensor = initialize_imu()
+calibration_data = calibrate_imu(sensor)
+
+bus = can.interface.Bus("can0", bustype="socketcan")
 
 # IMU Variables
 previous_time = time.monotonic()
