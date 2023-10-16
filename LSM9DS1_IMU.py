@@ -20,7 +20,7 @@ OUT_Z_L_XL = 0x2C
 OUT_Z_H_XL = 0x2D
 
 # Initialize the I2C bus and LSM9DS1
-bus = smbus.SMBus(0)
+bus = smbus.SMBus(1)
 
 def read_word_2c(addr):
     high = bus.read_byte_data(LSM9DS1_ADDRESS, addr)
