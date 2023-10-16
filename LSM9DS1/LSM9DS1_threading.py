@@ -15,7 +15,7 @@ sensor.accel_range = adafruit_lsm9ds1.ACCELRANGE_2G
 sensor.gyro_scale = adafruit_lsm9ds1.GYROSCALE_245DPS
 
 # Calibration period (in seconds)
-calibration_duration = 5  # Adjust this as needed
+calibration_duration = 15  # Adjust this as needed
 
 print("Calibrating LSM9DS1. Please keep the sensor stable...")
 calibration_data = {"gyro_total": [0, 0, 0], "sample_count": 0}
@@ -42,6 +42,8 @@ print("Calibration complete. Begin reading angles...")
 angle_pitch = 0.0
 angle_roll = 0.0
 
+# Declare previous_time as a global variable
+global previous_time
 previous_time = time.monotonic()
 
 # Create a lock to ensure thread safety when printing
@@ -49,6 +51,7 @@ print_lock = threading.Lock()
 
 # Function to read and print the roll angle
 def read_and_print_roll():
+    global previous_time  # Ensure the global variable is used
     while True:
         current_time = time.monotonic()
         elapsed_time = current_time - previous_time
