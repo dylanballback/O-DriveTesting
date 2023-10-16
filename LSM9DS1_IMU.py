@@ -3,7 +3,7 @@ import time
 import math
 
 # LSM9DS1 I2C address
-LSM9DS1_ADDRESS = 0x6B
+LSM9DS1_ADDRESS = 0x1E
 
 # Register addresses for LSM9DS1
 CTRL_REG1_G = 0x10
