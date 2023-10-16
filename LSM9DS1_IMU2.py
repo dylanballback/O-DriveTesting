@@ -2,6 +2,7 @@ import board
 import busio
 import adafruit_lsm9ds1
 import math
+import time  # Add this import
 
 # Initialize the I2C bus and the LSM9DS1 sensor
 i2c = busio.I2C(board.SCL, board.SDA)
