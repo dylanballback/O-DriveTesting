@@ -63,15 +63,15 @@ def set_vel():
     global current_set_velocity
     t = 0
     while running:
-        velocity = math.sin(t)
+        velocity = 10 * math.sin(t)  # Multiply by 10 for amplitude
         current_set_velocity = velocity
         bus.send(can.Message(
             arbitration_id=(node_id << 5 | 0x0d),
             data=struct.pack('<ff', float(velocity), 0.0),
             is_extended_id=False
         ))
-        t += 0.1
-        time.sleep(0.1)
+        t += 0.05  # Adjust this value to change the step of the sine wave. Smaller value = slower sine wave.
+        time.sleep(0.2)  # Adjust sleep time to make the loop run slower
 
 # Print encoder feedback and IMU roll angle
 def get_pos_vel_and_imu_roll():
