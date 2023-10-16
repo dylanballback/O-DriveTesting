@@ -42,16 +42,23 @@ print("Calibration complete. Begin reading angles...")
 angle_pitch = 0.0
 angle_roll = 0.0
 
-# Declare previous_time as a global variable
+# Declare previous_time, angle_pitch, and angle_roll as global variables
 global previous_time
+global angle_pitch
+global angle_roll
+
 previous_time = time.monotonic()
+angle_pitch = 0.0
+angle_roll = 0.0
 
 # Create a lock to ensure thread safety when printing
 print_lock = threading.Lock()
 
 # Function to read and print the roll angle
 def read_and_print_roll():
-    global previous_time  # Ensure the global variable is used
+    global previous_time
+    global angle_pitch
+    global angle_roll
     while True:
         current_time = time.monotonic()
         elapsed_time = current_time - previous_time
