@@ -72,6 +72,8 @@ def set_vel():
 # Print encoder feedback and IMU roll angle
 def get_pos_vel_and_imu_roll():
     global previous_time  # Make sure we're using the global variable
+    global angle_pitch
+    global angle_roll
     last_print_time = time.time()
     read_count = 0
     while running:
