@@ -1,14 +1,7 @@
-"""
-Minimal example for controlling an ODrive via the CANSimple protocol.
+import can
+import struct
 
-Puts the ODrive into closed loop control mode, sends a velocity setpoint of 1.0
-and then prints the encoder feedback.
 
-Assumes that the ODrive is already configured for velocity control.
-
-See https://docs.odriverobotics.com/v/latest/manual/can-protocol.html for protocol
-documentation.
-"""
 
 import can
 import struct
@@ -34,13 +27,33 @@ for msg in bus:
         if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
             break
 
-# Set velocity function to vel_set turns/s
-def set_vel(vel_set):
+def set_odrive_position(node_id, desired_position, bus_channel="can0"):
+    """
+    Sets the desired position for the ODrive motor through CAN messages.
+    
+    Parameters:
+    - node_id: The CAN node ID of the ODrive motor controller.
+    - desired_position: The target position value for the motor.
+    - bus_channel: The CAN bus channel (default is "can0").
+
+
+    Axis0_Set_Input_Pos (0xC)
+        - Input_Pos
+        - Vel_FF
+        - Torque_FF
+    """
+    
+    # Pack the desired position as a float (IEEE 754) into a byte array
+    position_data = struct.pack('<f', desired_position)
+    
+    # Send the position command
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-        data=struct.pack('<ff', float(vel_set), 0.0), # 1.0: velocity, 0.0: torque feedforward
+        arbitration_id=(node_id << 5 | 0x00C), # 0x00C: 
+        data=position_data,
         is_extended_id=False
     ))
+
+    print(f"Position set to {desired_position}.")
 
 
 # Print encoder feedback
@@ -51,30 +64,5 @@ def get_pos_vel():
             return print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
 
-
-
-
-
-set_vel_prev = 0
-
-set_vel_value = 10
-
-try:
-    while True:
-        if set_vel_value != set_vel_prev:
-            set_vel_prev= set_vel
-            set_vel(set_vel_value)
-        else:
-            get_pos_vel()
-
-except KeyboardInterrupt:
-    bus.shutdown()
-
-
-#
-#while True:
-#    set_vel(10)
-
-
-
-#get_pos_vel()
+# Example usage:
+# set_odrive_position(0, 1000.0)  # Node ID 0, desired position 1000.0 units
