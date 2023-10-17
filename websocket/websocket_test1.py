@@ -61,16 +61,18 @@ def get_angles(sensor, calibration_data, previous_time):
 
     return angle_pitch, angle_roll, current_time
 
-def read_and_send_imu_data():
-    sensor = initialize_imu()
-    calibration_data = calibrate_imu(sensor)
+def connect_to_websocket():
+    """Connect to the WebSocket server and return the socketIO instance."""
+    socketIO = SocketIO('localhost', 5000)  # Adjust the host and port as needed
+    print("Connected to the WebSocket server!")
+    return socketIO
 
+def send_data_through_websocket(socketIO, sensor, calibration_data):
+    """Send the IMU data through the connected WebSocket."""
     global angle_pitch, angle_roll
     angle_pitch = 0.0
     angle_roll = 0.0
     previous_time = time.monotonic()
-
-    print("Connected to the WebSocket server!")  # Print statement
 
     while True:
         angle_pitch, angle_roll, previous_time = get_angles(sensor, calibration_data, previous_time)
@@ -82,6 +84,11 @@ def read_and_send_imu_data():
         socketIO.emit('imu_data', data)
         time.sleep(1)  # Adjust this to your preferred data transmission rate
 
+def main():
+    sensor = initialize_imu()
+    calibration_data = calibrate_imu(sensor)
+    socketIO = connect_to_websocket()
+    send_data_through_websocket(socketIO, sensor, calibration_data)
+
 if __name__ == '__main__':
-    with SocketIO('localhost', 5000) as socketIO:  # Adjust the host and port as needed
-        read_and_send_imu_data()
+    main()
