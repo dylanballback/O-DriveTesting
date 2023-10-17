@@ -1,10 +1,13 @@
-# imu_client.py
 import board
 import busio
 import adafruit_lsm9ds1
 import math
 import time
 from socketIO_client import SocketIO
+
+# Global angle variables
+angle_pitch = 0.0
+angle_roll = 0.0
 
 def initialize_imu():
     i2c = board.I2C()  # uses board.SCL and board.SDA
@@ -38,6 +41,7 @@ def calibrate_imu(sensor):
     return calibration_data
 
 def get_angles(sensor, calibration_data, previous_time):
+    global angle_pitch, angle_roll
     alpha = 0.98  # Complementary filter coefficient
 
     current_time = time.monotonic()
@@ -69,9 +73,6 @@ def connect_to_websocket():
 
 def send_data_through_websocket(socketIO, sensor, calibration_data):
     """Send the IMU data through the connected WebSocket."""
-    global angle_pitch, angle_roll
-    angle_pitch = 0.0
-    angle_roll = 0.0
     previous_time = time.monotonic()
 
     while True:
