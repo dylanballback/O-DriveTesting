@@ -67,7 +67,7 @@ def get_angles(sensor, calibration_data, previous_time):
 
 def connect_to_websocket():
     """Connect to the WebSocket server and return the socketIO instance."""
-    socketIO = SocketIO('192.168.1.2', 5001)  # Adjust the host and port as needed
+    socketIO = SocketIO('192.168.1.2', 5002)  # Adjust the host and port as needed
     print("Connected to the WebSocket server!")
     return socketIO
 
