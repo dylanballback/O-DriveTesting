@@ -79,14 +79,14 @@ def get_imu_angles(sensor, calibration_data, websocket):
                 print(f"Failed to send data through WebSocket. Error: {e}")
 
         previous_time = current_time
-        time.sleep(1)
+        time.sleep(.1)
 
 # Main Execution
 if __name__ == "__main__":
     imu_sensor = initialize_imu()
     imu_calibration_data = calibrate_imu(imu_sensor)
     # Replace 'YOUR_SERVER_IP' and 'YOUR_SERVER_PORT' with your Flask server's IP and port.
-    ws = connect_to_websocket(host='192.168.1.2', port=5025)
+    ws = connect_to_websocket('192.168.1.2', 5025)
     get_imu_angles(imu_sensor, imu_calibration_data, ws)
 
 
