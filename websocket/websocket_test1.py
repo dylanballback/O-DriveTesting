@@ -70,6 +70,8 @@ def read_and_send_imu_data():
     angle_roll = 0.0
     previous_time = time.monotonic()
 
+    print("Connected to the WebSocket server!")  # Print statement
+
     while True:
         angle_pitch, angle_roll, previous_time = get_angles(sensor, calibration_data, previous_time)
 
