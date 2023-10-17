@@ -5,13 +5,6 @@ import math
 import time
 from socketIO_client import SocketIO, LoggingNamespace
 
-import board
-import busio
-import adafruit_lsm9ds1
-import math
-import time
-from socketIO_client import SocketIO, LoggingNamespace
-
 def initialize_imu():
     """Initialize IMU settings."""
     i2c = board.I2C()
@@ -51,6 +44,13 @@ def connect_to_websocket(server_ip, server_port):
         return None
 
 
+def send_data_via_websocket(ws, data):
+    """Send data through the WebSocket."""
+    try:
+        ws.emit('imu_data', data)
+    except Exception as e:
+        print(f"Failed to send data through WebSocket. Error: {e}")
+
 def get_imu_angles(sensor, calibration_data):
     """Read IMU angles and return them."""
     alpha = 0.98
@@ -84,12 +84,13 @@ def main():
     imu_calibration_data = calibrate_imu(imu_sensor)
     ws = connect_to_websocket('192.168.1.2', 5025)
     
-    while True:
-        pitch, roll = get_imu_angles(imu_sensor, imu_calibration_data)
-        print(f"Pitch: {pitch:.2f} degrees, Roll: {roll:.2f} degrees")
-        data = {'pitch': pitch, 'roll': roll}
-        send_data_via_websocket(ws, data)
-        time.sleep(.1)
+    if ws:  # Ensure the WebSocket is connected before proceeding
+        while True:
+            pitch, roll = get_imu_angles(imu_sensor, imu_calibration_data)
+            print(f"Pitch: {pitch:.2f} degrees, Roll: {roll:.2f} degrees")
+            data = {'pitch': pitch, 'roll': roll}
+            send_data_via_websocket(ws, data)
+            time.sleep(.1)
 
 if __name__ == "__main__":
     main()
