@@ -43,11 +43,10 @@ def connect_to_websocket(server_ip, server_port):
         print(f"Failed to connect to the WebSocket server. Error: {e}")
         return None
 
-
-def send_data_via_websocket(ws, data):
-    """Send data through the WebSocket."""
+def send_data_via_websocket(websocket, data):
+    """Send IMU data through the WebSocket."""
     try:
-        ws.emit('imu_data', data)
+        websocket.emit('imu_data', data)
     except Exception as e:
         print(f"Failed to send data through WebSocket. Error: {e}")
 
