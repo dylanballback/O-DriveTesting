@@ -5,16 +5,23 @@ import math
 import time
 from socketIO_client import SocketIO, LoggingNamespace
 
-# IMU Initialization
+import board
+import busio
+import adafruit_lsm9ds1
+import math
+import time
+from socketIO_client import SocketIO, LoggingNamespace
+
 def initialize_imu():
+    """Initialize IMU settings."""
     i2c = board.I2C()
     sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
     sensor.accel_range = adafruit_lsm9ds1.ACCELRANGE_2G
     sensor.gyro_scale = adafruit_lsm9ds1.GYROSCALE_245DPS
     return sensor
 
-# IMU Calibration
 def calibrate_imu(sensor):
+    """Calibrate IMU gyro readings."""
     calibration_duration = 15
     print("Calibrating LSM9DS1. Please keep the sensor stable...")
     calibration_data = {"gyro_total": [0, 0, 0], "sample_count": 0}
@@ -33,8 +40,8 @@ def calibrate_imu(sensor):
     print("Calibration complete.")
     return calibration_data
 
-# WebSocket Connection
 def connect_to_websocket(server_ip, server_port):
+    """Connect to WebSocket server."""
     try:
         socketIO = SocketIO(server_ip, server_port, LoggingNamespace)
         print("Successfully connected to the WebSocket server.")
@@ -43,8 +50,8 @@ def connect_to_websocket(server_ip, server_port):
         print(f"Failed to connect to the WebSocket server. Error: {e}")
         return None
 
-# Get IMU Angles and Send via WebSocket
 def get_imu_angles(sensor, calibration_data, websocket):
+    """Read IMU angles and send data via WebSocket."""
     alpha = 0.98
     angle_pitch = angle_roll = 0.0
     previous_time = time.monotonic()
@@ -81,14 +88,15 @@ def get_imu_angles(sensor, calibration_data, websocket):
         previous_time = current_time
         time.sleep(.1)
 
-# Main Execution
-if __name__ == "__main__":
+def main():
+    """Main execution function."""
     imu_sensor = initialize_imu()
     imu_calibration_data = calibrate_imu(imu_sensor)
-    # Replace 'YOUR_SERVER_IP' and 'YOUR_SERVER_PORT' with your Flask server's IP and port.
     ws = connect_to_websocket('192.168.1.2', 5025)
     get_imu_angles(imu_sensor, imu_calibration_data, ws)
 
+if __name__ == "__main__":
+    main()
 
 
 """
