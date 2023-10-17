@@ -77,6 +77,9 @@ def send_data_through_websocket(socketIO, sensor, calibration_data):
     while True:
         angle_pitch, angle_roll, previous_time = get_angles(sensor, calibration_data, previous_time)
 
+        # Print IMU angles in the terminal
+        print(f"Pitch: {angle_pitch:.2f} degrees, Roll: {angle_roll:.2f} degrees")
+
         data = {
             'roll': angle_roll,
             'pitch': angle_pitch
