@@ -28,13 +28,6 @@ bus = can.interface.Bus("can0", bustype="socketcan")
 while not (bus.recv(timeout=0) is None):
     pass
 
-# Set up a thread to monitor ODrive positions and velocities
-def monitor_odrive():
-    while True:
-        for node_id in odrive_node_ids:
-            get_pos_vel(node_id)
-        time.sleep(1)  # Adjust the update interval as needed
-
 # Function to get position and velocity for a specific ODrive
 def get_pos_vel(node_id):
     for msg in bus:
@@ -60,16 +53,24 @@ def connect_odrive(node_id):
 for node_id in odrive_node_ids:
     connect_odrive(node_id)
 
-# Start the monitoring thread
-monitor_thread = threading.Thread(target=monitor_odrive)
-monitor_thread.daemon = True
-monitor_thread.start()
+# Set up a thread to move each ODrive's position by +200 every 3 seconds
+def move_odrive_position(node_id):
+    position = 0
+    while True:
+        position += 200
+        set_position(node_id, position)
+        time.sleep(3)
 
+# Start a thread for each ODrive to move its position
+position_threads = []
+for node_id in odrive_node_ids:
+    position_thread = threading.Thread(target=move_odrive_position, args=(node_id,))
+    position_thread.daemon = True
+    position_thread.start()
+    
 try:
     while True:
-        for node_id in odrive_node_ids:
-            set_position(node_id, 200)  # Set the desired position to 200 turns
-        time.sleep(3)  # Wait for 3 seconds before updating positions again
+        time.sleep(1)  # Keep the main thread running
 
 except KeyboardInterrupt:
     print("Keyboard interrupt detected. Stopping all ODrives.")
