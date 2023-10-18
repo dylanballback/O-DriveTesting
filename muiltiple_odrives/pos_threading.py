@@ -49,6 +49,7 @@ def move_single_odrive_position(node_id):
         except Exception as e:
             print(f"Error in move_single_odrive_position for ODrive {node_id}: {str(e)}")
 
+
 # Start threads to move position for each ODrive one at a time
 for node_id in odrive_node_ids:
     print(f"Starting thread for ODrive {node_id}")  # Debug print
