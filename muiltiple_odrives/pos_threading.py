@@ -37,8 +37,8 @@ def connect_odrive(node_id):
 for node_id in odrive_node_ids:
     connect_odrive(node_id)
 
-# Function to move each ODrive's position
-def move_odrive_position(node_id):
+# Function to move a single ODrive's position
+def move_single_odrive_position(node_id):
     position = 0
     while True:
         try:
@@ -47,12 +47,12 @@ def move_odrive_position(node_id):
             set_position(node_id, position)
             time.sleep(3)
         except Exception as e:
-            print(f"Error in move_odrive_position for ODrive {node_id}: {str(e)}")
+            print(f"Error in move_single_odrive_position for ODrive {node_id}: {str(e)}")
 
-# Start threads to move position for each ODrive
+# Start threads to move position for each ODrive one at a time
 for node_id in odrive_node_ids:
     print(f"Starting thread for ODrive {node_id}")  # Debug print
-    position_thread = threading.Thread(target=move_odrive_position, args=(node_id,))
+    position_thread = threading.Thread(target=move_single_odrive_position, args=(node_id,))
     position_thread.daemon = True  # This ensures the thread will be terminated when the main program exits
     position_thread.start()
 
