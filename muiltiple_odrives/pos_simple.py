@@ -23,7 +23,7 @@ def set_position(node_id, position):
         is_extended_id=False
     ))
 
-def clear_can_buffer(max_iterations=1000):
+def clear_can_buffer(max_iterations=100):
     """
     Clear any pending messages in the CAN bus buffer.
     
@@ -40,28 +40,6 @@ def clear_can_buffer(max_iterations=1000):
     if count == max_iterations:
         print("Warning: Reached max iterations while clearing buffer. Buffer might not be fully cleared.")
 
-def check_heartbeat(node_id):
-    """
-    Check the heartbeat of a specific ODrive to ensure it's in the CLOSED_LOOP_CONTROL state.
-
-    Args:
-    - node_id: The ID of the ODrive.
-
-    Returns:
-    - True if the ODrive is in the correct state, else False.
-    """
-    start_time = time.time()
-    while time.time() - start_time < HEARTBEAT_TIMEOUT:
-        msg = bus.recv(timeout=HEARTBEAT_TIMEOUT)
-        if msg and msg.arbitration_id == (node_id << 5 | 0x01):  # Heartbeat message
-            error, state, _, _ = struct.unpack('<IBBB', bytes(msg.data[:7]))
-            if state == 8:  # Check if state is CLOSED_LOOP_CONTROL
-                return True
-            else:
-                print(f"ODrive {node_id} reported an error code: {error}")
-                return False
-    print(f"ODrive {node_id} heartbeat timeout!")
-    return False
 
 def connect_odrive(node_id):
     """
