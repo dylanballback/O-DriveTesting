@@ -10,7 +10,7 @@ odrive_node_ids = [0, 1, 2]
 # Function to set position for a specific ODrive
 def set_position(node_id, position):
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0a),
+        arbitration_id=(node_id << 5 | 0x0C),
         data=struct.pack('<ff', float(position), 0.0),
         is_extended_id=False
     ))
