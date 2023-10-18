@@ -81,15 +81,14 @@ def connect_odrive(node_id):
         print(f"Failed to connect to ODrive {node_id} due to heartbeat issues.")
 
 try:
-    # Initialize the CAN bus
     bus = can.interface.Bus("can0", bustype="socketcan")
     print("CAN bus initialized!")
-    
-    # Clear the CAN bus buffer of any stale messages
+    print("Clearing CAN bus buffer...")  # Add this
     clear_can_buffer()
+    print("Buffer cleared!")  # Add this
 
-    # Iterate over each ODrive, connect to it, and check its heartbeat
     for node_id in odrive_node_ids:
+        print(f"Attempting to connect to ODrive {node_id}...")  # This already exists in the function but adding here for emphasis
         connect_odrive(node_id)
 
     # Dictionary to track the position of each ODrive
