@@ -5,101 +5,74 @@ import time
 import signal
 import sys
 
-# Number of O-Drives you want to control. Change this value as needed (2, 4, 9, etc.).
-NUM_MOTORS = 4  # Example: 4 O-Drives
+# Define the node IDs for your ODrives
+odrive_node_ids = [0, 1, 2]  # Adjust these based on your ODrive configuration
 
-# Generate a list of node_ids for the O-Drives based on NUM_MOTORS.
-node_ids = list(range(NUM_MOTORS))
-
-bus = can.interface.Bus("can0", bustype="socketcan")
-
-def flush_can_buffer():
-    """Flush CAN RX buffer to ensure no old pending messages."""
-    while not (bus.recv(timeout=0) is None): pass
-
-def set_closed_loop_control(node_id):
-    """Put a specific O-Drive into closed loop control mode."""
-    try:
-        bus.send(can.Message(
-            arbitration_id=(node_id << 5 | 0x07), # 0x07: Set_Axis_State
-            data=struct.pack('<I', 8), # 8: AxisState.CLOSED_LOOP_CONTROL
-            is_extended_id=False
-        ))
-
-        # Wait for the O-Drive to enter closed loop control mode
-        for msg in bus:
-            if msg.arbitration_id == (node_id << 5 | 0x01): # 0x01: Heartbeat
-                error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
-                if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
-                    break
-        print(f"Connected to O-Drive {node_id}")
-    except Exception as e:
-        print(f"Error connecting to O-Drive {node_id}: {str(e)}")
-
-def set_pos(node_id, pos_set):
-    """Set the position for a specific O-Drive."""
+# Function to set position for a specific ODrive
+def set_position(node_id, position):
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0e), # 0x0e: Set_Input_Pos
-        data=struct.pack('<f', float(pos_set)),
+        arbitration_id=(node_id << 5 | 0x0a),  # 0x0a: Set_Input_Pos
+        data=struct.pack('<ff', float(position), 0.0),  # Position, velocity feedforward
         is_extended_id=False
     ))
 
-def move_motor(node_id):
-    """Move a specific motor 200 turns every 3 seconds."""
-    while not exit_program:
-        set_pos(node_id, 200.0)
-        time.sleep(3)
-        set_pos(node_id, 0.0)
-        time.sleep(3)
+# Function to stop all ODrives
+def stop_all_odrives():
+    for node_id in odrive_node_ids:
+        set_position(node_id, 0)  # Set position to 0 to stop motion
 
-def print_feedback():
-    """Print position feedback for all O-Drives."""
-    while not exit_program:
-        for node_id in node_ids:
-            # Request encoder estimates
-            bus.send(can.Message(
-                arbitration_id=(node_id << 5 | 0x09), # 0x09: Get_Encoder_Estimates
-                is_extended_id=False
-            ))
-            msg = bus.recv()
-            if msg and msg.arbitration_id == (node_id << 5 | 0x09):
-                pos, _ = struct.unpack('<ff', bytes(msg.data))
-                print(f"O-Drive {node_id} - pos: {pos:.3f} [turns]")
-        time.sleep(1)  # Print feedback every second
+# Define the CAN bus interface
+bus = can.interface.Bus("can0", bustype="socketcan")
 
-def handle_keyboard_interrupt(signal, frame):
-    global exit_program
-    print("Keyboard interrupt received. Exiting...")
-    exit_program = True
+# Flush CAN RX buffer so there are no more old pending messages
+while not (bus.recv(timeout=0) is None):
+    pass
+
+# Set up a thread to monitor ODrive positions and velocities
+def monitor_odrive():
+    while True:
+        for node_id in odrive_node_ids:
+            get_pos_vel(node_id)
+        time.sleep(1)  # Adjust the update interval as needed
+
+# Function to get position and velocity for a specific ODrive
+def get_pos_vel(node_id):
+    for msg in bus:
+        if msg.arbitration_id == (node_id << 5 | 0x09):  # 0x09: Get_Encoder_Estimates
+            pos, vel = struct.unpack('<ff', bytes(msg.data))
+            print(f"ODrive {node_id} - Position: {pos:.3f} [turns], Velocity: {vel:.3f} [turns/s]")
+
+# Function to connect to and configure an ODrive
+def connect_odrive(node_id):
+    try:
+        # Add code here to connect to the ODrive and configure it
+        # You can print messages indicating the connection status
+
+        print(f"Connecting to ODrive {node_id}...")
+        # Your connection code goes here
+
+        print(f"Successfully connected to ODrive {node_id}")
+
+    except Exception as e:
+        print(f"Error connecting to ODrive {node_id}: {str(e)}")
+
+# Connect to and configure each ODrive
+for node_id in odrive_node_ids:
+    connect_odrive(node_id)
+
+# Start the monitoring thread
+monitor_thread = threading.Thread(target=monitor_odrive)
+monitor_thread.daemon = True
+monitor_thread.start()
+
+try:
+    while True:
+        for node_id in odrive_node_ids:
+            set_position(node_id, 200)  # Set the desired position to 200 turns
+        time.sleep(3)  # Wait for 3 seconds before updating positions again
+
+except KeyboardInterrupt:
+    print("Keyboard interrupt detected. Stopping all ODrives.")
+    stop_all_odrives()
     bus.shutdown()
     sys.exit(0)
-
-# Register a handler for the keyboard interrupt (Ctrl+C)
-signal.signal(signal.SIGINT, handle_keyboard_interrupt)
-
-exit_program = False
-flush_can_buffer()
-
-# Check connection to each O-Drive and set to closed loop control mode
-for node_id in node_ids:
-    set_closed_loop_control(node_id)
-
-# Start a thread to print feedback for all O-Drives
-feedback_thread = threading.Thread(target=print_feedback)
-feedback_thread.start()
-
-# Create and start threads for each O-Drive to control their position
-position_threads = []
-for node_id in node_ids:
-    t = threading.Thread(target=move_motor, args=(node_id,))
-    position_threads.append(t)
-    t.start()
-
-# Wait for all position control threads to complete
-for t in position_threads:
-    t.join()
-
-# Stop the feedback thread once all position control threads have completed
-feedback_thread.join()
-
-bus.shutdown()
