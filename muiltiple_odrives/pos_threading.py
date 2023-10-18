@@ -11,7 +11,7 @@ odrive_node_ids = [0, 1, 2]
 def set_position(node_id, position):
     try:
         bus.send(can.Message(
-            arbitration_id=(node_id << 5 | 0x00c),
+            arbitration_id=(node_id << 5 | 0x00C),
             data=struct.pack('<f', float(position)),
             is_extended_id=False
         ))
