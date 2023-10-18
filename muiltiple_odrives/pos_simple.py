@@ -23,13 +23,22 @@ def set_position(node_id, position):
         is_extended_id=False
     ))
 
-def clear_can_buffer():
+def clear_can_buffer(max_iterations=1000):
     """
     Clear any pending messages in the CAN bus buffer.
+    
+    Args:
+    - max_iterations: Maximum number of messages to clear to avoid infinite loop.
     """
-    while True:
-        # Flush CAN RX buffer so there are no more old pending messages
-        while not (bus.recv(timeout=0) is None): pass
+    count = 0
+    while count < max_iterations:
+        msg = bus.recv(timeout=0.1)
+        if msg is None:
+            break
+        print(f"Clearing message: {msg}")  # Printing the message being cleared
+        count += 1
+    if count == max_iterations:
+        print("Warning: Reached max iterations while clearing buffer. Buffer might not be fully cleared.")
 
 def check_heartbeat(node_id):
     """
