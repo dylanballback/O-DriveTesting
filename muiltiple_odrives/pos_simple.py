@@ -30,7 +30,7 @@ def clear_can_buffer():
     while True:
         msg = bus.recv(timeout=0.1)
         if msg is None:
-            break
+            pass
 
 def check_heartbeat(node_id):
     """
