@@ -28,6 +28,8 @@ def connect_odrive(node_id):
     try:
         # Connection code goes here
         print(f"Successfully connected to ODrive {node_id}")
+        # Initialize its position to 0 after connecting
+        set_position(node_id, 0)
 
     except Exception as e:
         print(f"Error connecting to ODrive {node_id}: {str(e)}")
