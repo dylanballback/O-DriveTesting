@@ -28,9 +28,8 @@ def clear_can_buffer():
     Clear any pending messages in the CAN bus buffer.
     """
     while True:
-        msg = bus.recv(timeout=0.1)
-        if msg is None:
-            pass
+        # Flush CAN RX buffer so there are no more old pending messages
+        while not (bus.recv(timeout=0) is None): pass
 
 def check_heartbeat(node_id):
     """
