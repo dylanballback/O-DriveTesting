@@ -12,7 +12,16 @@ def set_position(node_id, position):
         is_extended_id=False
     ))
 
+def clear_can_buffer():
+    while True:
+        msg = bus.recv(timeout=0.1)
+        if msg is None:
+            break
+
 bus = can.interface.Bus("can0", bustype="socketcan")
+
+# Clear any pending messages on the CAN bus
+clear_can_buffer()
 
 for node_id in odrive_node_ids:
     set_position(node_id, 0)
