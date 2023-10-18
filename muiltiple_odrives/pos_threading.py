@@ -8,11 +8,11 @@ import sys
 odrive_node_ids = [0, 1, 2]
 
 # Function to set position for a specific ODrive
-def set_position(node_id, position, vel_ff=0.0, torque_ff=0.0):
+def set_position(node_id, position):
     try:
         bus.send(can.Message(
             arbitration_id=(node_id << 5 | 0x00c),
-            data=struct.pack('<fff', float(position), float(vel_ff), float(torque_ff)),
+            data=struct.pack('<f', float(position)),
             is_extended_id=False
         ))
     except can.CanError as e:
