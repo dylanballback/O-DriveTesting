@@ -8,10 +8,10 @@ import sys
 odrive_node_ids = [0, 1, 2]
 
 # Function to set position for a specific ODrive
-def set_position(node_id, position):
+def set_position(node_id, position, vel_ff=0.0, torque_ff=0.0):
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x00c),
-        data=struct.pack('<ff', float(position), 0.0),
+        arbitration_id=(node_id << 5 | 0x00c),  # Using the correct CMD ID for Set_Input_Pos
+        data=struct.pack('<fff', float(position), float(vel_ff), float(torque_ff)),
         is_extended_id=False
     ))
 
