@@ -15,7 +15,7 @@ bus = can.interface.Bus("can0", bustype="socketcan")
 
 def flush_can_buffer():
     """Flush CAN RX buffer to ensure no old pending messages."""
-    while not (bus.recv(timeout=0) is None): passimport can
+    while not (bus.recv(timeout=0) is None): pass
 import struct
 import threading
 import time
