@@ -60,12 +60,6 @@ def connect_odrive(node_id):
         is_extended_id=False
     ))
 
-    # Check the heartbeat to confirm the state transition
-    if check_heartbeat(node_id):
-        print(f"Successfully connected and transitioned ODrive {node_id} to CLOSED_LOOP_CONTROL state.")
-        set_position(node_id, 0)
-    else:
-        print(f"Failed to connect to ODrive {node_id} due to heartbeat issues.")
 
 try:
     bus = can.interface.Bus("can0", bustype="socketcan")
