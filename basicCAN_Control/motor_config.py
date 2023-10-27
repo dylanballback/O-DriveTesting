@@ -15,11 +15,11 @@ class ODriveCAN:
         O-Drive Controller Specific Attributes:
         nodeID (integer): The node ID can be set by the 
     """
-
     def __init__(self, canBusID, canBusType, nodeID):
         self.canBusID = canBusID
         self.canBusType = canBusType
         self.nodeID = nodeID
+
 
 
 
@@ -28,11 +28,10 @@ class ODriveCAN:
         Sets Axis NodeID for an O-Drive Controller through CAN BUS
 
         Set_Axis_NodeID: 0x06
-
-        
         """
 
         pass
+
 
 
 
@@ -56,10 +55,38 @@ class ODriveCAN:
                 Homing:                              0xA
                 Encoder_Hall_Polarity_Calibration:   0xB
                 Encoder_Hall_Phase_Calibration:      0xD
-
-
         """
         pass
+
+
+
+
+
+    def setControllerMode(self):
+            """
+            Set the O-Drive Controller Mode type 
+
+            Attribute: 
+                CAN Set_Controller_Mode: 0x0B
+                        Control_Mode:
+                            Voltage_Control:   0x0
+                            Torque_Control:    0x1
+                            Velocity_Control:  0x2
+                            Position_Control:  0x3
+
+                        Input_Mode:
+                            Inactive:      0x0
+                            Passthrough:   0x1
+                            VEL_Ramp:      0x2
+                            Pos_Filter:    0x3
+                            Mix_Channels:  0x4
+                            Trap_Traj:     0x5
+                            Torque_Ramp:   0x6
+                            Mirror:        0x7  
+                            Tunning:       0x8 
+            """
+            pass
+
 
 
 
@@ -78,39 +105,10 @@ class ODriveCAN:
         Returns:
             Pos_Estimate
             Vel_Estimate 
-            
-
-
         """
         pass
 
 
 
 
-    def setControllerMode(self):
-        """
-        Set the O-Drive Controller Mode type 
-
-        Attribute: 
-            CAN Set_Controller_Mode: 0x0B
-                    Control_Mode:
-                        Voltage_Control:   0x0
-                        Torque_Control:    0x1
-                        Velocity_Control:  0x2
-                        Position_Control:  0x3
-
-                    Input_Mode:
-                        Inactive:      0x0
-                        Passthrough:   0x1
-                        VEL_Ramp:      0x2
-                        Pos_Filter:    0x3
-                        Mix_Channels:  0x4
-                        Trap_Traj:     0x5
-                        Torque_Ramp:   0x6
-                        Mirror:        0x7  
-                        Tunning:       0x8
-            
-        """
-        pass
-
-
+  
