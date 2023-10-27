@@ -84,10 +84,15 @@ def read_and_print_roll():
             imu_read_count = 0
             imu_rate_time = current_time
 
+
 def set_vel(velocity):
     while running:
-        bus.send(can.Message(arbitration_id=(node_id << 5 | 0x0d), data=struct.pack('<ff', float(velocity), 0.0), is_extended_id=False))
+        bus.send(can.Message(
+            arbitration_id=(node_id << 5 | 0x0d), 
+            data=struct.pack('<ff', float(velocity), 0.0), 
+            is_extended_id=False))
         time.sleep(0.1)
+
 
 def get_pos_vel():
     global angle_roll, imu_read_rate
