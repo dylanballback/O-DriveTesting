@@ -17,7 +17,7 @@ def initialize_imu():
 
 def calibrate_imu(sensor):
     """Calibrate IMU gyro readings."""
-    calibration_duration = 15
+    calibration_duration = 5
     print("Calibrating LSM9DS1. Please keep the sensor stable...")
     calibration_data = {"gyro_total": [0, 0, 0], "sample_count": 0}
     start_time = time.monotonic()
@@ -47,6 +47,7 @@ def send_data_via_websocket(data):
     """Send IMU data through the WebSocket."""
     try:
         sio.emit('imu_data', data)
+        print(f"Sent data: {data}")  # Debugging print
     except Exception as e:
         print(f"Failed to send data through WebSocket. Error: {e}")
 
