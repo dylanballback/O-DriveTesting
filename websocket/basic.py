@@ -3,7 +3,9 @@ import busio
 import adafruit_lsm9ds1
 import math
 import time
-from socketIO_client import SocketIO, LoggingNamespace
+import socketio
+
+sio = socketio.Client()
 
 def initialize_imu():
     """Initialize IMU settings."""
@@ -33,22 +35,21 @@ def calibrate_imu(sensor):
     print("Calibration complete.")
     return calibration_data
 
+
 def connect_to_websocket(server_ip, server_port):
     """Connect to WebSocket server."""
-    try:
-        socketIO = SocketIO(server_ip, server_port, LoggingNamespace)
-        print("Successfully connected to the WebSocket server.")
-        return socketIO
-    except Exception as e:
-        print(f"Failed to connect to the WebSocket server. Error: {e}")
-        return None
+    sio.connect(f'http://{server_ip}:{server_port}')
+    print("Successfully connected to the WebSocket server.")
 
-def send_data_via_websocket(websocket, data):
+
+
+def send_data_via_websocket(data):
     """Send IMU data through the WebSocket."""
     try:
-        websocket.emit('imu_data', data)
+        sio.emit('imu_data', data)
     except Exception as e:
         print(f"Failed to send data through WebSocket. Error: {e}")
+
 
 def get_imu_angles(sensor, calibration_data):
     """Read IMU angles and return them."""
@@ -81,18 +82,21 @@ def main():
     """Main execution function."""
     imu_sensor = initialize_imu()
     imu_calibration_data = calibrate_imu(imu_sensor)
-    ws = connect_to_websocket('192.168.1.2', 5025)
+    connect_to_websocket('192.168.1.2', 5025)
     
-    if ws:  # Ensure the WebSocket is connected before proceeding
-        while True:
-            pitch, roll = get_imu_angles(imu_sensor, imu_calibration_data)
-            print(f"Pitch: {pitch:.2f} degrees, Roll: {roll:.2f} degrees")
-            data = {'pitch': pitch, 'roll': roll}
-            send_data_via_websocket(ws, data)
-            time.sleep(.1)
+    while True:
+        pitch, roll = get_imu_angles(imu_sensor, imu_calibration_data)
+        print(f"Pitch: {pitch:.2f} degrees, Roll: {roll:.2f} degrees")
+        data = {'pitch': pitch, 'roll': roll}
+        send_data_via_websocket(data)
+        time.sleep(.1)
+    
+    sio.wait()
+
 
 if __name__ == "__main__":
     main()
+
 
 
 """
