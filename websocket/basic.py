@@ -7,6 +7,9 @@ import socketio
 
 sio = socketio.Client()
 
+# Define previous_time as a global variable
+previous_time = time.monotonic()
+
 def initialize_imu():
     """Initialize IMU settings."""
     i2c = board.I2C()
@@ -53,6 +56,7 @@ def send_data_via_websocket(data):
 
 
 def get_imu_angles(sensor, calibration_data):
+    global previous_time  # Indicate that we're using the global previous_time
     """Read IMU angles and return them."""
     alpha = 0.98
     angle_pitch = angle_roll = 0.0
@@ -77,6 +81,8 @@ def get_imu_angles(sensor, calibration_data):
     angle_pitch = alpha * pitch_gyro + (1 - alpha) * pitch_acc
     angle_roll = alpha * roll_gyro + (1 - alpha) * roll_acc
 
+    previous_time = current_time  # Update the global variable
+
     return angle_pitch, angle_roll
 
 def main():
@@ -86,13 +92,10 @@ def main():
     connect_to_websocket('192.168.1.2', 5025)
     
     while True:
-        current_time = time.monotonic()
-        elapsed_time = current_time - previous_time
         pitch, roll = get_imu_angles(imu_sensor, imu_calibration_data)
         print(f"Pitch: {pitch:.2f} degrees, Roll: {roll:.2f} degrees")
         data = {'pitch': pitch, 'roll': roll}
         send_data_via_websocket(data)
-        previous_time = current_time  # Update previous_time for the next iteration
     
     sio.wait()
 
