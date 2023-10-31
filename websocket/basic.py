@@ -7,9 +7,6 @@ import socketio
 
 sio = socketio.Client()
 
-# Define previous_time as a global variable
-previous_time = time.monotonic()
-
 def initialize_imu():
     """Initialize IMU settings."""
     i2c = board.I2C()
@@ -38,6 +35,41 @@ def calibrate_imu(sensor):
     print("Calibration complete.")
     return calibration_data
 
+# Define global variables
+previous_time = time.monotonic()
+angle_pitch = 0.0
+angle_roll = 0.0
+
+def get_imu_angles(sensor, calibration_data):
+    global previous_time, angle_pitch, angle_roll  # Indicate that we're using the global variables
+    """Read IMU angles and return them."""
+    alpha = 0.98
+
+    current_time = time.monotonic()
+    elapsed_time = current_time - previous_time
+    accel_x, accel_y, accel_z = sensor.acceleration
+    gyro_x, gyro_y, gyro_z = sensor.gyro
+
+    for i in range(3):
+        gyro_x -= calibration_data["gyro_total"][i]
+        gyro_y -= calibration_data["gyro_total"][i]
+        gyro_z -= calibration_data["gyro_total"][i]
+
+    pitch_acc = math.degrees(math.atan2(accel_x, math.sqrt(accel_y * accel_y + accel_z * accel_z)))
+    roll_acc = math.degrees(math.atan2(accel_y, accel_z))
+
+    pitch_gyro = angle_pitch + (gyro_x * elapsed_time)
+    roll_gyro = angle_roll + (gyro_y * elapsed_time)
+
+    angle_pitch = alpha * pitch_gyro + (1 - alpha) * pitch_acc
+    angle_roll = alpha * roll_gyro + (1 - alpha) * roll_acc
+
+    previous_time = current_time  # Update the global variable at the end
+
+    return angle_pitch, angle_roll
+
+
+#----------------------Websocket Functions START-----------------------------------------------------------------
 
 def connect_to_websocket(server_ip, server_port):
     """Connect to WebSocket server."""
@@ -54,35 +86,7 @@ def send_data_via_websocket(data):
     except Exception as e:
         print(f"Failed to send data through WebSocket. Error: {e}")
 
-
-def get_imu_angles(sensor, calibration_data):
-    global previous_time  # Indicate that we're using the global previous_time
-    """Read IMU angles and return them."""
-    alpha = 0.98
-    angle_pitch = angle_roll = 0.0
-
-    current_time = time.monotonic()
-    elapsed_time = current_time - previous_time  # Compute elapsed_time using the previous and current times
-    accel_x, accel_y, accel_z = sensor.acceleration
-    gyro_x, gyro_y, gyro_z = sensor.gyro
-
-    for i in range(3):
-        gyro_x -= calibration_data["gyro_total"][i]
-        gyro_y -= calibration_data["gyro_total"][i]
-        gyro_z -= calibration_data["gyro_total"][i]
-
-    pitch_acc = math.degrees(math.atan2(accel_x, math.sqrt(accel_y * accel_y + accel_z * accel_z)))
-    roll_acc = math.degrees(math.atan2(accel_y, accel_z))
-
-    pitch_gyro = angle_pitch + (gyro_x * elapsed_time)  # gyro_x is already in degrees per second
-    roll_gyro = angle_roll + (gyro_y * elapsed_time)    # gyro_y is already in degrees per second
-
-    angle_pitch = alpha * pitch_gyro + (1 - alpha) * pitch_acc
-    angle_roll = alpha * roll_gyro + (1 - alpha) * roll_acc
-
-    previous_time = current_time  # Update the global variable at the end
-
-    return angle_pitch, angle_roll
+#----------------------Websocket Functions END-----------------------------------------------------------------
 
 
 def main():
