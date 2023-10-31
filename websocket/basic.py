@@ -86,11 +86,13 @@ def main():
     connect_to_websocket('192.168.1.2', 5025)
     
     while True:
+        current_time = time.monotonic()
+        elapsed_time = current_time - previous_time
         pitch, roll = get_imu_angles(imu_sensor, imu_calibration_data)
         print(f"Pitch: {pitch:.2f} degrees, Roll: {roll:.2f} degrees")
         data = {'pitch': pitch, 'roll': roll}
         send_data_via_websocket(data)
-        time.sleep(.1)
+        previous_time = current_time  # Update previous_time for the next iteration
     
     sio.wait()
 
