@@ -74,8 +74,8 @@ def get_imu_angles(sensor, calibration_data):
     pitch_acc = math.degrees(math.atan2(accel_x, math.sqrt(accel_y * accel_y + accel_z * accel_z)))
     roll_acc = math.degrees(math.atan2(accel_y, accel_z))
 
-    pitch_gyro = angle_pitch + math.degrees(gyro_x * elapsed_time)
-    roll_gyro = angle_roll + math.degrees(gyro_y * elapsed_time)
+    pitch_gyro = angle_pitch + (gyro_x * elapsed_time)  # gyro_x is already in degrees per second
+    roll_gyro = angle_roll + (gyro_y * elapsed_time)    # gyro_y is already in degrees per second
 
     angle_pitch = alpha * pitch_gyro + (1 - alpha) * pitch_acc
     angle_roll = alpha * roll_gyro + (1 - alpha) * roll_acc
