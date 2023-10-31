@@ -60,10 +60,9 @@ def get_imu_angles(sensor, calibration_data):
     """Read IMU angles and return them."""
     alpha = 0.98
     angle_pitch = angle_roll = 0.0
-    previous_time = time.monotonic()
 
     current_time = time.monotonic()
-    elapsed_time = current_time - previous_time
+    elapsed_time = current_time - previous_time  # Compute elapsed_time using the previous and current times
     accel_x, accel_y, accel_z = sensor.acceleration
     gyro_x, gyro_y, gyro_z = sensor.gyro
 
@@ -81,9 +80,10 @@ def get_imu_angles(sensor, calibration_data):
     angle_pitch = alpha * pitch_gyro + (1 - alpha) * pitch_acc
     angle_roll = alpha * roll_gyro + (1 - alpha) * roll_acc
 
-    previous_time = current_time  # Update the global variable
+    previous_time = current_time  # Update the global variable at the end
 
     return angle_pitch, angle_roll
+
 
 def main():
     """Main execution function."""
