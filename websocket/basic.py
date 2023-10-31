@@ -50,7 +50,7 @@ def send_data_via_websocket(data):
     """Send IMU data through the WebSocket."""
     try:
         sio.emit('imu_data', data)
-        print(f"Sent data: {data}")  # Debugging print
+        #print(f"Sent data: {data}")  # Debugging print
     except Exception as e:
         print(f"Failed to send data through WebSocket. Error: {e}")
 
