@@ -19,7 +19,7 @@ def send_data():
 if __name__ == '__main__':
     try:
         # Replace 'server_address' with the IP of the machine running the Flask server
-        sio.connect('http://server_address:5000')
+        sio.connect('http://192.168.1.2:5025')
         sio.wait()
     except Exception as e:
         print(f"Error: {e}")
