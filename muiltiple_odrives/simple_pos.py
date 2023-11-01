@@ -7,15 +7,15 @@ import sys
 # Define the node IDs for your ODrives
 odrive_node_ids = [0, 1, 2]
 
+bus = can.interface.Bus("can0", bustype="socketcan")
+
 def set_position(node_id, position):
-    bus = can.interface.Bus("can0", bustype="socketcan")  # Each process needs its own bus instance
     bus.send(can.Message(
         arbitration_id=(node_id << 5 | 0x0a),
         data=struct.pack('<ff', float(position), 0.0, 0.0),
         is_extended_id=False
     ))
-    bus.flush_tx_buffer()
-    bus.stop()
+    
 
 
 def connect_odrive(node_id):
@@ -41,5 +41,7 @@ if __name__ == "__main__":
     for node_id in odrive_node_ids:
         connect_odrive(node_id)
 
+    position = 0
     for node_id in odrive_node_ids:
-        move_odrive_position(node_id)
+        position += 300
+        set_position(node_id, position)
