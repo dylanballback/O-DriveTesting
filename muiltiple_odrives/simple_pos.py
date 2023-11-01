@@ -17,6 +17,9 @@ def set_position(node_id, position):
     ))
     
 
+def flush_can_buffer():
+    """Flush CAN RX buffer to ensure no old pending messages."""
+    while not (bus.recv(timeout=0) is None): pass
 
 def connect_odrive(node_id):
     print(f"Attempting to connect to ODrive {node_id}...")
@@ -24,6 +27,7 @@ def connect_odrive(node_id):
         # Connection code goes here. If there's no actual connection logic, you can remove this.
         print(f"Successfully connected to ODrive {node_id}")
         set_position(node_id, 0)
+        flush_can_buffer()
 
     except Exception as e:
         print(f"Error connecting to ODrive {node_id}: {str(e)}")
