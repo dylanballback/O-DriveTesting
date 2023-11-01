@@ -5,7 +5,7 @@ import time
 import sys
 
 # Define the node IDs for your ODrives
-odrive_node_ids = [0, 1]
+odrive_node_ids = [1]
 
 bus = can.interface.Bus("can0", bustype="socketcan")
 
@@ -18,8 +18,8 @@ def flush_can_buffer():
 
 # Put axis into closed loop control state
 def set_control_state(node_id):
-    print(f"Attempting to set control state to ODrive {node_id}...")
     flush_can_buffer()
+    print(f"Attempting to set control state to ODrive {node_id}...")
     try:
         bus.send(can.Message(
             arbitration_id=(node_id << 5 | 0x07), # 0x07: Set_Axis_State
