@@ -92,10 +92,10 @@ if __name__ == "__main__":
         
         for x in range(10):
             for node_id in odrive_node_ids:
-                position += 300
+                position += 10
                 set_position(node_id, position)
-                print_feedback(node_id)
-                time.sleep(10)
+                #print_feedback(node_id)
+                time.sleep(5)
 
 
     except KeyboardInterrupt:
