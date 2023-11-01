@@ -81,16 +81,25 @@ def print_feedback(node_id):
 
 
 if __name__ == "__main__":
-    position = 0
-    flush_can_buffer()
-
-    for node_id in odrive_node_ids:
-        set_control_state(node_id)
-
     
+    try:
+        position = 0
+        flush_can_buffer()
 
-    for node_id in odrive_node_ids:
-        position += 300
-        set_position(node_id, position)
-        print_feedback(node_id)
-        time.sleep(3)
+        for node_id in odrive_node_ids:
+            set_control_state(node_id)
+
+        
+
+        for node_id in odrive_node_ids:
+            position += 300
+            set_position(node_id, position)
+            print_feedback(node_id)
+            time.sleep(10)
+
+
+    except KeyboardInterrupt:
+        for node_id in odrive_node_ids:
+            set_position(node_id, 0)
+        bus.shutdown()
+
