@@ -41,10 +41,3 @@ if __name__ == "__main__":
 
     for node_id in odrive_node_ids:
         move_odrive_position(node_id)
-
-
-    except KeyboardInterrupt:
-        print("\nKeyboard interrupt detected. Stopping all ODrives.")
-        for node_id in odrive_node_ids:
-            set_position(node_id, 0)
-        sys.exit(0)
