@@ -43,7 +43,7 @@ def set_control_state(node_id):
 # Function to set position for a specific O-Drive
 def set_position(node_id, position, velocity_feedforward=0.0, torque_feedforward=0.0):
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0a),
+        arbitration_id=(node_id << 5 | 0x0C),
         data=struct.pack('<ff', float(position), velocity_feedforward, torque_feedforward),
         is_extended_id=False
     ))
