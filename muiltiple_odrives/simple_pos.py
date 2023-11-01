@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
         for node_id in odrive_node_ids:
             set_control_state(node_id)
+            time.sleep(2)
 
         
         for x in range(10):
