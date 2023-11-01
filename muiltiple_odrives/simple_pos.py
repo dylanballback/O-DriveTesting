@@ -14,6 +14,8 @@ def set_position(node_id, position):
         data=struct.pack('<ff', float(position), 0.0, 0.0),
         is_extended_id=False
     ))
+    bus.flush_tx_buffer()
+    bus.stop()
 
 
 def connect_odrive(node_id):
