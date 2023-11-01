@@ -90,12 +90,12 @@ if __name__ == "__main__":
             set_control_state(node_id)
 
         
-
-        for node_id in odrive_node_ids:
-            position += 300
-            set_position(node_id, position)
-            print_feedback(node_id)
-            time.sleep(10)
+        for x in range(10):
+            for node_id in odrive_node_ids:
+                position += 300
+                set_position(node_id, position)
+                print_feedback(node_id)
+                time.sleep(10)
 
 
     except KeyboardInterrupt:
