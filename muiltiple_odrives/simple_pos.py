@@ -13,6 +13,7 @@ bus = can.interface.Bus("can0", bustype="socketcan")
 def flush_can_buffer():
     #Flush CAN RX buffer to ensure no old pending messages.
     while not (bus.recv(timeout=0) is None): pass
+    print("I have cleared all CAN Messages on the BUS!")
 
 
 # Put axis into closed loop control state
@@ -26,7 +27,7 @@ def set_control_state(node_id):
             is_extended_id=False
         ))
         
-        
+        print(f"Checking Hearbeat for ODrive {node_id}")
         # Wait for axis to enter closed loop control by scanning heartbeat messages
         for msg in bus:
             if msg.arbitration_id == (node_id << 5 | 0x01): # 0x01: Heartbeat
