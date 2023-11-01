@@ -32,6 +32,24 @@ def connect_odrive(node_id):
     except Exception as e:
         print(f"Error connecting to ODrive {node_id}: {str(e)}")
 
+
+
+# Put axis into closed loop control state
+def set_control_state(node_id):
+    bus.send(can.Message(
+        arbitration_id=(node_id << 5 | 0x07), # 0x07: Set_Axis_State
+        data=struct.pack('<I', 8), # 8: AxisState.CLOSED_LOOP_CONTROL
+        is_extended_id=False
+    ))
+    
+    # Wait for axis to enter closed loop control by scanning heartbeat messages
+    for msg in bus:
+        if msg.arbitration_id == (node_id << 5 | 0x01): # 0x01: Heartbeat
+            error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
+            if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
+                break
+
+
 def move_odrive_position(node_id):
     position = 0
     while True:
@@ -43,6 +61,7 @@ def move_odrive_position(node_id):
 
 if __name__ == "__main__":
     for node_id in odrive_node_ids:
+        set_control_state(node_id)
         connect_odrive(node_id)
 
     position = 0
