@@ -10,11 +10,10 @@ odrive_node_ids = [0, 1, 2]
 def set_position(node_id, position):
     bus = can.interface.Bus("can0", bustype="socketcan")  # Each process needs its own bus instance
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0a),
-        data=struct.pack('<ff', float(position), 0.0),
+        arbitration_id=(node_id << 5 | 0x0C),
+        data=struct.pack('<ff', float(position), 0.0, 0.0)
         is_extended_id=False
     ))
-    bus.shutdown()
 
 def connect_odrive(node_id):
     print(f"Attempting to connect to ODrive {node_id}...")
