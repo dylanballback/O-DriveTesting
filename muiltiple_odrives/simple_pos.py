@@ -44,11 +44,23 @@ def set_control_state(node_id):
 def set_position(node_id, position, velocity_feedforward=0.0, torque_feedforward=0.0):
     bus.send(can.Message(
         arbitration_id=(node_id << 5 | 0x0C),
-        data=struct.pack('<ff', float(position), velocity_feedforward, torque_feedforward),
+        data=struct.pack('<fhh', float(position), velocity_feedforward, torque_feedforward),
         is_extended_id=False
     ))
     print(f"Successfully moved ODrive {node_id} to {position}")
     
+
+"""
+# Function to set position for a specific O-Drive
+def set_position(node_id, position, velocity_feedforward=0, torque_feedforward=0):
+    bus.send(can.Message(
+        arbitration_id=(node_id << 5 | 0x0c),  # 0x0c: Set_Input_Pos
+        data=struct.pack('<fhh', position, velocity_feedforward, torque_feedforward),
+        is_extended_id=False
+    ))
+
+"""    
+
 
 # Function to set velocity for a specific O-Drive
 def set_velocity(node_id, velocity=1.0, torque_feedforward=0.0):
