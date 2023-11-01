@@ -36,19 +36,14 @@ for msg in bus:
         if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
             break
 
-# Set velocity function to vel_set turns/s
-def set_vel(vel_set):
+# Set torque function to torque_set 
+def set_torque(torque_set):
     bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-        data=struct.pack('<ff', float(vel_set), 0.0), # 1.0: velocity, 0.0: torque feedforward
+        arbitration_id=(node_id << 5 | 0x0E), # 0x0E: Set_Input_Torque
+        data=struct.pack('<ff', float(torque_set), 0.0), 
         is_extended_id=False
     ))
 
-
-def set_torque(torque_set):
-    bus.send(can.Message(
-        arbitration_id=(node_id << 5 | 0)
-    ))
 
 # Print encoder feedback
 def get_pos_vel():
