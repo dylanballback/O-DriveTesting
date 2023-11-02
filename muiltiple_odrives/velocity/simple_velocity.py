@@ -98,11 +98,10 @@ if __name__ == "__main__":
             for node_id in odrive_node_ids:
                 velocity += 1
                 set_velocity(node_id, velocity)
-                print_feedback(node_id)
+                #print_feedback(node_id)
                 time.sleep(2)
         
         
-
 
         """
         Testing if there is a delay between O-Drives starting without threading.
@@ -112,8 +111,6 @@ if __name__ == "__main__":
         """
         
         
-        
-
 
     except KeyboardInterrupt:
         for node_id in odrive_node_ids:
