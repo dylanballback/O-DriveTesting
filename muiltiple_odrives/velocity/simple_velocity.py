@@ -98,13 +98,18 @@ def print_feedback(node_id, timeout=0.1):
             return
     print(f"No feedback received from O-Drive {node_id} within the timeout period.")
 
+
+#Trying to mointor encoder feedback in real time while being able to send motor commands
 def monitor_odrive_feedback(node_id, stop_event):
     while not stop_event.is_set():
-        msg = bus.recv(timeout=0.1)
-        if msg and msg.arbitration_id == (node_id << 5 | 0x09):
-            pos, vel = struct.unpack('<ff', bytes(msg.data))
-            safe_print(f"O-Drive {node_id} - pos: {pos:.3f}, vel: {vel:.3f}")
-        time.sleep(0.05)
+        try:
+            msg = bus.recv(timeout=0.5)  # Slightly longer timeout to reduce CPU usage
+            if msg:
+                if msg.arbitration_id == (node_id << 5 | 0x09):
+                    pos, vel = struct.unpack('<ff', bytes(msg.data))
+                    safe_print(f"O-Drive {node_id} - pos: {pos:.3f}, vel: {vel:.3f}")
+        except can.CanError as e:
+            safe_print(f"CAN Error: {e}")
 
 
 
