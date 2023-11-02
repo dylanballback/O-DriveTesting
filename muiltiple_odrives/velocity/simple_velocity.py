@@ -1,6 +1,7 @@
 import can
 import struct
 import time
+import threading
 
 
 """
@@ -22,12 +23,23 @@ odrive_node_ids = [0, 1, 2]
 
 bus = can.interface.Bus("can0", bustype="socketcan")
 
+# Thread-safe print function
+print_lock = threading.Lock()
 
 def flush_can_buffer():
     #Flush CAN RX buffer to ensure no old pending messages.
     while not (bus.recv(timeout=0) is None): pass
     print("I have cleared all CAN Messages on the BUS!")
 
+
+def safe_print(*args, **kwargs):
+    with print_lock:
+        print(*args, **kwargs)
+
+def flush_can_buffer():
+    while not (bus.recv(timeout=0) is None):
+        pass
+    safe_print("CAN Messages flushed from the BUS!")
 
 # Put axis into closed loop control state
 def set_control_state(node_id):
@@ -86,8 +98,54 @@ def print_feedback(node_id, timeout=0.1):
             return
     print(f"No feedback received from O-Drive {node_id} within the timeout period.")
 
+def monitor_odrive_feedback(node_id, stop_event):
+    while not stop_event.is_set():
+        msg = bus.recv(timeout=0.1)
+        if msg and msg.arbitration_id == (node_id << 5 | 0x09):
+            pos, vel = struct.unpack('<ff', bytes(msg.data))
+            safe_print(f"O-Drive {node_id} - pos: {pos:.3f}, vel: {vel:.3f}")
+        time.sleep(0.05)
 
 
+
+if __name__ == "__main__":
+    
+    stop_event = threading.Event()
+
+    feedback_threads = []
+    for node_id in odrive_node_ids:
+        thread = threading.Thread(target=monitor_odrive_feedback, args=(node_id, stop_event))
+        thread.start()
+        feedback_threads.append(thread)
+
+    try:
+        velocity = 0
+        flush_can_buffer()
+
+        for node_id in odrive_node_ids:
+            set_control_state(node_id)
+            time.sleep(2)
+
+        for x in range(10):
+            for node_id in odrive_node_ids:
+                velocity += 1
+                set_velocity(node_id, velocity)
+                time.sleep(2)
+
+    except KeyboardInterrupt:
+        stop_event.set()
+
+        for thread in feedback_threads:
+            thread.join()
+
+        for node_id in odrive_node_ids:
+            set_velocity(node_id, 0)
+        bus.shutdown()
+
+
+
+
+"""
 
 if __name__ == "__main__":
     
@@ -109,12 +167,12 @@ if __name__ == "__main__":
         
         
 
-        """
-        Testing if there is a delay between O-Drives starting without threading.
-        set_position(0, 100)
-        set_position(1, 100)
-        set_position(2, 100)
-        """
+        
+        #Testing if there is a delay between O-Drives starting without threading.
+        #set_position(0, 100)
+        #set_position(1, 100)
+        #set_position(2, 100)
+        
         
         
 
@@ -123,3 +181,5 @@ if __name__ == "__main__":
             set_position(node_id, 0)
         bus.shutdown()
 
+
+"""
