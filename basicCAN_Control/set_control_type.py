@@ -1,4 +1,5 @@
 import can
+import struct
 
 def set_odrive_mode(channel, node_id, control_mode_str, input_mode_str):
     # Define control mode mappings
@@ -43,7 +44,15 @@ def set_odrive_mode(channel, node_id, control_mode_str, input_mode_str):
     # Create and send the CAN message
     message = can.Message(arbitration_id=can_id, data=data, is_extended_id=False)
     bus = can.interface.Bus(channel=channel, bustype='socketcan')
-    bus.send(message)
+
+    
+    bus.send(can.Message(
+        arbitration_id=(node_id << 5 | 0x0B),  # 0x0d: Set_Input_Vel
+        data=struct.pack('<ff', control_mode, input_mode),
+        is_extended_id=False
+    ))
+
+    
     bus.shutdown()
 
 # Usage example:
