@@ -66,7 +66,7 @@ def set_position(node_id, position, velocity_feedforward=0, torque_feedforward=0
 
 
 # Function to set velocity for a specific O-Drive
-def set_velocity(node_id, velocity=1.0, torque_feedforward=0.0):
+def set_velocity(node_id, velocity, torque_feedforward=0.0):
     bus.send(can.Message(
         arbitration_id=(node_id << 5 | 0x0d),  # 0x0d: Set_Input_Vel
         data=struct.pack('<ff', velocity, torque_feedforward),
@@ -86,7 +86,7 @@ def print_feedback(node_id):
 if __name__ == "__main__":
     
     try:
-        position = 0
+        velocity = 0
         flush_can_buffer()
 
         for node_id in odrive_node_ids:
@@ -96,8 +96,8 @@ if __name__ == "__main__":
         
         for x in range(10):
             for node_id in odrive_node_ids:
-                position += 10
-                set_position(node_id, position)
+                velocity += 1
+                set_velocity(node_id, velocity)
                 print_feedback(node_id)
                 time.sleep(2)
         

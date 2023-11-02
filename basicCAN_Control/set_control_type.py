@@ -1,6 +1,9 @@
 import can
 import struct
 
+
+#11/1/23 code doesn't work... just used USB and web gui
+
 def set_odrive_mode(channel, node_id, control_mode_str, input_mode_str):
     # Define control mode mappings
     CONTROL_MODES = {
