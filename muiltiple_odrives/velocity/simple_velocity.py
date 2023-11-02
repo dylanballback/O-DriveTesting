@@ -72,6 +72,7 @@ def set_velocity(node_id, velocity, torque_feedforward=0.0):
         data=struct.pack('<ff', velocity, torque_feedforward),
         is_extended_id=False
     ))
+    print(f"Successfully set ODrive {node_id} to velocity {velocity} turns/s")
 
 
 # Function to print encoder feedback for a specific O-Drive
