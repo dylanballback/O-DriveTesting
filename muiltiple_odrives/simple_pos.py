@@ -4,6 +4,21 @@ import multiprocessing
 import time
 import sys
 
+
+"""
+11/1/23
+This code is for controlling 3 O-Drives using position control.
+
+You have to ensure that each O-Drive is configured using the Web-GUI first and set to postion control. 
+
+You also have to go to the inspector tab on the GUI and change the 'node_ID' of two of the O-Drives to '1' and '2' then save the configuration.
+
+Then this code will set each of the 3 O-Drives to close axis state, and change the position of each O-Drive by 10 turns every 2 seconds for a total of 10 times.
+
+When you keyboard interrupt the position will be set to 0 for all O-Drives and the CAN Bus connection will be shutdown.
+"""
+
+
 # Define the node IDs for your ODrives
 odrive_node_ids = [0, 1, 2]
 
