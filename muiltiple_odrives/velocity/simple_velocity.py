@@ -87,6 +87,10 @@ def set_velocity(node_id, velocity, torque_feedforward=0.0):
     print(f"Successfully set ODrive {node_id} to velocity {velocity} turns/s")
 
 
+
+
+
+
 # Function to print encoder feedback for a specific O-Drive
 def print_feedback(node_id, timeout=0.1):
     start_time = time.time()
@@ -99,17 +103,31 @@ def print_feedback(node_id, timeout=0.1):
     print(f"No feedback received from O-Drive {node_id} within the timeout period.")
 
 
-#Trying to mointor encoder feedback in real time while being able to send motor commands
+
+# This dictionary will store the latest feedback from each ODrive
+latest_feedback = {node_id: {'pos': 0.0, 'vel': 0.0} for node_id in odrive_node_ids}
+feedback_lock = threading.Lock()
+
 def monitor_odrive_feedback(node_id, stop_event):
     while not stop_event.is_set():
         try:
-            msg = bus.recv(timeout=0.5)  # Slightly longer timeout to reduce CPU usage
-            if msg:
-                if msg.arbitration_id == (node_id << 5 | 0x09):
-                    pos, vel = struct.unpack('<ff', bytes(msg.data))
-                    safe_print(f"O-Drive {node_id} - pos: {pos:.3f}, vel: {vel:.3f}")
+            msg = bus.recv(timeout=0.5)  # Increased timeout to reduce bus load
+            if msg and msg.arbitration_id == (node_id << 5 | 0x09):
+                pos, vel = struct.unpack('<ff', bytes(msg.data))
+                with feedback_lock:
+                    latest_feedback[node_id]['pos'] = pos
+                    latest_feedback[node_id]['vel'] = vel
         except can.CanError as e:
             safe_print(f"CAN Error: {e}")
+
+# Function to print all feedback in one line
+def print_all_feedback():
+    with feedback_lock:
+        feedbacks = [f"O-Drive {node_id} - pos: {latest_feedback[node_id]['pos']:.3f}, vel: {latest_feedback[node_id]['vel']:.3f}" for node_id in odrive_node_ids]
+    safe_print(' | '.join(feedbacks))
+
+
+
 
 
 
@@ -135,6 +153,7 @@ if __name__ == "__main__":
             for node_id in odrive_node_ids:
                 velocity += 1
                 set_velocity(node_id, velocity)
+                print_all_feedback()
                 time.sleep(2)
 
     except KeyboardInterrupt:
