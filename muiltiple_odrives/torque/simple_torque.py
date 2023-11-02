@@ -136,6 +136,6 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         for node_id in odrive_node_ids:
-            set_position(node_id, 0)
+            set_torque(node_id, 0)
         bus.shutdown()
 
