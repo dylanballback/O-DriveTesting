@@ -97,7 +97,7 @@ if __name__ == "__main__":
                 position += 10
                 set_position(node_id, position)
                 #print_feedback(node_id)
-                time.sleep(2)
+                #time.sleep(2)
 
 
     except KeyboardInterrupt:
