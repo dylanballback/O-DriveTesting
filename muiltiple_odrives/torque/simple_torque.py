@@ -82,6 +82,7 @@ def set_torque(node_id, torque):
         data=struct.pack('<f', torque),
         is_extended_id=False
     ))
+    print(f"Successfully set ODrive {node_id} to {torque} [Nm]")
 
 
 #Function to get Torque Target & Estimate
