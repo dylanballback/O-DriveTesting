@@ -1,5 +1,6 @@
 import can
 
+""""
 # Definitions for control modes based on provided table
 CONTROL_MODES = {
     "torque": 0x1,
@@ -10,6 +11,7 @@ CONTROL_MODES = {
 COMMAND_ID = 0x0b  # As provided in your previous information
 
 def set_odrive_mode(node_id, mode, channel='can0'):
+    """
     """Set the control mode of ODrive with a specific node_id via CAN.
     
     Parameters:
@@ -19,6 +21,7 @@ def set_odrive_mode(node_id, mode, channel='can0'):
     
     Returns:
     - bool: True if successful, False otherwise.
+    """
     """
     
     if mode not in CONTROL_MODES:
@@ -52,3 +55,27 @@ def set_odrive_mode(node_id, mode, channel='can0'):
 # Example usage:
 node_id_example = 0  # Replace with your ODrive's node ID
 set_odrive_mode(node_id_example, "torque")
+"""
+
+
+def set_odrive_mode(channel, node_id):
+    # Define the CAN message ID. Assuming standard CAN 11-bit ID.
+    # Here, I'm assuming node_id is part of the CAN ID, but this depends on your setup.
+    can_id = 0x00b | (node_id << 4)
+
+    # Define the data payload for Torque Control and Passthrough.
+    control_mode = 0x1  # Torque Control
+    input_mode = 0x1    # Passthrough
+
+    data = control_mode.to_bytes(4, 'little') + input_mode.to_bytes(4, 'little')
+
+    # Create a CAN message.
+    message = can.Message(arbitration_id=can_id, data=data, is_extended_id=False)
+
+    # Send the message.
+    bus = can.interface.Bus(channel=channel, bustype='socketcan')
+    bus.send(message)
+    bus.shutdown()
+
+# Usage
+set_odrive_mode('can0', 0)  # Example for 'can0' interface and node_id=0x01.
