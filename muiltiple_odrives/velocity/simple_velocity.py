@@ -127,6 +127,11 @@ def print_all_feedback():
     safe_print(' | '.join(feedbacks))
 
 
+# Function to continuously print all feedback in one line
+def continuous_print_all_feedback(stop_event, print_interval=1):
+    while not stop_event.is_set():
+        print_all_feedback()
+        time.sleep(print_interval)
 
 
 
@@ -135,11 +140,16 @@ if __name__ == "__main__":
     
     stop_event = threading.Event()
 
+    # Start feedback monitoring threads
     feedback_threads = []
     for node_id in odrive_node_ids:
         thread = threading.Thread(target=monitor_odrive_feedback, args=(node_id, stop_event))
         thread.start()
         feedback_threads.append(thread)
+
+    # Start the continuous printing thread
+    print_thread = threading.Thread(target=continuous_print_all_feedback, args=(stop_event,))
+    print_thread.start()
 
     try:
         velocity = 0
@@ -161,6 +171,8 @@ if __name__ == "__main__":
 
         for thread in feedback_threads:
             thread.join()
+
+        print_thread.join()
 
         for node_id in odrive_node_ids:
             set_velocity(node_id, 0)
