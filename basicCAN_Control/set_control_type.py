@@ -1,81 +1,50 @@
 import can
 
-""""
-# Definitions for control modes based on provided table
-CONTROL_MODES = {
-    "torque": 0x1,
-    "velocity": 0x2,
-    "position": 0x3
-}
+def set_odrive_mode(channel, node_id, control_mode_str, input_mode_str):
+    # Define control mode mappings
+    CONTROL_MODES = {
+        "Voltage Control": 0x0,
+        "Torque Control": 0x1,
+        "Velocity Control": 0x2,  # Corrected spelling
+        "Position Control": 0x3,
+    }
 
-COMMAND_ID = 0x0b  # As provided in your previous information
+    # Define input mode mappings
+    INPUT_MODES = {
+        "Inactive": 0x0,
+        "Passthrough": 0x1,
+        "Velocity Ramp": 0x2,  # Corrected spelling
+        "Position Filter": 0x3,
+        "Mix Channels": 0x4,
+        "Trap Traj": 0x5,
+        "Torque Ramp": 0x6,
+        "Mirror": 0x7,
+        "Tuning": 0x8,
+    }
 
-def set_odrive_mode(node_id, mode, channel='can0'):
-    """
-    """Set the control mode of ODrive with a specific node_id via CAN.
+    # Check valid modes
+    if control_mode_str not in CONTROL_MODES:
+        raise ValueError(f"Invalid control mode: {control_mode_str}")
     
-    Parameters:
-    - node_id (int): CAN node ID of the ODrive.
-    - mode (str): One of 'torque', 'velocity', or 'position'.
-    - channel (str): CAN channel. Default is 'can0'.
-    
-    Returns:
-    - bool: True if successful, False otherwise.
-    """
-    """
-    
-    if mode not in CONTROL_MODES:
-        print(f"Invalid mode {mode}. Choose one of {', '.join(CONTROL_MODES.keys())}.")
-        return False
+    if input_mode_str not in INPUT_MODES:
+        raise ValueError(f"Invalid input mode: {input_mode_str}")
 
-    # Create a CAN message
-    can_msg = can.Message(
-        arbitration_id=node_id,
-        data=[CONTROL_MODES[mode], 0x00, 0x00, 0x00],  # Set the control mode and pad with zeros
-        is_extended_id=False
-    )
+    # Get the selected modes
+    control_mode = CONTROL_MODES[control_mode_str]
+    input_mode = INPUT_MODES[input_mode_str]
 
-    try:
-        # Initialize the CAN bus interface
-        bus = can.interface.Bus(channel=channel, bustype='socketcan')
-        
-        # Send the message
-        bus.send(can_msg)
-        
-        # Cleanup
-        bus.shutdown()
-
-        return True
-
-    except can.CanError:
-        print("Failed to send CAN message.")
-        return False
-
-
-# Example usage:
-node_id_example = 0  # Replace with your ODrive's node ID
-set_odrive_mode(node_id_example, "torque")
-"""
-
-
-def set_odrive_mode(channel, node_id):
     # Define the CAN message ID. Assuming standard CAN 11-bit ID.
-    # Here, I'm assuming node_id is part of the CAN ID, but this depends on your setup.
+    # Here, I'm assuming node_id is part of the CAN ID, but adjust as necessary.
     can_id = 0x00b | (node_id << 4)
 
-    # Define the data payload for Torque Control and Passthrough.
-    control_mode = 0x1  # Torque Control
-    input_mode = 0x1    # Passthrough
-
+    # Construct the data payload
     data = control_mode.to_bytes(4, 'little') + input_mode.to_bytes(4, 'little')
 
-    # Create a CAN message.
+    # Create and send the CAN message
     message = can.Message(arbitration_id=can_id, data=data, is_extended_id=False)
-
-    # Send the message.
     bus = can.interface.Bus(channel=channel, bustype='socketcan')
     bus.send(message)
     bus.shutdown()
 
-# Usage
-set_odrive_mode('can0', 0)  # Example for 'can0' interface and node_id=0x01.
+# Usage example:
+set_odrive_mode('can0', 0x01, "Torque Control", "Passthrough")
