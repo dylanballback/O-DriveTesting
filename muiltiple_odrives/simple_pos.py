@@ -93,13 +93,21 @@ if __name__ == "__main__":
             set_control_state(node_id)
             time.sleep(2)
 
-        
+        """
         for x in range(10):
             for node_id in odrive_node_ids:
                 position += 10
                 set_position(node_id, position)
                 #print_feedback(node_id)
                 time.sleep(2)
+        
+        """
+
+        set_position(0, 100)
+        set_position(1, 100)
+        set_position(2, 100)
+        
+        
 
 
     except KeyboardInterrupt:
