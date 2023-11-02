@@ -76,11 +76,16 @@ def set_velocity(node_id, velocity, torque_feedforward=0.0):
 
 
 # Function to print encoder feedback for a specific O-Drive
-def print_feedback(node_id):
-    for msg in bus:
-        if msg.arbitration_id == (node_id << 5 | 0x09):  # 0x09: Get_Encoder_Estimates
+def print_feedback(node_id, timeout=0.1):
+    start_time = time.time()
+    while (time.time() - start_time) < timeout:
+        msg = bus.recv(timeout=timeout)
+        if msg and msg.arbitration_id == (node_id << 5 | 0x09):  # 0x09: Get_Encoder_Estimates
             pos, vel = struct.unpack('<ff', bytes(msg.data))
             print(f"O-Drive {node_id} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+            return
+    print(f"No feedback received from O-Drive {node_id} within the timeout period.")
+
 
 
 
@@ -99,7 +104,7 @@ if __name__ == "__main__":
             for node_id in odrive_node_ids:
                 velocity += 1
                 set_velocity(node_id, velocity)
-                #print_feedback(node_id)
+                print_feedback(node_id)
                 time.sleep(2)
         
         
