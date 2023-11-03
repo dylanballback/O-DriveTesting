@@ -172,8 +172,8 @@ if __name__ == "__main__":
             torque += 0.1
             for node_id in odrive_node_ids:
                 set_torque(node_id, torque)
-                get_torques(node_id)
-                #read_torque(node_id)
+                #get_torques(node_id)
+                read_torque(node_id)
                 #get_torque(node_id)
                 #print_feedback(node_id)
                 time.sleep(2)
