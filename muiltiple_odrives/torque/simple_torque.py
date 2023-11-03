@@ -16,7 +16,6 @@ Then this code will set each of the 3 O-Drives to close axis state, and change t
 When you keyboard interrupt the position will be set to 0 for all O-Drives and the CAN Bus connection will be shutdown.
 """
 
-
 # Define the node IDs for your ODrives
 odrive_node_ids = [0, 1, 2]
 
