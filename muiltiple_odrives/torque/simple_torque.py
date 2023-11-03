@@ -140,6 +140,7 @@ def read_torque(node_id):
 
 # Function to print encoder feedback for a specific O-Drive
 def get_torques(node_id):
+    print(f"I am trying to get torque for {node_id}")
     for msg in bus:
         if msg.arbitration_id == (node_id << 5 | 0x1C):  # 0x1C: Get_Torques
             torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
