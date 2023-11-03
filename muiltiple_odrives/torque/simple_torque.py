@@ -112,16 +112,20 @@ def get_torque(node_id, timeout=1.0):
 """
 
 
+# Define constants for the CAN message
+ODRIVE_COMMAND_ID = 0x1C
+TORQUE_DATA_LENGTH = 8  # Expected data length for the torque message
+
 def read_torque(node_id):
     # Compute the expected arbitration ID for the given node_id
-    expected_arbitration_id = (node_id << 5) | 0x1C
+    expected_arbitration_id = (node_id << 5) | ODRIVE_COMMAND_ID
 
     try:
         # Attempt to receive a message
         message = bus.recv()  # Adjust the timeout as needed
 
         # Check if a message is received and has the expected arbitration ID and data length
-        if message and message.arbitration_id == expected_arbitration_id and len(message.data) == 8:
+        if message and message.arbitration_id == expected_arbitration_id and len(message.data) == TORQUE_DATA_LENGTH:
             # Unpack the data to get the torque target and estimate
             torque_target, torque_estimate = struct.unpack('<ff', message.data)
             print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
@@ -130,7 +134,6 @@ def read_torque(node_id):
 
     except can.CanError as e:
         print(f"CAN error occurred: {e}")
-
 
 
 # Function to print encoder feedback for a specific O-Drive
