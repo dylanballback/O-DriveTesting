@@ -94,7 +94,7 @@ def get_torque(node_id):
         if msg.arbitration_id == (node_id << 5 | 0x1C):  # 0x1C: Get_Torques
             torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
             print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
-"""
+
 
 #Function to get Torque Target & Estimate once when ran
 def get_torque(node_id, timeout=1.0):
@@ -108,6 +108,29 @@ def get_torque(node_id, timeout=1.0):
             torque_target, torque_estimate = struct.unpack('<ff', msg.data)
             print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
             break  # Exit after processing the expected message
+
+"""
+
+
+def read_torque(node_id):
+    # Compute the expected arbitration ID for the given node_id
+    expected_arbitration_id = (node_id << 5) | 0x1C
+
+    try:
+        # Attempt to receive a message
+        message = bus.recv()  # Adjust the timeout as needed
+
+        # Check if a message is received and has the expected arbitration ID and data length
+        if message and message.arbitration_id == expected_arbitration_id and len(message.data) == 8:
+            # Unpack the data to get the torque target and estimate
+            torque_target, torque_estimate = struct.unpack('<ff', message.data)
+            print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+        else:
+            print(f"Message received with ID {message.arbitration_id}, but not from O-Drive {node_id} or not a torque message.")
+
+    except can.CanError as e:
+        print(f"CAN error occurred: {e}")
+
 
 
 # Function to print encoder feedback for a specific O-Drive
@@ -134,7 +157,8 @@ if __name__ == "__main__":
             torque += 0.1
             for node_id in odrive_node_ids:
                 set_torque(node_id, torque)
-                get_torque(node_id)
+                read_torque(node_id)
+                #get_torque(node_id)
                 #print_feedback(node_id)
                 time.sleep(2)
         
