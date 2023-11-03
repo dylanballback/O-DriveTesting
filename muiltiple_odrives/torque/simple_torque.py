@@ -136,6 +136,18 @@ def read_torque(node_id):
         print(f"CAN error occurred: {e}")
 
 
+
+
+
+# Function to print encoder feedback for a specific O-Drive
+def get_torques(node_id):
+    for msg in bus:
+        if msg.arbitration_id == (node_id << 5 | 0x1C):  # 0x1C: Get_Torques
+            torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+            print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+
+
+
 # Function to print encoder feedback for a specific O-Drive
 def get_pos_vel(node_id):
     for msg in bus:
@@ -160,7 +172,8 @@ if __name__ == "__main__":
             torque += 0.1
             for node_id in odrive_node_ids:
                 set_torque(node_id, torque)
-                read_torque(node_id)
+                get_torques(node_id)
+                #read_torque(node_id)
                 #get_torque(node_id)
                 #print_feedback(node_id)
                 time.sleep(2)
