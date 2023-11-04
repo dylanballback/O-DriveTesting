@@ -1,5 +1,6 @@
 import board 
 import can
+import struct
 
 
 class ODriveCAN:
@@ -15,14 +16,35 @@ class ODriveCAN:
         O-Drive Controller Specific Attributes:
         nodeID (integer): The node ID can be set by the 
     """
-    def __init__(self, canBusID, canBusType, nodeID):
+    def __init__(self, canBusID="can0", canBus="socketcan", nodeID):
         self.canBusID = canBusID
-        self.canBusType = canBusType
+        self.canBus = canBus
         self.nodeID = nodeID
 
 
 
 
+    def initCanBus(self):
+        """
+        Initalize connection to CAN Bus
+
+        canBusID (String): Default "can0" this is the name of the can interface
+        canBus (String): Default "socketcan" this is the python can libary CAN type
+        """
+        can.interface.Bus(self.canBusID, self.canBus)
+
+
+
+
+    def flush_can_buffer(self):
+        #Flush CAN RX buffer to ensure no old pending messages.
+        while not (self.canBus.recv(timeout=0) is None): pass
+        print("I have cleared all CAN Messages on the BUS!")
+
+
+
+
+    #I don't know if you can do this through CAN, you need to use webGUI
     def setAxisNodeID(self):
         """
         Sets Axis NodeID for an O-Drive Controller through CAN BUS
@@ -58,6 +80,31 @@ class ODriveCAN:
         """
         pass
 
+
+
+
+    # setAxisState into closed loop control state
+    def set_control_state(self):
+        self.flush_can_buffer()
+        print(f"Attempting to set control state to ODrive {self.nodeID}...")
+        try:
+            self.canBus.send(can.Message(
+                arbitration_id=(self.nodeID << 5 | 0x07), # 0x07: Set_Axis_State
+                data=struct.pack('<I', 8), # 8: AxisState.CLOSED_LOOP_CONTROL
+                is_extended_id=False
+            ))
+            
+            print(f"Checking Hearbeat for ODrive {self.nodeID}")
+            # Wait for axis to enter closed loop control by scanning heartbeat messages
+            for msg in self.canBus:
+                if msg.arbitration_id == (self.nodeID << 5 | 0x01): # 0x01: Heartbeat
+                    error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
+                    if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
+                        break
+            print(f"Successfully set control state to ODrive {self.nodeID}")
+
+        except Exception as e:
+            print(f"Error connecting to ODrive {self.nodeID}: {str(e)}")
 
 
 
@@ -112,3 +159,52 @@ class ODriveCAN:
 
 
   
+    # Function to set position for a specific O-Drive
+    def set_position(self, node_id, position, velocity_feedforward=0, torque_feedforward=0):
+        self.canBus.send(can.Message(
+            arbitration_id=(node_id << 5 | 0x0C),
+            data=struct.pack('<fhh', float(position), velocity_feedforward, torque_feedforward),
+            is_extended_id=False
+        ))
+        print(f"Successfully moved ODrive {node_id} to {position}")
+        
+
+
+    # Function to set velocity for a specific O-Drive
+    def set_velocity(self, node_id, velocity, torque_feedforward=0.0):
+        self.canBus.send(can.Message(
+            arbitration_id=(node_id << 5 | 0x0d),  # 0x0d: Set_Input_Vel
+            data=struct.pack('<ff', velocity, torque_feedforward),
+            is_extended_id=False
+        ))
+
+
+
+    # Function to set torque for a specific O-Drive
+    def set_torque(self, node_id, torque):
+        self.canBus.send(can.Message(
+            arbitration_id=(node_id << 5 | 0x0E),  # 0x0E: Set_Input_Torque
+            data=struct.pack('<f', torque),
+            is_extended_id=False
+        ))
+        print(f"Successfully set ODrive {node_id} to {torque} [Nm]")
+
+
+
+
+
+#Example on how to use:
+
+odrive1 = ODriveCAN(0)
+
+odrive1.initCanBus()
+
+odrive1.set_torque(5)
+
+
+
+odrive2 = ODriveCAN(2)
+
+odrive2.initCanBus()
+
+
