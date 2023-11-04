@@ -138,13 +138,36 @@ def read_torque(node_id):
 
 
 
-# Function to print encoder feedback for a specific O-Drive
+# Function to print torque feedback for a specific O-Drive (will get stuck in for loop forever)
 def get_torques(node_id):
     print(f"I am trying to get torque for {node_id}")
     for msg in bus:
         if msg.arbitration_id == (node_id << 5 | 0x1C):  # 0x1C: Get_Torques
             torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
             print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+
+
+
+
+
+# Function to print torque feedback for a specific O-Drive one time
+def get_one_torque(node_id, timeout=1.0):
+    print(f"I am trying to get torque for node ID: {node_id}")
+    
+    start_time = time.time()
+    while (time.time() - start_time) < timeout:
+        msg = bus.recv(timeout=timeout - (time.time() - start_time))  # Adjust timeout for recv
+        if msg is None:
+            print("Timeout occurred, no message received.")
+            break
+
+        if msg.arbitration_id == (node_id << 5 | 0x1C):  # 0x1C: Get_Torques
+            torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+            print(f"O-Drive {node_id} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+            break
+    else:
+        print(f"No torque message received for O-Drive {node_id} within the timeout period.")
+
 
 
 
@@ -172,8 +195,9 @@ if __name__ == "__main__":
             torque += 0.1
             for node_id in odrive_node_ids:
                 set_torque(node_id, torque)
+                get_one_torque(node_id)
                 #get_torques(node_id)
-                read_torque(node_id)
+                #read_torque(node_id)
                 #get_torque(node_id)
                 #print_feedback(node_id)
                 time.sleep(2)
