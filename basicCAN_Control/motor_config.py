@@ -1,6 +1,7 @@
 import board 
 import can
 import struct
+import time
 
 
 class ODriveCAN:
@@ -156,24 +157,23 @@ class ODriveCAN:
         pass
 
 
-
-
+#-------------------------------------- Motor Controls ----------------------------------------------------
   
     # Function to set position for a specific O-Drive
-    def set_position(self, node_id, position, velocity_feedforward=0, torque_feedforward=0):
+    def set_position(self, position, velocity_feedforward=0, torque_feedforward=0):
         self.canBus.send(can.Message(
-            arbitration_id=(node_id << 5 | 0x0C),
+            arbitration_id=(self.nodeID << 5 | 0x0C),
             data=struct.pack('<fhh', float(position), velocity_feedforward, torque_feedforward),
             is_extended_id=False
         ))
-        print(f"Successfully moved ODrive {node_id} to {position}")
+        print(f"Successfully moved ODrive {self.nodeID} to {position}")
         
 
 
     # Function to set velocity for a specific O-Drive
-    def set_velocity(self, node_id, velocity, torque_feedforward=0.0):
+    def set_velocity(self, velocity, torque_feedforward=0.0):
         self.canBus.send(can.Message(
-            arbitration_id=(node_id << 5 | 0x0d),  # 0x0d: Set_Input_Vel
+            arbitration_id=(self.nodeID << 5 | 0x0d),  # 0x0d: Set_Input_Vel
             data=struct.pack('<ff', velocity, torque_feedforward),
             is_extended_id=False
         ))
@@ -181,15 +181,47 @@ class ODriveCAN:
 
 
     # Function to set torque for a specific O-Drive
-    def set_torque(self, node_id, torque):
+    def set_torque(self, torque):
         self.canBus.send(can.Message(
-            arbitration_id=(node_id << 5 | 0x0E),  # 0x0E: Set_Input_Torque
+            arbitration_id=(self.nodeID << 5 | 0x0E),  # 0x0E: Set_Input_Torque
             data=struct.pack('<f', torque),
             is_extended_id=False
         ))
-        print(f"Successfully set ODrive {node_id} to {torque} [Nm]")
+        print(f"Successfully set ODrive {self.nodeID} to {torque} [Nm]")
 
 
+
+
+#-------------------------------------- Motor Feedback ----------------------------------------------------
+
+
+# Function to print torque feedback for a specific O-Drive (will get stuck in for loop forever)
+def get_torques(self):
+    print(f"I am trying to get torque for {self.nodeID}")
+    for msg in self.canBus:
+        if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
+            torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+            print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+
+
+
+
+
+# Function to print torque feedback for a specific O-Drive one time
+def get_one_torque(self, timeout=1.0):
+    start_time = time.time()
+    while (time.time() - start_time) < timeout:
+        msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))  # Adjust timeout for recv
+        if msg is None:
+            print("Timeout occurred, no message received.")
+            break
+
+        if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
+            torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+            print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+            break
+    else:
+        print(f"No torque message received for O-Drive {self.nodeID} within the timeout period.")
 
 
 
