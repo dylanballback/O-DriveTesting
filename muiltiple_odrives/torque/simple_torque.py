@@ -152,8 +152,6 @@ def get_torques(node_id):
 
 # Function to print torque feedback for a specific O-Drive one time
 def get_one_torque(node_id, timeout=1.0):
-    print(f"I am trying to get torque for node ID: {node_id}")
-    
     start_time = time.time()
     while (time.time() - start_time) < timeout:
         msg = bus.recv(timeout=timeout - (time.time() - start_time))  # Adjust timeout for recv
