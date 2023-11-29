@@ -10,8 +10,10 @@ AS5048B_REG_ANGLE_LOW = 0xFF   # Register for bits 5 to 0 of the angle
 
 # This variable will hold the zero offset
 zero_offset = 0
-# This variable will hold the last angle to calculate the correct continuous angle
-continuous_angle = 0
+# This variable will hold the last raw angle to detect rollover
+last_raw_angle = -1
+# This will hold the total accumulated angle to handle rollover
+total_angle = 0
 
 def read_raw_angle(bus, address):
     """
@@ -25,31 +27,39 @@ def set_zero_position(bus, address):
     """
     Read the current position and set it as the new zero.
     """
-    global zero_offset, continuous_angle
+    global zero_offset, last_raw_angle, total_angle
     zero_offset = read_raw_angle(bus, address)
-    continuous_angle = 0  # Reset the continuous angle
+    last_raw_angle = zero_offset
+    total_angle = 0  # Reset the total angle
+
+def calculate_continuous_angle(raw_angle, last_angle):
+    global total_angle
+    if last_angle == -1:  # No last angle recorded, skip calculation
+        total_angle = 0
+    else:
+        # Check if there has been a rollover
+        difference = raw_angle - last_angle
+        if difference > 8191:  # Rollover, counting down
+            total_angle -= (16384 - difference)
+        elif difference < -8191:  # Rollover, counting up
+            total_angle += (16384 + difference)
+        else:
+            total_angle += difference
+
+    return total_angle
 
 def read_angle(bus, address):
     """
-    Read the angle data from the encoder, adjust for zero offset, and handle rollover.
+    Read the angle data from the encoder and adjust for zero offset, and handle rollover.
     """
-    global zero_offset, continuous_angle
-    raw_angle = read_raw_angle(bus, address) - zero_offset
-    adjusted_angle = raw_angle % 16384  # Adjust the angle for zero offset
+    global last_raw_angle
+    raw_angle = read_raw_angle(bus, address)
+    continuous_angle = calculate_continuous_angle(raw_angle, last_raw_angle)
+    last_raw_angle = raw_angle  # Update the last angle
 
-    # Calculate the change in angle, considering the rollover
-    angle_change = adjusted_angle - (continuous_angle % 16384)
-    
-    # Detect if rollover occurred
-    if angle_change < -8192:  # Rollover from 0 to 16383
-        angle_change += 16384
-    elif angle_change > 8192:  # Rollover from 16383 to 0
-        angle_change -= 16384
-
-    # Update the continuous angle
-    continuous_angle += angle_change
-
-    return continuous_angle * 360 / 16384.0  # Convert to degrees
+    # Adjust for zero offset and scale to degrees
+    adjusted_angle = (continuous_angle - zero_offset) % 16384
+    return adjusted_angle * 360 / 16384.0
 
 def main():
     # Create an instance of the smbus2 SMBus
@@ -61,14 +71,10 @@ def main():
         
         while True:
             angle = read_angle(bus, AS5048B_ADDRESS)
-            print("Angle: {:.2f} degrees".format(angle))
-            time.sleep(0.01)
+            print(f"Angle: {angle:.2f} degrees")
+            time.sleep(0.1)
     except KeyboardInterrupt:
-        # Gracefully handle a keyboard interrupt
         print("Interrupted by user")
-    except Exception as e:
-        # Handle other exceptions
-        print("An error occurred:", e)
     finally:
         bus.close()
 
