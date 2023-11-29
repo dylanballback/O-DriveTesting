@@ -1,6 +1,11 @@
 import smbus2
 import time
 
+"""
+11/29/23 This is very basic code to read the angle data of a AS5048B with
+I2C and a Raspberry Pi. I am using 3.3v 
+"""
+
 # AS5048B I2C address
 AS5048B_ADDRESS = 0x40
 
