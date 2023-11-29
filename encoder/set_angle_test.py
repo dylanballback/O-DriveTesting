@@ -29,45 +29,48 @@ def set_zero_position(bus, address):
     global zero_offset
     zero_offset = read_raw_angle(bus, address)
 
-def read_angle(bus, address):
+def read_angle(bus, address, last_angle):
     """
-    Read the angle data from the encoder and adjust it by the zero offset.
+    Read the angle data from the encoder, adjust it by the zero offset, and handle rollover.
     """
     raw_angle = read_raw_angle(bus, address)
     # Adjust the raw angle based on the zero offset
-    adjusted_angle = (raw_angle - zero_offset + 16384) % 16384
-
-    # If the result is close to the maximum value, and the previous
-    # angle was close to zero, we probably wrapped around from 0 to 16383.
-    # Similarly, if the result is close to 0 and the previous angle was close to 16383,
-    # we wrapped around from 16383 to 0.
-    global last_angle
-    if last_angle > 16300 and adjusted_angle < 100:
-        # If we're close to 0 and the last angle was close to 16383,
-        # add 16384 to the angle to handle wrap around
-        adjusted_angle += 16384
-    elif last_angle < 100 and adjusted_angle > 16300:
-        # If we're close to 16383 and the last angle was close to 0,
-        # subtract 16384 from the angle to handle wrap around
+    adjusted_angle = (raw_angle - zero_offset) % 16384
+    
+    # Calculate the difference between the new angle and the last angle
+    angle_difference = adjusted_angle - last_angle
+    
+    # Detect rollover from 16383 to 0
+    if angle_difference > 8192:  # Half of 16384
         adjusted_angle -= 16384
+    # Detect rollover from 0 to 16383
+    elif angle_difference < -8192:  # Negative half of 16384
+        adjusted_angle += 16384
 
-    last_angle = adjusted_angle  # Update the last angle for the next call
-    return adjusted_angle * 360 / 16384.0
+    # Ensure adjusted_angle is within 0 to 16383
+    adjusted_angle = adjusted_angle % 16384
+
+    # Update last_angle for next calculation
+    last_angle = adjusted_angle
+
+    # Normalize the angle to a 360 degree scale
+    return adjusted_angle * 360 / 16384.0, last_angle
 
 
 
 def main():
-    # Create an instance of the smbus2 SMBus
+    # Initialize last_angle to a value that's out of range to force a fresh read
+    last_angle = -1
     bus = smbus2.SMBus(1)
 
     try:
-        # Set the current position as zero
+        # Set the initial zero position
         set_zero_position(bus, AS5048B_ADDRESS)
         
         while True:
-            angle = read_angle(bus, AS5048B_ADDRESS)
+            angle, last_angle = read_angle(bus, AS5048B_ADDRESS, last_angle)
             print("Angle: {:.2f} degrees".format(angle))
-            time.sleep(0.01)
+            time.sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:
