@@ -27,26 +27,30 @@ def main():
     # Create an instance of the smbus2 SMBus
     bus = smbus2.SMBus(1)
 
-    # Initialize variables
-    total_angle = 0.0
+    previous_angle = None
 
     try:
         while True:
             angle = read_angle(bus, AS5048B_ADDRESS)
 
-            # Calculate the change in angle
-            angle_change = angle - total_angle
+            if previous_angle is not None:
+                # Calculate the difference between the current angle and the previous angle
+                angle_diff = angle - previous_angle
 
-            # Update the total angle
-            total_angle += angle_change
+                # Check for wraparound (e.g., from 360 to 0)
+                if angle_diff < -180:
+                    angle_diff += 360
+                elif angle_diff > 180:
+                    angle_diff -= 360
 
-            # Ensure the total angle stays within 0 to 360 degrees
-            if total_angle >= 360:
-                total_angle -= 360
-            elif total_angle < 0:
-                total_angle += 360
+                # Calculate the new angle
+                angle = previous_angle + angle_diff
 
-            print("Total Angle: {:.2f} degrees".format(total_angle))
+            print("Angle: {:.2f} degrees".format(angle))
+
+            # Update the previous angle
+            previous_angle = angle
+
             time.sleep(0.01)
     except KeyboardInterrupt:
         pass
