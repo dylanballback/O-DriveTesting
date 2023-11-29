@@ -75,11 +75,11 @@ def perform_calibration(bus, address):
                 prev_angle = rounded_angle
 
     print("Move the encoder to the upright position.")
-    input("Press Enter when ready to start calibration...")
-
+    input("Press Enter when ready to start left max calibration...move to the left stopper")
     move_to_left_stopper()
+    
     print("Move the encoder to the upright position.")
-    time.sleep(3)  # Wait 3 seconds at the upright position
+    input("Press Enter when ready to start right max calibration... move to the right stopper")
     move_to_right_stopper()
 
     print("Calibration complete")
