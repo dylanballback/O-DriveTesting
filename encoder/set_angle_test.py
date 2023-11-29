@@ -27,39 +27,25 @@ def set_zero_position(bus, address):
     """
     Read the current position and set it as the new zero.
     """
-    global zero_offset, last_raw_angle, total_angle
+    global zero_offset
     zero_offset = read_raw_angle(bus, address)
-    last_raw_angle = zero_offset
-    total_angle = 0  # Reset the total angle
-
-def calculate_continuous_angle(raw_angle, last_angle):
-    global total_angle
-    if last_angle == -1:  # No last angle recorded, skip calculation
-        total_angle = 0
-    else:
-        # Check if there has been a rollover
-        difference = raw_angle - last_angle
-        if difference > 8191:  # Rollover, counting down
-            total_angle -= (16384 - difference)
-        elif difference < -8191:  # Rollover, counting up
-            total_angle += (16384 + difference)
-        else:
-            total_angle += difference
-
-    return total_angle
 
 def read_angle(bus, address):
     """
-    Read the angle data from the encoder and adjust for zero offset, and handle rollover.
+    Read the angle data from the encoder and adjust for zero offset.
     """
-    global last_raw_angle
     raw_angle = read_raw_angle(bus, address)
-    continuous_angle = calculate_continuous_angle(raw_angle, last_raw_angle)
-    last_raw_angle = raw_angle  # Update the last angle
-
-    # Adjust for zero offset and scale to degrees
-    adjusted_angle = (continuous_angle - zero_offset) % 16384
+    
+    if zero_offset is None:
+        set_zero_position(bus, address)
+        return 0  # Return 0 until zero position is set
+    
+    # Calculate the continuous angle
+    adjusted_angle = (raw_angle - zero_offset) % 16384
+    
+    # Scale to degrees
     return adjusted_angle * 360 / 16384.0
+
 
 def main():
     # Create an instance of the smbus2 SMBus

@@ -57,18 +57,33 @@ def calibrate_map_angles(bus, address):
 
     return start_angle, left_max_angle, right_max_angle
 
+
+def map_angle(raw_angle, start_angle, left_max_angle, right_max_angle):
+    """
+    Map the raw angle to a desired range based on the measured limits.
+    """
+    if raw_angle >= start_angle:
+        # Angle is to the right of the start position, map to the right_max_angle
+        mapped_angle = (raw_angle - start_angle) / (right_max_angle - start_angle) * right_max_angle
+    else:
+        # Angle is to the left of the start position, map to the left_max_angle
+        mapped_angle = (raw_angle - start_angle) / (start_angle - left_max_angle) * left_max_angle
+
+    return mapped_angle
+
+
 def main():
     # Create an instance of the smbus2 SMBus
     bus = smbus2.SMBus(1)
-
 
     start_angle, left_max_angle, right_max_angle = calibrate_map_angles(bus, AS5048B_ADDRESS)
     print(f"Calibration complete: Raw Upright= {start_angle}, Raw Left Max= {left_max_angle}, Raw Right Max {right_max_angle}")
 
     try:
         while True:
-            angle = read_angle(bus, AS5048B_ADDRESS)
-            print("Angle: {:.2f} degrees".format(angle))
+            raw_angle = read_angle(bus, AS5048B_ADDRESS)
+            mapped_angle = map_angle(raw_angle, start_angle, left_max_angle, right_max_angle)
+            print("Mapped Angle: {:.2f} degrees".format(mapped_angle))
             time.sleep(0.01)
     except KeyboardInterrupt:
         pass
