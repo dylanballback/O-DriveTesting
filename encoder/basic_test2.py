@@ -39,12 +39,6 @@ MOVEMENT_DURATION = 5  # 5 seconds (adjust as needed)
 HYSTERESIS_THRESHOLD = 1.0  # Adjust as needed
 
 
-The "min() arg is an empty sequence" error typically occurs when you try to find the minimum value of an empty list or sequence. This error is raised because there are no elements in the sequence to find the minimum from.
-
-In your code, it's possible that the left_calibration_data or right_calibration_data lists are empty because the encoder did not detect any angle changes exceeding the hysteresis threshold during calibration. To handle this situation, you should check if the lists are empty before using the min() function. Here's how you can modify the code:
-
-python
-Copy code
 def perform_calibration(bus, address):
     """
     Perform calibration by moving the encoder from the upright position to the left stopper
