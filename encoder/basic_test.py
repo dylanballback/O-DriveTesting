@@ -10,10 +10,13 @@ def read_angle():
     lsb = bus.read_byte_data(address, 0xFF)
     
     # Combine the two bytes to create a 14-bit angle value
+    # Mask the MSB with 0x3F to get rid of the two most significant non-angle bits
     angle = ((msb & 0x3F) << 8) | lsb
-    return angle
+    # Convert the raw sensor reading to degrees (optional)
+    angle_in_degrees = (angle / 0x3FFF) * 360.0
+    return angle_in_degrees
 
 while True:
     angle = read_angle()
-    print("Angle: ", angle)
-    time.sleep(1)
+    print("Angle: {:.2f} degrees".format(angle))
+    time.sleep(0.1)  # Sleep for 100ms
