@@ -66,10 +66,9 @@ def map_angle(raw_angle, start_angle, left_max_angle, right_max_angle):
         # Angle is to the right of the start position, map to the right_max_angle
         mapped_angle = (raw_angle - start_angle) / (right_max_angle - start_angle) * right_max_angle
     else:
-        # Angle is to the left of the start position, map to the left_max_angle
-        mapped_angle = (raw_angle - start_angle) / (start_angle - left_max_angle) * left_max_angle
-        mapped_angle = - mapped_angle
-
+        # Angle is to the left of the start position, map to the left_max_angle and make it negative
+        mapped_angle = -((start_angle - raw_angle) * (left_max_angle / (start_angle - left_max_angle)))
+        
     return mapped_angle
 
 
