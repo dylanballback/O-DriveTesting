@@ -10,9 +10,8 @@ AS5048B_REG_ANGLE_LOW = 0xFF   # Register for bits 5 to 0 of the angle
 
 # This variable will hold the zero offset
 zero_offset = 0
-
-# Global variable to store the last angle read from the encoder
-last_angle = 0
+# This variable will hold the last raw angle to detect rollover
+last_raw_angle = None
 
 def read_raw_angle(bus, address):
     """
@@ -29,47 +28,46 @@ def set_zero_position(bus, address):
     global zero_offset
     zero_offset = read_raw_angle(bus, address)
 
-def read_angle(bus, address, last_angle):
+def read_angle(bus, address):
     """
-    Read the angle data from the encoder, adjust it by the zero offset, and handle rollover.
+    Read the angle data from the encoder, adjust for zero offset, and handle rollover.
     """
+    global last_raw_angle
     raw_angle = read_raw_angle(bus, address)
-    print(raw_angle)
-    # Adjust the raw angle based on the zero offset
-    adjusted_angle = (raw_angle - zero_offset) % 16384
-    
-    # Calculate the difference between the new angle and the last angle
-    angle_difference = adjusted_angle - last_angle
-    
-    # Detect rollover from 16383 to 0
-    if angle_difference > 8192:  # Half of 16384
-        adjusted_angle -= 16384
-    # Detect rollover from 0 to 16383
-    elif angle_difference < -8192:  # Negative half of 16384
-        adjusted_angle += 16384
 
-    # Ensure adjusted_angle is within 0 to 16383
-    adjusted_angle = adjusted_angle % 16384
+    # If it's the first read, initialize last_raw_angle
+    if last_raw_angle is None:
+        last_raw_angle = raw_angle
 
-    # Update last_angle for next calculation
-    last_angle = adjusted_angle
+    # Calculate the difference from the last raw angle
+    difference = raw_angle - last_raw_angle
 
-    # Normalize the angle to a 360 degree scale
-    return adjusted_angle * 360 / 16384.0, last_angle
+    # Check for rollover from 0x3FFF to 0x0000 (clockwise)
+    if difference < -8192:  # More than half the range in the negative direction
+        difference += 16384
+    # Check for rollover from 0x0000 to 0x3FFF (counter-clockwise)
+    elif difference > 8192:  # More than half the range in the positive direction
+        difference -= 16384
 
+    # Update the last_raw_angle with the current raw_angle
+    last_raw_angle = raw_angle
 
+    # Adjust the angle based on the zero offset and the difference
+    adjusted_angle = (zero_offset + difference) % 16384
+
+    # Convert to degrees
+    return adjusted_angle * 360 / 16384.0
 
 def main():
-    # Initialize last_angle to a value that's out of range to force a fresh read
-    last_angle = -1
+    # Create an instance of the smbus2 SMBus
     bus = smbus2.SMBus(1)
 
     try:
-        # Set the initial zero position
+        # Set the current position as zero
         set_zero_position(bus, AS5048B_ADDRESS)
         
         while True:
-            angle, last_angle = read_angle(bus, AS5048B_ADDRESS, last_angle)
+            angle = read_angle(bus, AS5048B_ADDRESS)
             print("Angle: {:.2f} degrees".format(angle))
             time.sleep(0.1)
     except KeyboardInterrupt:
