@@ -45,7 +45,7 @@ def main():
         while True:
             angle = read_angle(bus, AS5048B_ADDRESS)
             print("Angle: {:.2f} degrees".format(angle))
-            time.sleep(0.1)
+            time.sleep(0.01)
     except KeyboardInterrupt:
         pass
     finally:
