@@ -35,6 +35,9 @@ def read_angle(bus, address):
 # Define the duration for each movement
 MOVEMENT_DURATION = 5  # 5 seconds (adjust as needed)
 
+# Define the hysteresis threshold
+HYSTERESIS_THRESHOLD = 1.0  # Adjust as needed
+
 def perform_calibration(bus, address):
     """
     Perform calibration by moving the encoder from the upright position to the left stopper
@@ -48,31 +51,38 @@ def perform_calibration(bus, address):
         """
         Move the encoder all the way to the left stopper in less than MOVEMENT_DURATION seconds.
         """
-        print("Move the encoder to the left stopper in less than {} seconds.".format(MOVEMENT_DURATION))
         start_time = time.time()
+        prev_angle = None
         while time.time() - start_time < MOVEMENT_DURATION:
             raw_angle = read_angle(bus, address)
-            left_calibration_data.append(raw_angle)
+            rounded_angle = round(raw_angle)  # Round to the nearest whole number
+            if prev_angle is None or rounded_angle != prev_angle:
+                left_calibration_data.append(rounded_angle)
+                prev_angle = rounded_angle
 
     def move_to_right_stopper():
         """
         Move the encoder all the way to the right stopper in less than MOVEMENT_DURATION seconds.
         """
-        print("Move the encoder to the right stopper in less than {} seconds.".format(MOVEMENT_DURATION))
         start_time = time.time()
+        prev_angle = None
         while time.time() - start_time < MOVEMENT_DURATION:
             raw_angle = read_angle(bus, address)
-            right_calibration_data.append(raw_angle)
+            rounded_angle = round(raw_angle)  # Round to the nearest whole number
+            if prev_angle is None or rounded_angle != prev_angle:
+                right_calibration_data.append(rounded_angle)
+                prev_angle = rounded_angle
 
     print("Move the encoder to the upright position.")
     input("Press Enter when ready to start calibration...")
 
     move_to_left_stopper()
     print("Move the encoder to the upright position.")
-    input("Press Enter when ready to start calibration...")
+    time.sleep(3)  # Wait 3 seconds at the upright position
     move_to_right_stopper()
 
     print("Calibration complete")
+
     return left_calibration_data, right_calibration_data
 
 
