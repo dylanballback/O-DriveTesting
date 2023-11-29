@@ -34,6 +34,7 @@ def read_angle(bus, address, last_angle):
     Read the angle data from the encoder, adjust it by the zero offset, and handle rollover.
     """
     raw_angle = read_raw_angle(bus, address)
+    print(raw_angle)
     # Adjust the raw angle based on the zero offset
     adjusted_angle = (raw_angle - zero_offset) % 16384
     
