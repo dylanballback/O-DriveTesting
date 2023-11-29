@@ -1,8 +1,8 @@
 import smbus
 import time
 
-bus = smbus.SMBus(2)  # 1 indicates /dev/i2c-1
-address = 0x50 #AS5048A I2C address
+bus = smbus.SMBus(1)  # 1 indicates /dev/i2c-1
+address = 0x40 #AS5048A I2C address
 
 
 def read_register(reg):
