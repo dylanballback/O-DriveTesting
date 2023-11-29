@@ -5,21 +5,20 @@ import time
 AS5048B_ADDRESS = 0x40
 
 # Registers for the AS5048B angle value
-AS5048B_REG_ANGLE_HIGH = 0xFE  # High byte of the angle value
-AS5048B_REG_ANGLE_LOW = 0xFF   # Low byte of the angle value
+AS5048B_REG_ANGLE_HIGH = 0xFE  # Register for bits 13 to 6 of the angle
+AS5048B_REG_ANGLE_LOW = 0xFF   # Register for bits 5 to 0 of the angle
 
 def read_angle(bus, address):
     """
     Read the angle data from the encoder.
     """
-    # Read two bytes of data from the angle registers
+    # Read the high byte (contains bits 13 to 6)
     angle_high = bus.read_byte_data(address, AS5048B_REG_ANGLE_HIGH)
+    # Read the low byte (contains bits 5 to 0)
     angle_low = bus.read_byte_data(address, AS5048B_REG_ANGLE_LOW)
 
-    # Combine the two bytes to create one 14-bit number
-    # Masking the lower 6 bits of the high byte and shifting left by 8 bits,
-    # then adding the low byte.
-    angle = ((angle_high & 0x3F) << 8) | angle_low
+    # Combine the two bytes into a 14-bit value
+    angle = ((angle_high & 0x7F) << 6) | (angle_low & 0x3F)
 
     # The value is 14-bit, so we normalize it to a 360 degree scale
     return angle * 360 / 16384.0
