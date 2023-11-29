@@ -2,7 +2,7 @@ import smbus
 import time
 
 bus = smbus.SMBus(2)  # 1 indicates /dev/i2c-1
-address = 0x54  # AS5048A I2C address
+address = 0x3A # AS5048A I2C address
 
 
 def read_angle_raw():
