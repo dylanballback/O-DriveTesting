@@ -4,19 +4,21 @@ import time
 bus = smbus.SMBus(2)  # 1 indicates /dev/i2c-1
 address = 0x50# AS5048A I2C address
 
+def read_register(reg):
+    return bus.read_byte_data(address, reg)
+
 def read_angle():
-    # Read the angle value from the sensor
-    word_data = bus.read_word_data(address, 0xFE)
-    # Reorder the bytes in the correct endianness
-    msb = (word_data & 0xFF00) >> 8
-    lsb = (word_data & 0x00FF)
-    # Combine the MSB and LSB into a single 14-bit value
-    angle = (msb << 6) | (lsb & 0x3F)
-    return angle
+    data = bus.read_i2c_block_data(address, 0xFE, 2)
+    return (data[0] << 6) | (data[1] & 0x3F)
+
+def diagnose_sensor():
+    agc = read_register(0xFA)  # Automatic Gain Control register
+    diag = read_register(0xFB)  # Diagnostics register
+    print(f"AGC: {agc}, DIAG: {diag}")
 
 while True:
     angle_raw = read_angle()
-    # Convert the raw angle to degrees
     angle_degrees = (angle_raw / float(0x3FFF)) * 360.0
     print(f"Raw angle value: {angle_raw}, Angle in degrees: {angle_degrees:.2f}")
-    time.sleep(0.1)  # Sleep for 100ms
+    diagnose_sensor()
+    time.sleep(0.1)
