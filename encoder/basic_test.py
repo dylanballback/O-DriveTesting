@@ -6,9 +6,12 @@ address = 0x50# AS5048A I2C address
 
 def read_angle():
     # Read the angle value from the sensor
-    data = bus.read_i2c_block_data(address, 0xFE, 2)
+    word_data = bus.read_word_data(address, 0xFE)
+    # Reorder the bytes in the correct endianness
+    msb = (word_data & 0xFF00) >> 8
+    lsb = (word_data & 0x00FF)
     # Combine the MSB and LSB into a single 14-bit value
-    angle = (data[0] << 6) | (data[1] & 0x3F)
+    angle = (msb << 6) | (lsb & 0x3F)
     return angle
 
 while True:
