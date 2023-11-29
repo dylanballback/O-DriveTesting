@@ -4,11 +4,13 @@ import time
 bus = smbus.SMBus(2)  # 1 indicates /dev/i2c-1
 address = 0x50  # AS5048A I2C address
 
-def read_angle():
-    # Read two bytes of data from the registers 0xFE and 0xFF
+
+def read_angle_raw():
     msb = bus.read_byte_data(address, 0xFE)
     lsb = bus.read_byte_data(address, 0xFF)
-    
+    return msb, lsb
+
+def convert_to_angle(msb, lsb):
     # Combine the two bytes to create a 14-bit angle value
     # Mask the MSB with 0x3F to get rid of the two most significant non-angle bits
     angle = ((msb & 0x3F) << 8) | lsb
@@ -17,6 +19,7 @@ def read_angle():
     return angle_in_degrees
 
 while True:
-    angle = read_angle()
-    print("Angle: {:.2f} degrees".format(angle))
+    msb, lsb = read_angle_raw()
+    angle = convert_to_angle(msb, lsb)
+    print(f"Raw MSB: {msb}, Raw LSB: {lsb}, Angle: {angle:.2f} degrees")
     time.sleep(0.1)  # Sleep for 100ms
