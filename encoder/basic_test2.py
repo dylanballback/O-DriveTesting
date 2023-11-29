@@ -30,59 +30,89 @@ def read_angle(bus, address):
     return angle * 360 / 16384.0
 
 
-def calibrate_map_angles(bus, address):
+
+
+# Define the angle stability threshold and duration
+STABILITY_THRESHOLD = 0.5  # Adjust as needed
+STABILITY_DURATION = 5  # 5 seconds (adjust as needed)
+
+def perform_calibration(bus, address):
     """
-    Read the start angle while inverted pendulum is striaght up and down 
-    Move all the was to the left stopper and meaasure angle
-    Move all the way to the right stopper and measure the angle 
-
-    Now map the vertical start angle as 0 and then angles 
-    moving left or right accordingly.
+    Perform calibration by moving the encoder from the upright position to the left stopper
+    and then back to the upright position to the right stopper.
+    Record the raw encoder angles during this process.
     """
-    
-    print("Move the inverted pendulum to the upright position with the lock.")
-    time.sleep(3)
-    start_angle = read_angle(bus, address)
-    print(f"The raw verical angle recorded is {start_angle}")
+    calibration_data = []
 
-    print("Move the inverted pendulum to the left stopper.")
-    time.sleep(5)
-    left_max_angle = read_angle(bus, address)
-    print(f"The raw verical angle recorded is {left_max_angle}")
+    def is_stable(values):
+        # Check if the last values in the list are stable (within the threshold) for the specified duration
+        if len(values) < STABILITY_DURATION:
+            return False
+        return all(abs(values[-1] - value) < STABILITY_THRESHOLD for value in values[-STABILITY_DURATION:])
 
-    print("Move the inverted pendulum to the right stopper.")
-    time.sleep(5)
-    right_max_angle = read_angle(bus, address)
-    print(f"The raw verical angle recorded is {right_max_angle}")
+    print("Move the encoder to the upright position.")
+    input("Press Enter when ready to start calibration...")
 
-    return start_angle, left_max_angle, right_max_angle
+    # Record angles while moving from upright to left stopper
+    print("Calibrating left side...")
+    last_raw_angles = []
+    while True:
+        raw_angle = read_angle(bus, address)
+        calibration_data.append(raw_angle)
+        last_raw_angles.append(raw_angle)
+
+        # Check if the left stopper is reached
+        if is_stable(last_raw_angles):
+            break
+
+    print("Move the encoder to the upright position.")
+    input("Press Enter when ready to continue calibration...")
+
+    # Record angles while moving from upright to right stopper
+    print("Calibrating right side...")
+    last_raw_angles = []
+    while True:
+        raw_angle = read_angle(bus, address)
+        calibration_data.append(raw_angle)
+        last_raw_angles.append(raw_angle)
+
+        # Check if the right stopper is reached
+        if is_stable(last_raw_angles):
+            break
+
+    return calibration_data
 
 
-def map_angle(raw_angle, start_angle, left_max_angle, right_max_angle):
+def map_angle(raw_angle, start_angle, left_stop_angle, right_stop_angle):
     """
-    Map the raw angle to a desired range based on the measured limits.
+    Map the raw angle to a desired range based on the calibration data.
     """
-    if raw_angle >= start_angle:
-        # Angle is to the right of the start position, map to the right_max_angle
-        mapped_angle = (raw_angle - start_angle) / (right_max_angle - start_angle) * right_max_angle
+    if raw_angle < start_angle:
+        # Angle is to the left of the start position, map to the left stop angle and make it negative
+        mapped_angle = -(start_angle - raw_angle) / (start_angle - left_stop_angle) * left_stop_angle
     else:
-        # Angle is to the left of the start position, map to the left_max_angle and make it negative
-        mapped_angle = ((start_angle - raw_angle) * (left_max_angle / (start_angle - left_max_angle))) * -1
+        # Angle is to the right of the start position, map to the right stop angle
+        mapped_angle = (raw_angle - start_angle) / (right_stop_angle - start_angle) * right_stop_angle
 
     return mapped_angle
-
 
 def main():
     # Create an instance of the smbus2 SMBus
     bus = smbus2.SMBus(1)
 
-    start_angle, left_max_angle, right_max_angle = calibrate_map_angles(bus, AS5048B_ADDRESS)
-    print(f"Calibration complete: Raw Upright= {start_angle}, Raw Left Max= {left_max_angle}, Raw Right Max {right_max_angle}")
+    # Perform calibration and get the calibration data
+    calibration_data = perform_calibration(bus, AS5048B_ADDRESS)
+    print("Calibration complete")
+
+    # Calculate the angles corresponding to the left and right stoppers
+    start_angle = min(calibration_data)
+    right_stop_angle = max(calibration_data)
+    left_stop_angle = min([angle for angle in calibration_data if angle > start_angle])
 
     try:
         while True:
             raw_angle = read_angle(bus, AS5048B_ADDRESS)
-            mapped_angle = map_angle(raw_angle, start_angle, left_max_angle, right_max_angle)
+            mapped_angle = map_angle(raw_angle, start_angle, left_stop_angle, right_stop_angle)
             print("Mapped Angle: {:.2f} degrees".format(mapped_angle))
             time.sleep(0.01)
     except KeyboardInterrupt:
