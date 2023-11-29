@@ -11,6 +11,9 @@ AS5048B_REG_ANGLE_LOW = 0xFF   # Register for bits 5 to 0 of the angle
 # This variable will hold the zero offset
 zero_offset = 0
 
+# Global variable to store the last angle read from the encoder
+last_angle = 0
+
 def read_raw_angle(bus, address):
     """
     Read the raw angle data from the encoder.
@@ -31,8 +34,27 @@ def read_angle(bus, address):
     Read the angle data from the encoder and adjust it by the zero offset.
     """
     raw_angle = read_raw_angle(bus, address)
-    adjusted_angle = (raw_angle - zero_offset) % 16384
+    # Adjust the raw angle based on the zero offset
+    adjusted_angle = (raw_angle - zero_offset + 16384) % 16384
+
+    # If the result is close to the maximum value, and the previous
+    # angle was close to zero, we probably wrapped around from 0 to 16383.
+    # Similarly, if the result is close to 0 and the previous angle was close to 16383,
+    # we wrapped around from 16383 to 0.
+    global last_angle
+    if last_angle > 16300 and adjusted_angle < 100:
+        # If we're close to 0 and the last angle was close to 16383,
+        # add 16384 to the angle to handle wrap around
+        adjusted_angle += 16384
+    elif last_angle < 100 and adjusted_angle > 16300:
+        # If we're close to 16383 and the last angle was close to 0,
+        # subtract 16384 from the angle to handle wrap around
+        adjusted_angle -= 16384
+
+    last_angle = adjusted_angle  # Update the last angle for the next call
     return adjusted_angle * 360 / 16384.0
+
+
 
 def main():
     # Create an instance of the smbus2 SMBus

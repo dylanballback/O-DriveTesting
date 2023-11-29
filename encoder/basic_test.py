@@ -28,6 +28,8 @@ def read_angle(bus, address):
     # The value is 14-bit, so we normalize it to a 360 degree scale
     return angle * 360 / 16384.0
 
+
+
 def main():
     # Create an instance of the smbus2 SMBus
     bus = smbus2.SMBus(1)
