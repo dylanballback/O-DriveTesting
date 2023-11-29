@@ -34,7 +34,7 @@ def read_angle(bus, address):
 
 # Define the angle stability threshold and duration
 STABILITY_THRESHOLD = 0.5  # Adjust as needed
-STABILITY_DURATION = 5  # 5 seconds (adjust as needed)
+STABILITY_DURATION = 10  # 5 seconds (adjust as needed)
 
 def perform_calibration(bus, address):
     """
