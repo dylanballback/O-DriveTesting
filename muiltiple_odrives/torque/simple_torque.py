@@ -17,7 +17,8 @@ When you keyboard interrupt the position will be set to 0 for all O-Drives and t
 """
 
 # Define the node IDs for your ODrives
-odrive_node_ids = [0, 1, 2]
+#odrive_node_ids = [0, 1, 2]
+odrive_node_ids = [0]
 
 bus = can.interface.Bus("can0", bustype="socketcan")
 
