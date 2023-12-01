@@ -3,8 +3,15 @@ import struct
 import time
 
 
+"""
+12/1/23 
+
+Testing out all the different O-Drive CAN data. 
+
+"""
+
 # Define the node IDs for your ODrives
-odrive_node_ids = [0, 1, 2]
+odrive_node_ids = [0, 1]
 
 bus = can.interface.Bus("can0", bustype="socketcan")
 
