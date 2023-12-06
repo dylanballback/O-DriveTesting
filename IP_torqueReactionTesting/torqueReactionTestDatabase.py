@@ -7,30 +7,15 @@ class TorqueReactionTestDatabase:
         self.database_name = database_name
         self.conn = self.create_connection()
 
-        # Create 'trials' table
-        self.create_table(
-            '''CREATE TABLE IF NOT EXISTS trials(
-            trial_id INTEGER PRIMARY KEY AUTOINCREMENT
-            );'''
-        )
 
-        # Create 'data' table with new fields
-        self.create_table(
-            '''CREATE TABLE IF NOT EXISTS data(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            trial_id INTEGER,
-            time REAL,
-            pos REAL,
-            vel REAL,
-            torque_setpoint REAL,
-            torque_estimate REAL,
-            bus_voltage REAL,
-            bus_current REAL,
-            iq_setpoint REAL,
-            iq_measured REAL,
-            FOREIGN KEY (trial_id) REFERENCES trials (trial_id)
-            );'''
-        )
+    def create_table(self, create_table_sql):
+        """ Execute a SQL statement to create a table """
+        try:
+            c = self.conn.cursor()
+            c.execute(create_table_sql)
+        except Error as e:
+            print(e)
+
 
     def create_connection(self):
         """ create a table from the create_table_sql statement """
@@ -118,3 +103,12 @@ class TorqueReactionTestDatabase:
         cur.execute('''DELETE FROM data WHERE trial_id=?''', (trial_id,))
         cur.execute('''DELETE FROM trials WHERE trial_id=?''', (trial_id,))
         self.conn.commit()
+
+    def get_trial_data(self, trial_id):
+        """
+        Fetch all data for a given trial ID.
+        """
+        sql = ''' SELECT time, torque_setpoint, torque_estimate, vel FROM data WHERE trial_id=? '''
+        cur = self.conn.cursor()
+        cur.execute(sql, (trial_id,))
+        return cur.fetchall()

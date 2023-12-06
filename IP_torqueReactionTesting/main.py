@@ -9,11 +9,13 @@ def main():
 
     db_name = "torqueReactionTestDatabase.db"
     torque_reaction_test_database = TorqueReactionTestDatabase(db_name)
+    # When initializing the database for the first time
+    #db.create_tables()
     trial_id = torque_reaction_test_database.add_trial()
     print(f"Added Trial with ID: {trial_id}")
 
     # Define your torque values here
-    torques = [0, 0.05, 0]
+    torques = [0, 0.1, 0]
     measurement_interval = 0.01  # Time between measurements
     torque_change_delay = 5  # Time to wait before changing torque
 
