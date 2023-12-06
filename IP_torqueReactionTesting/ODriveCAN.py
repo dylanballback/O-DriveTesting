@@ -340,6 +340,21 @@ class ODriveCAN:
         voltage_current_data = self.get_bus_voltage_current_rtr()
         iq_setpoint_measured_data = self.get_iq_setpoint_measured_rtr()
 
+        # Format each value to 3 decimal places if they are numeric
+        def format_data(data):
+            if isinstance(data, tuple):
+                return tuple(format(x, '.3f') if isinstance(x, (int, float)) else x for x in data)
+            return data
+
+        encoder_data_formatted = format_data(encoder_data)
+        torque_data_formatted = format_data(torque_data)
+        voltage_current_data_formatted = format_data(voltage_current_data)
+        iq_setpoint_measured_data_formatted = format_data(iq_setpoint_measured_data)
+
+        # Print formatted data
+        print("Encoder Data: {}, Torque Data: {}, Voltage/Current Data: {}, IQ Setpoint/Measured Data: {}"
+            .format(encoder_data_formatted, torque_data_formatted, voltage_current_data_formatted, iq_setpoint_measured_data_formatted))
+
         # Compile all data into a single structure (dictionary for better readability)
         all_data = {
             "encoder_data": encoder_data,
@@ -349,7 +364,7 @@ class ODriveCAN:
         }
 
         # Format and print all data in one line
-        print("Data: {}, {}, {}, {}".format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
+        #print("Data: {}, {}, {}, {}".format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
 
         return all_data
 
