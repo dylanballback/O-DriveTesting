@@ -352,7 +352,7 @@ class ODriveCAN:
         iq_setpoint_measured_data_formatted = format_data(iq_setpoint_measured_data)
 
         # Print formatted data
-        print("Encoder Data: {}, Torque Data: {}, Voltage/Current Data: {}, IQ Setpoint/Measured Data: {}"
+        print("Data: {}, {},  {}, {}"
             .format(encoder_data_formatted, torque_data_formatted, voltage_current_data_formatted, iq_setpoint_measured_data_formatted))
 
         # Compile all data into a single structure (dictionary for better readability)
