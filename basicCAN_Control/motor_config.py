@@ -17,7 +17,7 @@ class ODriveCAN:
         O-Drive Controller Specific Attributes:
         nodeID (integer): The node ID can be set by the 
     """
-    def __init__(self, canBusID="can0", canBus="socketcan", nodeID):
+    def __init__(self, nodeID, canBusID="can0", canBus="socketcan"):
         self.canBusID = canBusID
         self.canBus = canBus
         self.nodeID = nodeID
