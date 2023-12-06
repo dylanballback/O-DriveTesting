@@ -2,7 +2,7 @@ import can
 import struct
 import time
 
-odrive_node_ids = [0, 1]
+odrive_node_ids = [0]
 bus = can.interface.Bus("can0", bustype="socketcan")
 
 

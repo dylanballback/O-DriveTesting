@@ -195,34 +195,129 @@ class ODriveCAN:
 #-------------------------------------- Motor Feedback ----------------------------------------------------
 
 
-# Function to print torque feedback for a specific O-Drive (will get stuck in for loop forever)
-def get_torques(self):
-    print(f"I am trying to get torque for {self.nodeID}")
-    for msg in self.canBus:
-        if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
-            torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+    # Function to print torque feedback for a specific O-Drive (will get stuck in for loop forever)
+    def get_torques(self):
+        print(f"I am trying to get torque for {self.nodeID}")
+        for msg in self.canBus:
+            if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
+                torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+                print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+
+
+
+
+
+    # Function to print torque feedback for a specific O-Drive one time
+    def get_one_torque(self, timeout=1.0):
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))  # Adjust timeout for recv
+            if msg is None:
+                print("Timeout occurred, no message received.")
+                break
+
+            if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
+                torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
+                print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+                break
+        else:
+            print(f"No torque message received for O-Drive {self.nodeID} within the timeout period.")
+
+
+
+#-------------------------------------- Motor Feedback with CAN RTR ----------------------------------------------------
+
+    def send_rtr_message(self, request_id):
+        try:
+            # Create an RTR frame
+            rtr_frame = can.Message(
+                arbitration_id=(self.nodeID << 5 | request_id),
+                is_remote_frame=True,
+                is_extended_id=False
+            )
+
+            # Send the RTR frame
+            self.canBus.send(rtr_frame)
+
+        except Exception as e:
+            print(f"Error sending RTR message to ODrive {self.nodeID}, request_id {request_id}: {str(e)}")
+
+    def get_encoder_estimate_rtr(self):
+        request_id = 0x09
+        self.send_rtr_message(request_id)
+
+        # Wait for a response
+        response = self.canBus.recv(timeout=1.0)
+
+        if response:
+            pos, vel = struct.unpack('<ff', bytes(response.data))
+            print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+            return pos, vel
+        else:
+            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+
+    def get_torque_rtr(self):
+        request_id = 0x1C
+        self.send_rtr_message(request_id)
+
+        # Wait for a response
+        response = self.canBus.recv(timeout=1.0)
+
+        if response:
+            torque_target, torque_estimate = struct.unpack('<ff', bytes(response.data))
             print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+            return torque_target, torque_estimate
+        else:
+            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
 
+    def get_bus_voltage_current_rtr(self):
+        request_id = 0x17
+        self.send_rtr_message(request_id)
+
+        # Wait for a response
+        response = self.canBus.recv(timeout=1.0)
+
+        if response:
+            bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
+            print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
+            return bus_voltage, bus_current
+        else:
+            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
 
+    def get_iq_setpoint_measured_rtr(self):
+        request_id = 0x14
+        self.send_rtr_message(request_id)
 
-# Function to print torque feedback for a specific O-Drive one time
-def get_one_torque(self, timeout=1.0):
-    start_time = time.time()
-    while (time.time() - start_time) < timeout:
-        msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))  # Adjust timeout for recv
-        if msg is None:
-            print("Timeout occurred, no message received.")
-            break
+        # Wait for a response
+        response = self.canBus.recv(timeout=1.0)
 
-        if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
-            torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
-            print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
-            break
-    else:
-        print(f"No torque message received for O-Drive {self.nodeID} within the timeout period.")
+        if response:
+            iq_setpoint, iq_measured = struct.unpack('<ff', bytes(response.data))
+            print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
+            return iq_setpoint, iq_measured
+        else:
+            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
+
+    
+    def get_all_data_rtr(self):
+        # Collect data from each function
+        encoder_data = self.get_encoder_estimate_rtr()
+        torque_data = self.get_torque_rtr()
+        voltage_current_data = self.get_bus_voltage_current_rtr()
+        iq_setpoint_measured_data = self.get_iq_setpoint_measured_rtr()
+
+        # Compile all data into a single structure (dictionary for better readability)
+        all_data = {
+            "encoder_data": encoder_data,
+            "torque_data": torque_data,
+            "voltage_current_data": voltage_current_data,
+            "iq_setpoint_measured_data": iq_setpoint_measured_data
+        }
+
+        return all_data
 
 
 #Example on how to use:
@@ -231,12 +326,17 @@ odrive1 = ODriveCAN(0)
 
 odrive1.initCanBus()
 
-odrive1.set_torque(5)
+#Example how to print all data 
+all_data = odrive1.get_all_data_rtr()
+print(all_data)
+
+
+#odrive1.set_torque(5)
 
 
 
-odrive2 = ODriveCAN(2)
+#odrive2 = ODriveCAN(2)
 
-odrive2.initCanBus()
+#odrive2.initCanBus()
 
 
