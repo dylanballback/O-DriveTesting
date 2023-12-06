@@ -302,19 +302,21 @@ class ODriveCAN:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
 
-    def get_bus_voltage_current_rtr(self):
+    def get_bus_voltage_current_rtr(self, node_id):
         request_id = 0x17
-        self.send_rtr_message(request_id)
+        self.send_rtr_message(node_id, request_id)
 
         # Wait for a response
         response = self.canBus.recv(timeout=1.0)
 
         if response:
-            bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
-            return bus_voltage, bus_current
+            if len(response.data) == 8:
+                bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
+                print(f"O-Drive {node_id} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
+            else:
+                print(f"Unexpected data length: {len(response.data)}. Expected 8 bytes.")
         else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+            print(f"No response received for ODrive {node_id}, request_id {request_id}")
 
 
     def get_iq_setpoint_measured_rtr(self):
