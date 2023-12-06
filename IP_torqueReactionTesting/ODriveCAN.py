@@ -282,7 +282,7 @@ class ODriveCAN:
 
         if response:
             pos, vel = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+            #print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
             return pos, vel
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
@@ -296,7 +296,7 @@ class ODriveCAN:
 
         if response:
             torque_target, torque_estimate = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+            #print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
             return torque_target, torque_estimate
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
@@ -311,7 +311,7 @@ class ODriveCAN:
 
         if response:
             bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
+            #print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
             return bus_voltage, bus_current
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
@@ -326,7 +326,7 @@ class ODriveCAN:
 
         if response:
             iq_setpoint, iq_measured = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
+            #print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
             return iq_setpoint, iq_measured
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
@@ -347,6 +347,10 @@ class ODriveCAN:
             "voltage_current_data": voltage_current_data,
             "iq_setpoint_measured_data": iq_setpoint_measured_data
         }
+
+        # Format and print all data in one line
+        print("Encoder Data: {}, Torque Data: {}, Voltage/Current Data: {}, IQ Setpoint/Measured Data: {}"
+            .format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
 
         return all_data
 
