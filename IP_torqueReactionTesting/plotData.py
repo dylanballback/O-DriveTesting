@@ -12,6 +12,17 @@ def remove_outliers(data):
     cleaned_data = data[(data >= lower_bound) & (data <= upper_bound)]
     return cleaned_data.tolist()
 
+def remove_outliers_std(data_pairs, num_std=3):
+    # Separate times and values
+    times, values = zip(*data_pairs)
+    values = np.array(values)
+    
+    mean = np.mean(values)
+    std = np.std(values)
+    
+    # Filter pairs where values are within num_std standard deviations from the mean
+    filtered_pairs = [(t, v) for t, v in zip(times, values) if (mean - num_std * std < v < mean + num_std * std)]
+    return filtered_pairs
 
 def plot_torque_data(db, trial_id):
     trial_data = db.get_trial_data(trial_id)
@@ -23,6 +34,7 @@ def plot_torque_data(db, trial_id):
         # Cleaning the data
         cleaned_torque_setpoints = remove_outliers(torque_setpoints)
         cleaned_torque_estimates = remove_outliers(torque_estimates)
+
 
         # Plotting
         plt.figure(figsize=(10, 6))
@@ -49,6 +61,7 @@ def plot_torque_and_velocity_data(db, trial_id):
         cleaned_torque_setpoints = remove_outliers(torque_setpoints)
         cleaned_torque_estimates = remove_outliers(torque_estimates)
         cleaned_velocities = remove_outliers(velocities)
+
 
         # Ensure all cleaned data lists are of the same length
         min_length = min(len(cleaned_torque_setpoints), len(cleaned_torque_estimates), len(cleaned_velocities))
@@ -85,7 +98,7 @@ def plot_torque_and_velocity_data(db, trial_id):
 
 db = TorqueReactionTestDatabase("torqueReactionTestDatabase.db")
 
-#trial_id = int(input("Enter trial ID to plot:"))
+trial_id = int(input("Enter trial ID to plot:"))
 
-plot_torque_data(db, 16)  
-plot_torque_and_velocity_data(db, 16)  
+plot_torque_data(db, trial_id)  
+plot_torque_and_velocity_data(db, trial_id)  
