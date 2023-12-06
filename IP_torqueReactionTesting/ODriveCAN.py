@@ -304,7 +304,7 @@ class ODriveCAN:
 
     def get_bus_voltage_current_rtr(self):
         request_id = 0x17
-        self.send_rtr_message(self.nodeID, request_id)
+        self.send_rtr_message(request_id)
 
         # Wait for a response
         response = self.canBus.recv(timeout=1.0)
