@@ -33,6 +33,8 @@ class ODriveCAN:
         canBus (String): Default "socketcan" this is the python can libary CAN type
         """
         can.interface.Bus(self.canBusID, self.canBus)
+        self.flush_can_buffer()
+        self.set_control_state()
 
 
 
@@ -53,7 +55,30 @@ class ODriveCAN:
         Set_Axis_NodeID: 0x06
         """
 
-        pass
+
+    # Put axis into closed loop control state
+    def set_control_state(self):
+        self.flush_can_buffer()
+        print(f"Attempting to set control state to ODrive {self.nodeID}...")
+        try:
+            self.canBus.send(can.Message(
+                arbitration_id=(self.nodeID << 5 | 0x07), # 0x07: Set_Axis_State
+                data=struct.pack('<I', 8), # 8: AxisState.CLOSED_LOOP_CONTROL
+                is_extended_id=False
+            ))
+            
+            print(f"Checking Hearbeat for ODrive {self.nodeID}")
+            # Wait for axis to enter closed loop control by scanning heartbeat messages
+            for msg in self.canBus:
+                if msg.arbitration_id == (self.nodeID << 5 | 0x01): # 0x01: Heartbeat
+                    error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
+                    if state == 8: # 8: AxisState.CLOSED_LOOP_CONTROL
+                        break
+            print(f"Successfully set control state to ODrive {self.nodeID}")
+
+        except Exception as e:
+            print(f"Error connecting to ODrive {self.nodeID}: {str(e)}")
+
 
 
 
