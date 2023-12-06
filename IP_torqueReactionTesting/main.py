@@ -10,29 +10,39 @@ odrive = ODriveCAN(0)
 odrive.initCanBus()
 
 
-def set_torque_process(queue):
+def set_torque_process(queue, control_queue):
     odrive = ODriveCAN(0)
     odrive.initCanBus()
 
     while True:
         if not queue.empty():
             new_torque = queue.get()
+            control_queue.put('pause')  # Signal to pause data reading
             odrive.set_torque(new_torque)
             print(f"Torque set to {new_torque} Nm")
+            control_queue.put('resume')  # Signal to resume data reading
         time.sleep(5)  # Adjust the sleep duration as needed
 
-
-def read_data_process(queue, db_name, trial_id):
+def read_data_process(data_queue, control_queue, db_name, trial_id):
     odrive = ODriveCAN(0)
     odrive.initCanBus()
     db = TorqueReactionTestDatabase(db_name)
 
+    paused = False
     while True:
-        current_time = time.time()  # Get the current time in seconds
-        data = odrive.get_all_data_rtr()
-        complete_data = (current_time,) + data  # Prepend the time to the data tuple
-        db.add_data(trial_id, *complete_data)
-        time.sleep(0.01)  # Adjust the sleep duration as needed
+        if not control_queue.empty():
+            signal = control_queue.get()
+            if signal == 'pause':
+                paused = True
+            elif signal == 'resume':
+                paused = False
+
+        if not paused:
+            current_time = time.time()  # Get the current time in seconds
+            data = odrive.get_all_data_rtr()
+            complete_data = (current_time,) + data  # Prepend the time to the data tuple
+            db.add_data(trial_id, *complete_data)
+            time.sleep(0.01)  # Adjust the sleep duration as needed
 
 
 if __name__ == "__main__":
@@ -42,9 +52,10 @@ if __name__ == "__main__":
     print(f"Added Trial with ID: {trial_id}")
 
     torque_queue = multiprocessing.Queue()
+    control_queue = multiprocessing.Queue()
 
-    torque_process = multiprocessing.Process(target=set_torque_process, args=(torque_queue,))
-    data_process = multiprocessing.Process(target=read_data_process, args=(torque_queue, db_name, trial_id))
+    torque_process = multiprocessing.Process(target=set_torque_process, args=(torque_queue, control_queue))
+    data_process = multiprocessing.Process(target=read_data_process, args=(torque_queue, control_queue, db_name, trial_id))
 
     torque_process.start()
     data_process.start()
