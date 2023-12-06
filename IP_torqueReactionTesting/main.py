@@ -40,17 +40,21 @@ def main():
             # Measure and store data
             data_dict = odrive.get_all_data_rtr()
 
-            data_dict = odrive.get_all_data_rtr()
+            # Function to safely extract tuple elements
+            def safe_extract(data, index, default=0):
+                if data is not None and len(data) > index:
+                    return data[index]
+                return default
 
-            # Access tuple elements by index
-            pos = data_dict['encoder_data'][0] if 'encoder_data' in data_dict else 0
-            vel = data_dict['encoder_data'][1] if 'encoder_data' in data_dict else 0
-            torque_setpoint = data_dict['torque_data'][0] if 'torque_data' in data_dict else 0
-            torque_estimate = data_dict['torque_data'][1] if 'torque_data' in data_dict else 0
-            bus_voltage = data_dict['voltage_current_data'][0] if 'voltage_current_data' in data_dict else 0
-            bus_current = data_dict['voltage_current_data'][1] if 'voltage_current_data' in data_dict else 0
-            iq_setpoint = data_dict['iq_setpoint_measured_data'][0] if 'iq_setpoint_measured_data' in data_dict else 0
-            iq_measured = data_dict['iq_setpoint_measured_data'][1] if 'iq_setpoint_measured_data' in data_dict else 0
+            # Safely access tuple elements
+            pos = safe_extract(data_dict.get('encoder_data'), 0)
+            vel = safe_extract(data_dict.get('encoder_data'), 1)
+            torque_setpoint = safe_extract(data_dict.get('torque_data'), 0)
+            torque_estimate = safe_extract(data_dict.get('torque_data'), 1)
+            bus_voltage = safe_extract(data_dict.get('voltage_current_data'), 0)
+            bus_current = safe_extract(data_dict.get('voltage_current_data'), 1)
+            iq_setpoint = safe_extract(data_dict.get('iq_setpoint_measured_data'), 0)
+            iq_measured = safe_extract(data_dict.get('iq_setpoint_measured_data'), 1)
 
             data_tuple = (
                 elapsed_time,
