@@ -9,7 +9,7 @@ def set_torques(odrive, torques, torque_change_delay):
         print(f"Torque set to {torque} Nm")
         time.sleep(torque_change_delay)
 
-def collect_data(odrive, db, trial_id, start_time):
+def collect_data(odrive, db_name, trial_id, start_time):
     # Create a new database connection in this thread
     db_thread = TorqueReactionTestDatabase(db_name)
 
@@ -67,7 +67,7 @@ def main():
     start_time = time.time()
 
     # Start the data collection thread
-    data_thread = threading.Thread(target=collect_data, args=(odrive, db, trial_id, start_time))
+    data_thread = threading.Thread(target=collect_data, args=(odrive, db_name, trial_id, start_time))
     data_thread.daemon = True  # Mark as a daemon thread
     data_thread.start()
 
