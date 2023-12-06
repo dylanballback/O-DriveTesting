@@ -17,10 +17,11 @@ class ODriveCAN:
         O-Drive Controller Specific Attributes:
         nodeID (integer): The node ID can be set by the 
     """
-    def __init__(self, nodeID, canBusID="can0", canBus="socketcan"):
+    def __init__(self, nodeID, canBusID="can0", canBusType="socketcan"):
         self.canBusID = canBusID
-        self.canBus = canBus
+        self.canBusType = canBusType
         self.nodeID = nodeID
+        self.canBus = None  # Initialize with None
 
 
 
@@ -32,12 +33,13 @@ class ODriveCAN:
         canBusID (String): Default "can0" this is the name of the can interface
         canBus (String): Default "socketcan" this is the python can libary CAN type
         """
-        can.interface.Bus(self.canBusID, bustype=self.canBus)
+         # Create and assign the CAN bus interface object to self.canBus
+        self.canBus = can.interface.Bus(self.canBusID, bustype=self.canBusType)
 
-        #Flush the CAN Bus of any previous messages
+        # Flush the CAN Bus of any previous messages
         self.flush_can_buffer()
 
-        #Set the Odrive to closed axis state control
+        # Set the Odrive to closed axis state control
         self.set_control_state()
 
 
