@@ -362,7 +362,7 @@ all_data = odrive1.get_all_data_rtr()
 print(all_data)
 
 
-#odrive1.set_torque(5)
+odrive1.set_torque(0.05)
 
 
 
