@@ -26,28 +26,34 @@ def main():
         odrive.set_torque(torque)
         print(f"Torque set to {torque} Nm")
 
-        # Wait some time for the system to stabilize
-        time.sleep(5)
-
         # Calculate elapsed time since start
         elapsed_time = time.time() - start_time
 
-        # Measure and store data
-        data_dict = odrive.get_all_data_rtr()
+        # Define how long to collect data after setting torque (e.g., 30 seconds)
+        collect_duration = 5
+        end_time = time.time() + collect_duration
 
-        data_tuple = (
-            elapsed_time,
-            data_dict.get('pos', 0),
-            data_dict.get('vel', 0),
-            data_dict.get('torque_setpoint', 0),
-            data_dict.get('torque_estimate', 0),
-            data_dict.get('bus_voltage', 0),
-            data_dict.get('bus_current', 0),
-            data_dict.get('iq_setpoint', 0),
-            data_dict.get('iq_measured', 0)
-        )
+        while time.time() < end_time:
+            # Calculate elapsed time since start
+            elapsed_time = time.time() - start_time
 
-        torque_reaction_test_database.add_data(trial_id, *data_tuple)
+            # Measure and store data
+            data_dict = odrive.get_all_data_rtr()
+
+            data_tuple = (
+                elapsed_time,
+                data_dict.get('pos', 0),
+                data_dict.get('vel', 0),
+                data_dict.get('torque_setpoint', 0),
+                data_dict.get('torque_estimate', 0),
+                data_dict.get('bus_voltage', 0),
+                data_dict.get('bus_current', 0),
+                data_dict.get('iq_setpoint', 0),
+                data_dict.get('iq_measured', 0)
+            )
+
+            torque_reaction_test_database.add_data(trial_id, *data_tuple)
+            time.sleep(0.01)  # Adjust the sleep duration as needed
 
     print("All torque values have been processed.")
 
