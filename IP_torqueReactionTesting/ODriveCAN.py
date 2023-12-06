@@ -310,11 +310,9 @@ class ODriveCAN:
         response = self.canBus.recv(timeout=1.0)
 
         if response:
-            if len(response.data) == 8:
-                bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
-                print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
-            else:
-                print(f"Unexpected data length: {len(response.data)}. Expected 8 bytes.")
+            bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
+            print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
+            return bus_voltage, bus_current
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
