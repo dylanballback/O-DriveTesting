@@ -39,9 +39,22 @@ def read_data_process(data_queue, control_queue, db_name, trial_id):
 
         if not paused:
             current_time = time.time()  # Get the current time in seconds
-            data = odrive.get_all_data_rtr()
-            complete_data = (current_time,) + data  # Prepend the time to the data tuple
-            db.add_data(trial_id, *complete_data)
+            data_dict = odrive.get_all_data_rtr()
+
+            # Assuming data_dict contains keys like 'pos', 'vel', etc.
+            data_tuple = (
+                current_time,
+                data_dict.get('pos', 0),  # Provide default values if key might be missing
+                data_dict.get('vel', 0),
+                data_dict.get('torque_setpoint', 0),
+                data_dict.get('torque_estimate', 0),
+                data_dict.get('bus_voltage', 0),
+                data_dict.get('bus_current', 0),
+                data_dict.get('iq_setpoint', 0),
+                data_dict.get('iq_measured', 0)
+            )
+
+            db.add_data(trial_id, *data_tuple)
             time.sleep(0.01)  # Adjust the sleep duration as needed
 
 
