@@ -50,7 +50,7 @@ def collect_data(odrive, db_name, trial_id, start_time):
 
         #add the data to the database
         db_thread.add_data(trial_id, *data_tuple)
-        time.sleep(0.02)  # Adjust the sleep duration as needed
+        time.sleep(0.05)  # Adjust the sleep duration as needed
 
 
 def main():
