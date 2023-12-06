@@ -1,50 +1,36 @@
-import multiprocessing
 import time
 from ODriveCAN import ODriveCAN
 from torqueReactionTestDatabase import TorqueReactionTestDatabase
 
-#Create object of ODriveCAN class with node ID 0 
-odrive = ODriveCAN(0)
-
-#Initalize odrive 
-odrive.initCanBus()
-
-
-def set_torque_process(queue, control_queue):
+def main():
+    # Initialize ODriveCAN and database
     odrive = ODriveCAN(0)
     odrive.initCanBus()
 
-    while True:
-        if not queue.empty():
-            new_torque = queue.get()
-            control_queue.put('pause')  # Signal to pause data reading
-            odrive.set_torque(new_torque)
-            print(f"Torque set to {new_torque} Nm")
-            control_queue.put('resume')  # Signal to resume data reading
-        time.sleep(5)  # Adjust the sleep duration as needed
+    db_name = "torqueReactionTestDatabase.db"
+    torque_reaction_test_database = TorqueReactionTestDatabase(db_name)
+    trial_id = torque_reaction_test_database.add_trial()
+    print(f"Added Trial with ID: {trial_id}")
 
-def read_data_process(data_queue, control_queue, db_name, trial_id):
-    odrive = ODriveCAN(0)
-    odrive.initCanBus()
-    db = TorqueReactionTestDatabase(db_name)
+    # Define your torque values here
+    torques = [0, 0.005, 0]
+    measurement_interval = 0.01  # Time between measurements
+    torque_change_delay = 5  # Time to wait before changing torque
 
-    paused = False
-    while True:
-        if not control_queue.empty():
-            signal = control_queue.get()
-            if signal == 'pause':
-                paused = True
-            elif signal == 'resume':
-                paused = False
+    for torque in torques:
+        # Set torque
+        odrive.set_torque(torque)
+        print(f"Torque set to {torque} Nm")
 
-        if not paused:
-            current_time = time.time()  # Get the current time in seconds
+        # Measure and store data for a while after setting torque
+        start_time = time.time()
+        while time.time() - start_time < torque_change_delay:
+            current_time = time.time()
             data_dict = odrive.get_all_data_rtr()
 
-            # Assuming data_dict contains keys like 'pos', 'vel', etc.
             data_tuple = (
                 current_time,
-                data_dict.get('pos', 0),  # Provide default values if key might be missing
+                data_dict.get('pos', 0),
                 data_dict.get('vel', 0),
                 data_dict.get('torque_setpoint', 0),
                 data_dict.get('torque_estimate', 0),
@@ -54,37 +40,13 @@ def read_data_process(data_queue, control_queue, db_name, trial_id):
                 data_dict.get('iq_measured', 0)
             )
 
-            db.add_data(trial_id, *data_tuple)
-            time.sleep(0.01)  # Adjust the sleep duration as needed
+            torque_reaction_test_database.add_data(trial_id, *data_tuple)
+            time.sleep(measurement_interval)
 
+    print("All torque values have been processed.")
 
 if __name__ == "__main__":
-    db_name = "torqueReactionTestDatabase.db"
-    torque_reaction_test_database = TorqueReactionTestDatabase(db_name)
-    trial_id = torque_reaction_test_database.add_trial()
-    print(f"Added Trial with ID: {trial_id}")
-
-    torque_queue = multiprocessing.Queue()
-    control_queue = multiprocessing.Queue()
-
-    torque_process = multiprocessing.Process(target=set_torque_process, args=(torque_queue, control_queue))
-    data_process = multiprocessing.Process(target=read_data_process, args=(torque_queue, control_queue, db_name, trial_id))
-
-    torque_process.start()
-    data_process.start()
-
     try:
-        torques = [0, 0.005, 0]  # Define your torque values here
-        for torque in torques:
-            torque_queue.put(torque)
-            time.sleep(5)  # Wait some time before changing the torque
-        print("All torque values have been processed.")
+        main()
     except KeyboardInterrupt:
-        print("Keyboard Interrupt received, stopping processes.")
-
-    finally:
-        torque_process.terminate()
-        data_process.terminate()
-        torque_process.join()
-        data_process.join()
-        print("Processes terminated. Exiting program.")
+        print("Program interrupted by user. Exiting.")
