@@ -10,6 +10,9 @@ def set_torques(odrive, torques, torque_change_delay):
         time.sleep(torque_change_delay)
 
 def collect_data(odrive, db, trial_id, start_time):
+    # Create a new database connection in this thread
+    db_thread = TorqueReactionTestDatabase(db_name)
+
     while True:
         elapsed_time = time.time() - start_time
         
@@ -46,7 +49,7 @@ def collect_data(odrive, db, trial_id, start_time):
         )
 
         #add the data to the database
-        db.add_data(trial_id, *data_tuple)
+        db_thread.add_data(trial_id, *data_tuple)
         time.sleep(0.01)  # Adjust the sleep duration as needed
 
 
