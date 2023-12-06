@@ -15,6 +15,12 @@ def collect_data(odrive, db, trial_id, start_time):
         
         #Get all data from ODrive
         data_dict = odrive.get_all_data_rtr()
+        
+        # Function to safely extract tuple elements
+        def safe_extract(data, index, default=0):
+            if data is not None and len(data) > index:
+                return data[index]
+            return default
 
         # Safely access tuple elements
         pos = safe_extract(data_dict.get('encoder_data'), 0)
