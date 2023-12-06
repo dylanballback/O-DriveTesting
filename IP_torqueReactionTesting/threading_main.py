@@ -46,7 +46,6 @@ def collect_data(odrive, db, trial_id, start_time):
         )
 
         #add the data to the database
-        torque_reaction_test_database.add_data(trial_id, *data_tuple)
         db.add_data(trial_id, *data_tuple)
         time.sleep(0.01)  # Adjust the sleep duration as needed
 
