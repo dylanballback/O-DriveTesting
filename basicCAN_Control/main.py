@@ -32,7 +32,7 @@ class ODriveCAN:
         canBusID (String): Default "can0" this is the name of the can interface
         canBus (String): Default "socketcan" this is the python can libary CAN type
         """
-        can.interface.Bus(self.canBusID, self.canBus)
+        can.interface.Bus(self.canBusID, bustype=self.canBus)
 
         #Flush the CAN Bus of any previous messages
         self.flush_can_buffer()
