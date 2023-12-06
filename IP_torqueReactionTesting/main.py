@@ -40,15 +40,17 @@ def main():
             # Measure and store data
             data_dict = odrive.get_all_data_rtr()
 
-            # Assuming each function returns a dictionary with appropriate keys
-            pos = data_dict['encoder_data'].get('pos', 0)
-            vel = data_dict['encoder_data'].get('vel', 0)
-            torque_setpoint = data_dict['torque_data'].get('torque_setpoint', 0)
-            torque_estimate = data_dict['torque_data'].get('torque_estimate', 0)
-            bus_voltage = data_dict['voltage_current_data'].get('bus_voltage', 0)
-            bus_current = data_dict['voltage_current_data'].get('bus_current', 0)
-            iq_setpoint = data_dict['iq_setpoint_measured_data'].get('iq_setpoint', 0)
-            iq_measured = data_dict['iq_setpoint_measured_data'].get('iq_measured', 0)
+            data_dict = odrive.get_all_data_rtr()
+
+            # Access tuple elements by index
+            pos = data_dict['encoder_data'][0] if 'encoder_data' in data_dict else 0
+            vel = data_dict['encoder_data'][1] if 'encoder_data' in data_dict else 0
+            torque_setpoint = data_dict['torque_data'][0] if 'torque_data' in data_dict else 0
+            torque_estimate = data_dict['torque_data'][1] if 'torque_data' in data_dict else 0
+            bus_voltage = data_dict['voltage_current_data'][0] if 'voltage_current_data' in data_dict else 0
+            bus_current = data_dict['voltage_current_data'][1] if 'voltage_current_data' in data_dict else 0
+            iq_setpoint = data_dict['iq_setpoint_measured_data'][0] if 'iq_setpoint_measured_data' in data_dict else 0
+            iq_measured = data_dict['iq_setpoint_measured_data'][1] if 'iq_setpoint_measured_data' in data_dict else 0
 
             data_tuple = (
                 elapsed_time,
