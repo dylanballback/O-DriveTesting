@@ -75,8 +75,11 @@ class TorqueReactionTestDatabase:
         sql = ''' INSERT INTO data(trial_id, time, pos, vel, torque_setpoint, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured)
                   VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) '''
         cur = self.conn.cursor()
-        cur.execute(sql, (trial_id, time, pos, vel, torque_setpoint, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured))
-        self.conn.commit()
+        try:
+            cur.execute(sql, (trial_id, time, pos, vel, torque_setpoint, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured))
+            self.conn.commit()
+        except Exception as e:
+            print(f"Error inserting data: {e}")
         return cur.lastrowid
 
     def all_trials(self):
