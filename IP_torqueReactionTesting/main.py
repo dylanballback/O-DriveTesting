@@ -40,16 +40,26 @@ def main():
             # Measure and store data
             data_dict = odrive.get_all_data_rtr()
 
+            # Assuming each function returns a dictionary with appropriate keys
+            pos = data_dict['encoder_data'].get('pos', 0)
+            vel = data_dict['encoder_data'].get('vel', 0)
+            torque_setpoint = data_dict['torque_data'].get('torque_setpoint', 0)
+            torque_estimate = data_dict['torque_data'].get('torque_estimate', 0)
+            bus_voltage = data_dict['voltage_current_data'].get('bus_voltage', 0)
+            bus_current = data_dict['voltage_current_data'].get('bus_current', 0)
+            iq_setpoint = data_dict['iq_setpoint_measured_data'].get('iq_setpoint', 0)
+            iq_measured = data_dict['iq_setpoint_measured_data'].get('iq_measured', 0)
+
             data_tuple = (
                 elapsed_time,
-                data_dict.get('pos', 0),
-                data_dict.get('vel', 0),
-                data_dict.get('torque_setpoint', 0),
-                data_dict.get('torque_estimate', 0),
-                data_dict.get('bus_voltage', 0),
-                data_dict.get('bus_current', 0),
-                data_dict.get('iq_setpoint', 0),
-                data_dict.get('iq_measured', 0)
+                pos,
+                vel,
+                torque_setpoint,
+                torque_estimate,
+                bus_voltage,
+                bus_current,
+                iq_setpoint,
+                iq_measured
             )
 
             torque_reaction_test_database.add_data(trial_id, *data_tuple)
