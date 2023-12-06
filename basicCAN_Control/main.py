@@ -33,7 +33,11 @@ class ODriveCAN:
         canBus (String): Default "socketcan" this is the python can libary CAN type
         """
         can.interface.Bus(self.canBusID, self.canBus)
+
+        #Flush the CAN Bus of any previous messages
         self.flush_can_buffer()
+
+        #Set the Odrive to closed axis state control
         self.set_control_state()
 
 
