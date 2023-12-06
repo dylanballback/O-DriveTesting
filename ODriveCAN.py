@@ -353,16 +353,16 @@ class ODriveCAN:
 
 #Example on how to use:
 
-odrive1 = ODriveCAN(0)
+#odrive1 = ODriveCAN(0)
 
-odrive1.initCanBus()
+#odrive1.initCanBus()
 
 #Example how to print all data 
-all_data = odrive1.get_all_data_rtr()
-print(all_data)
+#all_data = odrive1.get_all_data_rtr()
+#print(all_data)
 
 
-odrive1.set_torque(0.05)
+#odrive1.set_torque(0.05)
 
 
 
