@@ -1,26 +1,42 @@
-import time
 from ODriveCAN import ODriveCAN
-
 
 # Initialize ODriveCAN for 1st Motor 
 odrive1 = ODriveCAN(0)
 odrive1.initCanBus()
 
-# Initialize ODriveCAN for 2nd Motor 
-#odrive2 = ODriveCAN(1)
-#odrive2.initCanBus()
+#Initialize ODriveCAN for 2nd Motor 
+odrive2 = ODriveCAN(1)
+odrive2.initCanBus()
+
 
 def set_motors_vel(target_vel):
     odrive1.set_velocity(target_vel)
-    motor2_target_vel = 0.5 * target_vel
-    odrive2.set_velocity(motor2_target_vel)
-    print(f"Set Motor 1 to {target_vel} turn/s, Motor 2 to {motor2_target_vel} turns/s")
+
+    #Convert target_vel from Turns/second to degrees/second
+    motor1_vel_deg_per_sec = target_vel * 360
+
+    #Vel 1st motor - 0.5 deg/s 
+    motor2_vel_deg_per_sec = motor1_vel_deg_per_sec - 0.5
+
+    #Convert Motor 2 Vel Deg/Sec back to Turn/Sec
+    motor2_target_vel_turns_per_sec = motor2_vel_deg_per_sec / 360 
+
+    #Set Odrive 2 to calulated Motor2 Target Velocity
+    odrive2.set_velocity(motor2_target_vel_turns_per_sec)
+
+    #Print Motor 1 & 2 set velocity
+    print(f"Set Motor 1 to {target_vel} turn/s, Motor 2 to {motor2_target_vel_turns_per_sec} turns/s")
 
 try:
     while True:
-        odrive1.set_velocity(3)
-        pos, vel = odrive1.get_encoder_estimate_rtr()
-        print(f"ODrive 1 velocity = {vel} turn/s")
+        #User Input target velocity
+        user_target_velocity = input("Enter your target velocity (0-20 turns/second):")
+
+        #Function that sets both motors velocity 
+        set_motors_vel(user_target_velocity)
+
 except KeyboardInterrupt:
+    #When program is ended set ODrive 1 & 2 Velocity to 0
     odrive1.set_velocity(0)
+    odrive2.set_velocity(0)
     print("Program interrupted by user. Exiting.")
