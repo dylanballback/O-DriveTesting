@@ -10,8 +10,11 @@ odrive1.initCanBus()
 odrive2 = ODriveCAN(1)
 odrive2.initCanBus()
 
-def get_motor2_velocity():
-    pass
+def set_motors_vel(target_vel):
+    odrive1.set_velocity(target_vel)
+    motor2_target_vel = 0.5 * target_vel
+    odrive2.set_velocity(motor2_target_vel)
+    print(f"Set Motor 1 to {target_vel} turn/s, Motor 2 to {motor2_target_vel} turns/s")
 
 try:
     while True:
