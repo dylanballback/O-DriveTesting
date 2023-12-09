@@ -3,7 +3,7 @@ from ODriveCAN import ODriveCAN
 
 
 # Initialize ODriveCAN and database
-odrive = ODriveCAN()
+odrive = ODriveCAN(0)
 odrive.initCanBus()
 
 
