@@ -10,7 +10,8 @@ odrive1.initCanBus()
 odrive2 = ODriveCAN(1)
 odrive2.initCanBus()
 
-def get_motor2_velocity()
+def get_motor2_velocity():
+    pass
 
 try:
     while True:
