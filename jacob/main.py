@@ -18,8 +18,8 @@ def set_motors_vel(target_vel):
 
 try:
     while True:
-        odrive.set_velocity(3)
-        pos, vel = odrive.get_encoder_estimate_rtr()
+        odrive1.set_velocity(3)
+        pos, vel = odrive1.get_encoder_estimate_rtr()
         print(f"ODrive 1 velocity = {vel} turn/s")
 except KeyboardInterrupt:
     odrive.set_velocity(0)
