@@ -22,5 +22,5 @@ try:
         pos, vel = odrive1.get_encoder_estimate_rtr()
         print(f"ODrive 1 velocity = {vel} turn/s")
 except KeyboardInterrupt:
-    odrive.set_velocity(0)
+    odrive1.set_velocity(0)
     print("Program interrupted by user. Exiting.")
