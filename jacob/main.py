@@ -7,8 +7,8 @@ odrive1 = ODriveCAN(0)
 odrive1.initCanBus()
 
 # Initialize ODriveCAN for 2nd Motor 
-odrive2 = ODriveCAN(1)
-odrive2.initCanBus()
+#odrive2 = ODriveCAN(1)
+#odrive2.initCanBus()
 
 def set_motors_vel(target_vel):
     odrive1.set_velocity(target_vel)
