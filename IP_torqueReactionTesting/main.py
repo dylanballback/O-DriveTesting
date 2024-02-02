@@ -3,7 +3,7 @@ from ODriveCAN import ODriveCAN
 from torqueReactionTestDatabase import TorqueReactionTestDatabase
 
 def main():
-    # Initialize ODriveCAN and database
+    # Initialize ODriveCAN to node_id 0 
     odrive = ODriveCAN(0)
     odrive.initCanBus()
 
