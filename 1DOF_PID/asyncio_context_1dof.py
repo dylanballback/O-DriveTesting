@@ -100,6 +100,8 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             else:
                 angle += (data_angle - angle) % 360
                 angle -= 360
+            print(angle)
+            continue
             torque = pid(angle)
             
             # Send a message to the can bus.
