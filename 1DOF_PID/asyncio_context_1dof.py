@@ -20,7 +20,7 @@ SM_BUS = smbus.SMBus(1)
 @contextmanager
 def get_can_bus(node, bus_id, bus_type):
     # Create the bus.
-    can_bus = can.interface(id, bustype=type)\
+    can_bus = can.interface.Bus(id, bustype=type)\
     
     # Flush the buffer.
     while can_bus.recv(timeout=0) is not None:
