@@ -87,7 +87,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             await asyncio.sleep(frequency)
             
             # Skip iteration if no angle yet.
-            if "angle" is not in data:
+            if "angle" not in data:
                 continue
             
             # Calculate the torque.
