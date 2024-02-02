@@ -106,7 +106,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
         data["is_running"] = False
 
 
-p = 0.02
+p = 0.05
 i = 0
 d = 0.001
 
