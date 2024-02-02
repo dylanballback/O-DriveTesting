@@ -79,6 +79,7 @@ async def read_angles(data, sm_bus, address, angle_reg, frequency):
         data["is_running"] = False
 
 async def set_torque(data, pid, can_bus, node_id, frequency):
+    angle = None
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -91,7 +92,14 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
                 continue
             
             # Calculate the torque.
-            angle = data["angle"]
+            data_angle = data["angle"]
+            if angle is None:
+                angle = data_angle
+            elif (data_angle - angle) % 360 < 180:
+                angle += (data_angle - angle) % 360
+            else:
+                angle += (data_angle - angle) % 360
+                angle -= 360
             torque = pid(angle)
             
             # Send a message to the can bus.
