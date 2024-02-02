@@ -105,12 +105,17 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
     finally:
         data["is_running"] = False
 
+
+p = 0.1
+i = 0
+d = 0
+
 async def main(can_bus):
     # Shared data.
     data = {"is_running": True}
     
     # Create PID.
-    pid = PID(p=0.01, i=0, d=0, setpoint=180)
+    pid = PID(p, i, d, setpoint=180)
     
     # Limit the PID output.
     lower = -0.63
