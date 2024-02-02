@@ -126,7 +126,7 @@ async def main(can_bus):
         # Run both until everything is done.
         await asyncio.gather(
             read_angles(data, SM_BUS, AS5048A_ADDRESS, AS5048A_ANGLE_REG, 0.001),
-            read_angles(data, pid, can_bus, NODE_ID, 0.001),
+            set_torque(data, pid, can_bus, NODE_ID, 0.001),
         )
     
     # Ensure everything stops if something stops.
