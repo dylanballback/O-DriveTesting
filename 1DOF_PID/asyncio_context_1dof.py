@@ -106,9 +106,9 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
         data["is_running"] = False
 
 
-p = 0.01
-i = 0.2
-d = -0.1
+p = 0.02
+i = 0
+d = 0.001
 
 async def main(can_bus):
     # Shared data.
