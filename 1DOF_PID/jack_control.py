@@ -1,5 +1,6 @@
 import asyncio
 import struct
+import time
 from contextlib import contextmanager
 
 import can
@@ -128,6 +129,10 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             set_torque(data, ...),
         )
     """
+    v2 = 0.0
+    w = 0.0
+    d = 0.0001
+    t1 = None
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -142,6 +147,22 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             # Calculate the torque.
             angle = data["angle"]
             torque = pid(angle)
+
+            if t is None:
+                t1 = time.monotonic_ns()
+                a = angle
+            else:
+                t2 = time.monotonic_ns()
+                dt = t2 - t1
+                da = angle - a
+                v = da / dt
+                v2 *= (1 - d) ** dt
+                v2 += (1 - (1 - d) ** dt) * (v ** 2)
+                w *= (1 - d) ** dt
+                w += 1 - (1 - d) ** dt
+                t1 = t2
+                a = angle
+                torque *= v * (w / v2) ** 0.5
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
