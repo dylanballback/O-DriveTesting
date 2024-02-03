@@ -2,6 +2,7 @@ import asyncio
 import struct
 import time
 from contextlib import contextmanager
+from math import cos, pi
 
 import can
 import smbus
@@ -133,10 +134,6 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
     """
     v_max = 1e-10
     t1 = None
-    a_avg = 0.0
-    w = 0.0
-    delta = 0.01
-    i = 0.0
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -152,27 +149,14 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             angle = data["angle"]
             torque = pid(angle)
             
-            a_avg += delta * (angle - a_avg)
-            w += delta * (1 - w)
-            if 5 < abs(angle - SETPOINT) > abs(a_avg / w - SETPOINT) * 0.8:
-                i += i ** 0.5 + 1
-            else:
-                i /= 2
-            
             if t1 is None:
-                t0 = t1 = time.monotonic_ns()
-                a0 = a1 = angle
+                t1 = time.monotonic_ns()
             else:
                 t2 = time.monotonic_ns()
-                dt = t2 - t1
-                da = angle - a1
-                v = da / dt
-                v_max = max(v_max, abs(v))
+                dt = 1e-11 * (t2 - t1)
                 t1 = t2
-                a1 = angle
-                suppression = abs(v) / v_max
-                if abs(torque) > i * suppression:
-                    torque *= suppression
+                suppression = cos(dt % (0.5 * pi))
+                torque *= suppression
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
