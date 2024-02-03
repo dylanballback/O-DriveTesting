@@ -155,9 +155,9 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             a_avg += delta * (angle - a_avg)
             w += delta * (1 - w)
             if abs(angle - SETPOINT) < abs(a_avg / w - SETPOINT) * 0.9:
-                i //= 2
+                i **= 2
             else:
-                i += 1
+                i += i + 1
             
             if t1 is None:
                 t0 = t1 = time.monotonic_ns()
