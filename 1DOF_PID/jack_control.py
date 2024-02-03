@@ -153,7 +153,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
                 t1 = time.monotonic_ns()
             else:
                 t2 = time.monotonic_ns()
-                dt = 1e-11 * (t2 - t1)
+                dt = 1e-12 * (t2 - t1)
                 t1 = t2
                 suppression = cos(dt % (0.5 * pi))
                 torque *= suppression
@@ -171,7 +171,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
 
 p = 0.01
 i = 0.003
-d = 0.001
+d = 0
 
 async def main(can_bus):
     """
