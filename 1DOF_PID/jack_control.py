@@ -192,7 +192,7 @@ async def decelerator(data, can_bus, node_id, frequency, acceleration_time):
         data["is_running"] = False
 
 p = .001
-i = 0
+i = 0.1
 d = .001
 
 async def main(can_bus):
