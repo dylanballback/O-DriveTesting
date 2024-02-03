@@ -132,11 +132,6 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             set_torque(data, ...),
         )
     """
-    v_max = 1e-10
-    t1 = None
-    torque_avg = 0.0
-    torque_weight = 0.0
-    delta = 0.001
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -152,19 +147,10 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             angle = data["angle"]
             torque = pid(angle)
 
-            torque_avg += delta * (torque - torque_avg)
-            torque_weight += delta * (1 - torque_weight)
-            
-            if t1 is None:
-                t1 = time.monotonic_ns()
-            else:
-                t2 = time.monotonic_ns()
-                dt = 1e-12 * (t2 - t1)
-                t1 = t2
-                suppression = cos(dt % (0.5 * pi))
-                #torque *= suppression
-                #if abs(torque) > abs(torque_avg / torque_weight) * 0.9:
-                #    torque = torque_avg / torque_weight * 0.9
+            data["torque"] = torque
+
+            if data["is_decelerating"]:
+                continue
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
@@ -174,6 +160,37 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             ))
     
     # Signal everything to stop if something stops.
+    finally:
+        data["is_running"] = False
+
+async def decelerator(data, can_bus, node_id, frequency, acceleration_time):
+    try:
+        # Loop until flagged to stop.
+        while data["is_running"]:
+
+            # Wait a certain amount of time between iterations.
+            await asyncio.sleep(acceleration_time)
+            
+            # Skip iteration if no torque yet.
+            if "torque" not in data:
+                continue
+            
+            # Decelerate to zero.
+            tq = tq0 = data["torque"]
+            data["is_decelerating"] = True
+
+            t0 = time.monotonic_ns()
+            while abs(tq) > abs(tq0) / 2:
+                tq = tq0 * 0.9 ** ((time.monotonic_ns() - t0) * 1e-9)
+                # Send a message to the can bus.
+                can_bus.send(can.Message(
+                    arbitration_id=(node_id << 5 | 0x0E),
+                    data=struct.pack("<f", tq),
+                    is_extended_id=False,
+                ))
+                await asyncio.sleep(frequency)
+            data["is_decelerating"] = False
+    
     finally:
         data["is_running"] = False
 
@@ -193,7 +210,7 @@ async def main(can_bus):
     4. Stop everything if KeyboardInterrupt.
     """
     # Shared data.
-    data = {"is_running": True}
+    data = {"is_running": True, "is_decelerating": False}
     
     # Create PID.
     pid = PID(p, i, d, setpoint=SETPOINT)
@@ -208,6 +225,7 @@ async def main(can_bus):
         await asyncio.gather(
             read_angles(data, SM_BUS, AS5048A_ADDRESS, AS5048A_ANGLE_REG, 0.001),
             set_torque(data, pid, can_bus, NODE_ID, 0.001),
+            decelerator(data, can_bus, NODE_ID, 0.001, 1),
         )
     
     # Ensure everything stops if something stops.
