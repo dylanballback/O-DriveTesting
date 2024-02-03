@@ -148,7 +148,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             angle = data["angle"]
             torque = pid(angle)
 
-            if t is None:
+            if t1 is None:
                 t1 = time.monotonic_ns()
                 a = angle
             else:
