@@ -185,7 +185,7 @@ async def decelerator(data, can_bus, node_id, frequency, acceleration_time):
                 data=struct.pack("<f", 0),
                 is_extended_id=False,
             ))
-            await asyncio.sleep(acceleration_time)
+            await asyncio.sleep(2 * acceleration_time)
             data["is_decelerating"] = False
     
     finally:
