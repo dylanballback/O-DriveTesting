@@ -100,8 +100,8 @@ async def main():
     pid = PID(p, i, d, setpoint=180)
     
     # Limit the PID output.
-    lower = -0.63
-    upper = +0.63
+    lower = -0.2 #0.63
+    upper = +0.2 #0.63
     pid.output_limits = (lower, upper)
     
     try:
