@@ -154,10 +154,10 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             
             a_avg += delta * (angle - a_avg)
             w += delta * (1 - w)
-            if abs(angle - SETPOINT) < abs(a_avg / w - SETPOINT) * 0.8:
-                i /= 2
-            else:
+            if 3 < abs(angle - SETPOINT) > abs(a_avg / w - SETPOINT) * 0.8:
                 i += i ** 0.5 + 1
+            else:
+                i /= 2
             
             if t1 is None:
                 t0 = t1 = time.monotonic_ns()
@@ -172,7 +172,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
                 a1 = angle
                 suppression = abs(v) / v_max
                 if abs(torque) > i * suppression:
-                    torque *= min(0.5, suppression * (1 + i) ** 0.5)
+                    torque *= suppression
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
