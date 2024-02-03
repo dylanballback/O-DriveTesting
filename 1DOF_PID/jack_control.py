@@ -134,6 +134,9 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
     """
     v_max = 1e-10
     t1 = None
+    torque_avg = 0.0
+    torque_weight = 0.0
+    delta = 0.001
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -148,6 +151,9 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             # Calculate the torque.
             angle = data["angle"]
             torque = pid(angle)
+
+            torque_avg += delta * (torque - torque_avg)
+            torque_weight += delta * (1 - torque_weight)
             
             if t1 is None:
                 t1 = time.monotonic_ns()
@@ -157,9 +163,8 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
                 t1 = t2
                 suppression = cos(dt % (0.5 * pi))
                 torque *= suppression
-                if abs(torque) < abs(torque_prev) * 0.97:
-                    torque = torque_prev * 0.97
-            torque_prev = torque
+                if abs(torque) < abs(torque_avg / torque_weight) * 0.97:
+                    torque = torque_avg / torque_weight * 0.97
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
