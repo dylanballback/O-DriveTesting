@@ -157,6 +157,9 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
                 t1 = t2
                 suppression = cos(dt % (0.5 * pi))
                 torque *= suppression
+                if abs(torque) < abs(torque_prev) * 0.97:
+                    torque = torque_prev * 0.97
+            torque_prev = torque
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
@@ -171,7 +174,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
 
 p = 0.001
 i = 0.00001
-d = -0.001
+d = 0.001
 
 async def main(can_bus):
     """
