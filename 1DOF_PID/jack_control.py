@@ -17,6 +17,8 @@ CAN_BUS_TYPE = "socketcan"
 
 SM_BUS = smbus.SMBus(1)
 
+SETPOINT = 180
+
 @contextmanager
 def get_can_bus(node, bus_id, bus_type):
     """
@@ -129,8 +131,11 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             set_torque(data, ...),
         )
     """
-    max_v = 1e-10
+    v_max = 1e-10
     t1 = None
+    a_avg = 0.0
+    w = 0.0
+    delta = 0.0001
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -145,20 +150,27 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             # Calculate the torque.
             angle = data["angle"]
             torque = pid(angle)
-
+            
+            a_avg += delta * (angle - a_avg)
+            w += delta * (1 - w)
             if t1 is None:
                 t0 = t1 = time.monotonic_ns()
-                a = angle
+                a0 = a1 = angle
+                i = 0
             else:
                 t2 = time.monotonic_ns()
                 dt = t2 - t1
-                da = angle - a
+                da = angle - a1
                 v = da / dt
-                max_v = max(max_v, abs(v))
+                if abs(angle - SETPOINT) < abs(a_avg / w - SETPOINT) * 0.9:
+                    i //= 2
+                else:
+                    i += 1
+                v_max = max(v_max, abs(v))
                 t1 = t2
-                a = angle
-                suppression = abs(v) / max_v
-                if abs(torque) > (t2 - t0) * suppression:
+                a1 = angle
+                suppression = abs(v) / v_max
+                if abs(torque) > i * suppression:
                     torque *= suppression
             
             # Send a message to the can bus.
@@ -191,7 +203,7 @@ async def main(can_bus):
     data = {"is_running": True}
     
     # Create PID.
-    pid = PID(p, i, d, setpoint=180)
+    pid = PID(p, i, d, setpoint=SETPOINT)
     
     # Limit the PID output.
     lower = -0.63
