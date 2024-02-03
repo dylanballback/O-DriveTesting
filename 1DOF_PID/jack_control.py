@@ -136,6 +136,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
     a_avg = 0.0
     w = 0.0
     delta = 0.0001
+    i = 0
     try:
         # Loop until flagged to stop.
         while data["is_running"]:
@@ -153,19 +154,19 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             
             a_avg += delta * (angle - a_avg)
             w += delta * (1 - w)
+            if abs(angle - SETPOINT) < abs(a_avg / w - SETPOINT) * 0.9:
+                i //= 2
+            else:
+                i += 1
+            
             if t1 is None:
                 t0 = t1 = time.monotonic_ns()
                 a0 = a1 = angle
-                i = 0
             else:
                 t2 = time.monotonic_ns()
                 dt = t2 - t1
                 da = angle - a1
                 v = da / dt
-                if abs(angle - SETPOINT) < abs(a_avg / w - SETPOINT) * 0.9:
-                    i //= 2
-                else:
-                    i += 1
                 v_max = max(v_max, abs(v))
                 t1 = t2
                 a1 = angle
