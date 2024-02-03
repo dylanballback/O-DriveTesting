@@ -51,7 +51,7 @@ async def read_angles(data, sm_bus, address, angle_reg, frequency):
             angle = block_data[0] * 256 + block_data[1]
             angle /= 16383.0
             angle *= 90.0
-            
+            print(angle)
             # Save the data for use elsewhere.
             data["angle"] = angle
     
