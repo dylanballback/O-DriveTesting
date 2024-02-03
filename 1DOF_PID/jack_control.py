@@ -154,7 +154,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             
             a_avg += delta * (angle - a_avg)
             w += delta * (1 - w)
-            if 3 < abs(angle - SETPOINT) > abs(a_avg / w - SETPOINT) * 0.8:
+            if 5 < abs(angle - SETPOINT) > abs(a_avg / w - SETPOINT) * 0.8:
                 i += i ** 0.5 + 1
             else:
                 i /= 2
