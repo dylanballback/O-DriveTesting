@@ -179,16 +179,13 @@ async def decelerator(data, can_bus, node_id, frequency, acceleration_time):
             tq = tq0 = data["torque"]
             data["is_decelerating"] = True
 
-            t0 = time.monotonic_ns()
-            while abs(tq) > abs(tq0) / 2:
-                tq = tq0 * 0.9 ** ((time.monotonic_ns() - t0) * 1e-9)
-                # Send a message to the can bus.
-                can_bus.send(can.Message(
-                    arbitration_id=(node_id << 5 | 0x0E),
-                    data=struct.pack("<f", tq),
-                    is_extended_id=False,
-                ))
-                await asyncio.sleep(frequency)
+            # Send a message to the can bus.
+            can_bus.send(can.Message(
+                arbitration_id=(node_id << 5 | 0x0E),
+                data=struct.pack("<f", 0),
+                is_extended_id=False,
+            ))
+            await asyncio.sleep(acceleration_time)
             data["is_decelerating"] = False
     
     finally:
