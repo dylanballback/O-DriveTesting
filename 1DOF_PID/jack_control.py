@@ -2,7 +2,6 @@ import asyncio
 import struct
 from contextlib import contextmanager
 
-import board
 import can
 import smbus
 
@@ -32,7 +31,7 @@ def get_can_bus(node, bus_id, bus_type):
             can_bus.send(...)
     """
     # Create the bus.
-    can_bus = can.interface(id, bustype=type)\
+    can_bus = can.interface(bus_id, bustype=bus_type)\
     
     # Flush the buffer.
     while can_bus.recv(timeout=0) is not None:
@@ -94,7 +93,7 @@ async def read_angles(data, sm_bus, address, angle_reg, frequency):
             await asyncio.sleep(frequency)
             
             # Read from the SM bus.
-            block_data = sm_bus.read_i2c_block_data(AS5048A_ADDRESS, AS5048A_ANGLE_REG, 2)
+            block_data = sm_bus.read_i2c_block_data(address, angle_reg, 2)
             
             # Parse the data.
             angle = block_data[0] * 256 + block_data[1]
@@ -137,7 +136,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             await asyncio.sleep(frequency)
             
             # Skip iteration if no angle yet.
-            if "angle" is not in data:
+            if "angle" not in data:
                 continue
             
             # Calculate the torque.
@@ -155,6 +154,10 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
     finally:
         data["is_running"] = False
 
+p = 0.01
+i = 0
+d = 0.001
+
 async def main(can_bus):
     """
     1. Use a can bus.
@@ -170,7 +173,7 @@ async def main(can_bus):
     data = {"is_running": True}
     
     # Create PID.
-    pid = PID(p=0.01, i=0, d=0, setpoint=180)
+    pid = PID(p, i, d, setpoint=180)
     
     # Limit the PID output.
     lower = -0.63
