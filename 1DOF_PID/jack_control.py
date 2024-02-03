@@ -171,7 +171,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
 
 p = 0.001
 i = 0.00001
-d = -0.0000001
+d = -0.001
 
 async def main(can_bus):
     """
