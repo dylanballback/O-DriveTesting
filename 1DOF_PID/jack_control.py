@@ -162,7 +162,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
                 w += 1 - (1 - d) ** dt
                 t1 = t2
                 a = angle
-                torque *= abs(v) * (w / v2) ** 0.5
+                torque *= abs(v) / (v2 / w + 1e-8) ** 0.5
             
             # Send a message to the can bus.
             can_bus.send(can.Message(
