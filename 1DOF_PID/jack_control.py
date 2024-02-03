@@ -31,7 +31,7 @@ def get_can_bus(node, bus_id, bus_type):
             can_bus.send(...)
     """
     # Create the bus.
-    can_bus = can.interface(bus_id, bustype=bus_type)\
+    can_bus = can.interface.Bus(bus_id, bustype=bus_type)\
     
     # Flush the buffer.
     while can_bus.recv(timeout=0) is not None:
