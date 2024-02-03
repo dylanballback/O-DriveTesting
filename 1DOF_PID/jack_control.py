@@ -147,6 +147,9 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
             angle = data["angle"]
             torque = pid(angle)
 
+            if abs(angle - SETPOINT) < 10:
+                torque = 0
+
             data["torque"] = torque
 
             if data["is_decelerating"]:
