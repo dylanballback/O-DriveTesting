@@ -131,7 +131,7 @@ async def set_torque(data, pid, can_bus, node_id, frequency):
     """
     v2 = 0.0
     w = 0.0
-    d = 0.0001
+    d = 1e-10
     t1 = None
     try:
         # Loop until flagged to stop.
