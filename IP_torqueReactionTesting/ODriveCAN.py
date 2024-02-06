@@ -88,7 +88,8 @@ class ODriveCAN:
 
 
 
-
+    #Currently the default Axis State should be set with the above method "set_control_state".
+    #Not sure if this is the best naming convention, will have to come back to this.
     def setAxisState(self):
         """
         Set Axis State for an O-Drive Controller through CAN BUS
