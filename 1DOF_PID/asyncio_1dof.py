@@ -51,7 +51,7 @@ async def read_angles(data, sm_bus, address, angle_reg, frequency):
             angle = block_data[0] * 256 + block_data[1]
             angle /= 16383.0
             angle *= 90.0
-            
+            print(angle)
             # Save the data for use elsewhere.
             data["angle"] = angle
     
@@ -100,15 +100,15 @@ async def main():
     pid = PID(p, i, d, setpoint=180)
     
     # Limit the PID output.
-    lower = -0.63
-    upper = +0.63
+    lower = -0.2 #0.63
+    upper = +0.2 #0.63
     pid.output_limits = (lower, upper)
     
     try:
         # Run both until everything is done.
         await asyncio.gather(
             read_angles(data, SM_BUS, AS5048A_ADDRESS, AS5048A_ANGLE_REG, 0.001),
-            set_torque(data, pid, CAN_BUS, NODE_ID, 0.001),
+            #set_torque(data, pid, CAN_BUS, NODE_ID, 0.001),
         )
     
     # Ensure everything stops if something stops.
