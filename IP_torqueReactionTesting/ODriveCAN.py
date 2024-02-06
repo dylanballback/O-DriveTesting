@@ -374,7 +374,7 @@ class ODriveCAN:
 
 odrive1 = ODriveCAN(0)
 odrive1.initCanBus()
-odrive1.set_torque(0)
+odrive1.set_torque(0.05)
 
 
 #Example how to print all data 
@@ -388,7 +388,10 @@ odrive1.set_torque(0)
 
 odrive2 = ODriveCAN(1)
 odrive2.initCanBus()
+odrive2.set_torque(0.05)
+
+
+time.sleep(10)
+
+odrive1.set_torque(0)
 odrive2.set_torque(0)
-
-
-
