@@ -13,9 +13,10 @@ def main():
     # Set torque
     odrive.set_torque(.2)
     #odrive2.set_torque(.2)
-    odrive.getAxisEncoderEstimates()
+    
 
     while True:
+        odrive.get_encoder_estimate_rtr()
         #odrive.get_encoder_estimate_rtr()
         #odrive.get_all_data_rtr()
         #odrive2.get_all_data_rtr()
