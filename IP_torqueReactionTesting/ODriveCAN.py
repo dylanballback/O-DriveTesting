@@ -274,6 +274,71 @@ class ODriveCAN:
 
 
 
+    def get_one_encoder_estimate(self, timeout=1.0):
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
+            if msg is None:
+                print("Timeout occurred, no message received.")
+                break
+
+            if msg.arbitration_id == (self.nodeID << 5 | 0x09):  # Encoder estimate
+                pos, vel = struct.unpack('<ff', bytes(msg.data))
+                print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+                break
+        else:
+            print(f"No encoder estimate message received for O-Drive {self.nodeID} within the timeout period.")
+
+
+
+    def get_one_bus_voltage_current(self, timeout=1.0):
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
+            if msg is None:
+                print("Timeout occurred, no message received.")
+                break
+
+            if msg.arbitration_id == (self.nodeID << 5 | 0x17):  # Bus voltage and current
+                bus_voltage, bus_current = struct.unpack('<ff', bytes(msg.data))
+                print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
+                break
+        else:
+            print(f"No bus voltage or current message received for O-Drive {self.nodeID} within the timeout period.")
+
+
+
+    def get_one_iq_setpoint_measured(self, timeout=1.0):
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
+            if msg is None:
+                print("Timeout occurred, no message received.")
+                break
+
+            if msg.arbitration_id == (self.nodeID << 5 | 0x14):  # IQ setpoint and measured
+                iq_setpoint, iq_measured = struct.unpack('<ff', bytes(msg.data))
+                print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
+                break
+        else:
+            print(f"No IQ setpoint or measured message received for O-Drive {self.nodeID} within the timeout period.")
+
+
+    def get_one_powers(self, timeout=1.0):
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
+            if msg is None:
+                print("Timeout occurred, no message received.")
+                break
+
+            if msg.arbitration_id == (self.nodeID << 5 | 0x1D):  # Powers
+                electrical_power, mechanical_power = struct.unpack('<ff', bytes(msg.data))
+                print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mechanical Power: {mechanical_power:.3f} [W]")
+                break
+        else:
+            print(f"No power message received for O-Drive {self.nodeID} within the timeout period.")
+
 #-------------------------------------- Motor Feedback with CAN RTR ----------------------------------------------------
 
     def send_rtr_message(self, request_id):
@@ -291,26 +356,7 @@ class ODriveCAN:
         except Exception as e:
             print(f"Error sending RTR message to ODrive {self.nodeID}, request_id {request_id}: {str(e)}")
 
-
-    """
-    def get_encoder_estimate_rtr(self):
-        request_id = 0x09
-        self.send_rtr_message(request_id)
-
-        #Wait for a response
-        response = self.canBus.recv(timeout=1.0)
-
-        if response:
-            pos, vel = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
-            return pos, vel
-        else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
-    """
     
-    
-
-
     def get_encoder_estimate_rtr(self):
         request_id = 0x09
         expected_arbitration_id = (self.nodeID << 5) | request_id  # Calculate the expected arbitration_id
