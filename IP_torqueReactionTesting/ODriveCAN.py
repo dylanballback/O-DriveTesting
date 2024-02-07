@@ -349,6 +349,22 @@ class ODriveCAN:
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
+    def get_powers_rtr(self):
+        request_id = 0x1D
+        self.send_rtr_message(request_id)
+
+        # Wait for a response
+        response = self.canBus.recv(timeout=1.0)
+
+        if response:
+            electrical_power, mechanical_power = struct.unpack('<ff', bytes(response.data))
+            print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mecanical Power: {mechanical_power:.3f} [W]")
+            return electrical_power, mechanical_power
+        else:
+            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+
+
+
 
     
     def get_all_data_rtr(self):
