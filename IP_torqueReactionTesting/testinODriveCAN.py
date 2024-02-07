@@ -1,5 +1,4 @@
 from ODriveCAN import ODriveCAN
-import time
 
 # Initialize ODriveCAN to node_id 0 
 odrive = ODriveCAN(0)
@@ -17,11 +16,8 @@ def main():
 
     while True:
         odrive.get_encoder_estimate_rtr()
-        time.sleep(0.1)
         odrive.get_torque_rtr()
-        time.sleep(0.1)
         odrive.get_bus_voltage_current_rtr()
-        time.sleep(0.1)
         #odrive.get_iq_setpoint_measured_rtr()
         #odrive.get_powers_rtr()
         #odrive.get_encoder_estimate_rtr()
