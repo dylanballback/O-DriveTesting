@@ -17,7 +17,7 @@ def main():
 
     while True:
         odrive.get_encoder_estimate_rtr()
-        #odrive.get_torque_rtr()
+        odrive.get_torque_rtr()
         #odrive.get_bus_voltage_current_rtr()
         #odrive.get_iq_setpoint_measured_rtr()
         #odrive.get_powers_rtr()
