@@ -358,7 +358,7 @@ class ODriveCAN:
 
         if response:
             electrical_power, mechanical_power = struct.unpack('<ff', bytes(response.data))
-            print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mecanical Power: {mechanical_power:.3f} [W]")
+            #print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mecanical Power: {mechanical_power:.3f} [W]")
             return electrical_power, mechanical_power
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
