@@ -353,8 +353,8 @@ class ODriveCAN:
     
     def get_all_data_rtr(self):
         # Collect data from each function
-        #encoder_data = self.get_encoder_estimate_rtr()
-        encoder_data = 0
+        encoder_data = self.get_encoder_estimate_rtr()
+        #encoder_data = 0
         torque_data = self.get_torque_rtr()
         voltage_current_data = self.get_bus_voltage_current_rtr()
         iq_setpoint_measured_data = self.get_iq_setpoint_measured_rtr()
