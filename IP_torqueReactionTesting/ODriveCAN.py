@@ -318,7 +318,7 @@ class ODriveCAN:
         self.send_rtr_message(request_id)
 
         # Wait for a response
-        response = self.canBus.recv(timeout=1.0)
+        response = self.canBus.recv(timeout=2.0)
 
         if response:
             # Check if the received message's arbitration_id matches the expected ID
@@ -340,7 +340,7 @@ class ODriveCAN:
 
         self.send_rtr_message(request_id)
 
-        response = self.canBus.recv(timeout=1.0)
+        response = self.canBus.recv(timeout=2.0)
 
         if response and response.arbitration_id == expected_arbitration_id:
             torque_target, torque_estimate = struct.unpack('<ff', bytes(response.data))
@@ -357,7 +357,7 @@ class ODriveCAN:
 
         self.send_rtr_message(request_id)
 
-        response = self.canBus.recv(timeout=1.0)
+        response = self.canBus.recv(timeout=2.0)
 
         if response and response.arbitration_id == expected_arbitration_id:
             bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
@@ -374,7 +374,7 @@ class ODriveCAN:
 
         self.send_rtr_message(request_id)
 
-        response = self.canBus.recv(timeout=1.0)
+        response = self.canBus.recv(timeout=2.0)
 
         if response and response.arbitration_id == expected_arbitration_id:
             iq_setpoint, iq_measured = struct.unpack('<ff', bytes(response.data))
@@ -390,7 +390,7 @@ class ODriveCAN:
 
         self.send_rtr_message(request_id)
 
-        response = self.canBus.recv(timeout=1.0)
+        response = self.canBus.recv(timeout=2.0)
 
         if response and response.arbitration_id == expected_arbitration_id:
             electrical_power, mechanical_power = struct.unpack('<ff', bytes(response.data))
