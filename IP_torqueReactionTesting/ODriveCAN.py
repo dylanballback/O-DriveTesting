@@ -209,7 +209,6 @@ class ODriveCAN:
 
 
 #-------------------------------------- Motor Controls ----------------------------------------------------
-  
     # Function to set position for a specific O-Drive
     def set_position(self, position, velocity_feedforward=0, torque_feedforward=0):
         self.canBus.send(can.Message(
@@ -239,7 +238,6 @@ class ODriveCAN:
             is_extended_id=False
         ))
         print(f"Successfully set ODrive {self.nodeID} to {torque} [Nm]")
-
 
 
 
