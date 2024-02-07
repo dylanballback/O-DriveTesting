@@ -369,11 +369,11 @@ class ODriveCAN:
     
     def get_all_data_rtr(self):
         # Collect data from each function
-        encoder_data = self.get_encoder_estimate_rtr()
-        #encoder_data = 0
+        encoder_data = self.get_encoder_estimate_rtr() 
         torque_data = self.get_torque_rtr()
         voltage_current_data = self.get_bus_voltage_current_rtr()
         iq_setpoint_measured_data = self.get_iq_setpoint_measured_rtr()
+        power_data = self.get_powers_rtr()
 
         # Format each value to 3 decimal places if they are numeric
         def format_data(data):
@@ -385,17 +385,19 @@ class ODriveCAN:
         torque_data_formatted = format_data(torque_data)
         voltage_current_data_formatted = format_data(voltage_current_data)
         iq_setpoint_measured_data_formatted = format_data(iq_setpoint_measured_data)
+        power_data_formatted = format_data(power_data)
 
         # Print formatted data
-        print("Data: {}, {},  {}, {}"
-            .format(encoder_data_formatted, torque_data_formatted, voltage_current_data_formatted, iq_setpoint_measured_data_formatted))
+        print("Data: {}, {},  {}, {}, {}"
+            .format(encoder_data_formatted, torque_data_formatted, voltage_current_data_formatted, iq_setpoint_measured_data_formatted, power_data_formatted))
 
         # Compile all data into a single structure (dictionary for better readability)
         all_data = {
             "encoder_data": encoder_data,
             "torque_data": torque_data,
             "voltage_current_data": voltage_current_data,
-            "iq_setpoint_measured_data": iq_setpoint_measured_data
+            "iq_setpoint_measured_data": iq_setpoint_measured_data,
+            "power_data": power_data_formatted
         }
 
         # Format and print all data in one line not limiting how many decimal places printed.
