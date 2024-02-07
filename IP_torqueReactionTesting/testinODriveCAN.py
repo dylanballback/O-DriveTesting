@@ -1,6 +1,5 @@
-import time
 from ODriveCAN import ODriveCAN
-from torqueReactionTestDatabase import TorqueReactionTestDatabase
+
 
 # Initialize ODriveCAN to node_id 0 
 odrive = ODriveCAN(0)

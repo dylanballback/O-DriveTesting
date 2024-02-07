@@ -114,8 +114,6 @@ class ODriveCAN:
         pass
 
 
-
-
     # setAxisState into closed loop control state
     def set_control_state(self):
         self.flush_can_buffer()
