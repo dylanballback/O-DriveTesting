@@ -150,6 +150,7 @@ class ODriveCAN:
         ... Can bus successfully shut down.
         """
         self.canBus.shutdown
+        time.sleep(2)
 
         print("Can bus successfully shut down.")
 
