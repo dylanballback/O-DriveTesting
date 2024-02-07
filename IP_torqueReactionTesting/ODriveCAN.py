@@ -140,6 +140,22 @@ class ODriveCAN:
             print(f"Error connecting to ODrive {self.nodeID}: {str(e)}")
 
 
+    #Shutdown can bus at the end of a program. 
+    def bus_shutdown(self):
+        """
+        Run this method at the end of your program to shundown the can bus to prevent can errors.
+
+        Example:
+        >>> import pyodrivecan
+        >>> odrivecan.bus_shutdown()
+        ...
+        ... Can bus successfully shut down.
+        """
+        self.canBus.shutdown
+
+        print("Can bus successfully shut down.")
+
+
 
 
     def setControllerMode(self):
@@ -274,6 +290,7 @@ class ODriveCAN:
         except Exception as e:
             print(f"Error sending RTR message to ODrive {self.nodeID}, request_id {request_id}: {str(e)}")
 
+
     def get_encoder_estimate_rtr(self):
         request_id = 0x09
         self.send_rtr_message(request_id)
@@ -287,6 +304,7 @@ class ODriveCAN:
             return pos, vel
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+
 
     def get_torque_rtr(self):
         request_id = 0x1C
@@ -372,9 +390,9 @@ class ODriveCAN:
 
 #Example on how to use:
 
-odrive1 = ODriveCAN(0)
-odrive1.initCanBus()
-odrive1.set_torque(0.05)
+#odrive1 = ODriveCAN(0)
+#odrive1.initCanBus()
+#odrive1.set_torque(0.05)
 #odrive1.get_all_data_rtr()
 
 #Example how to print all data 
@@ -386,17 +404,17 @@ odrive1.set_torque(0.05)
 
 
 
-odrive2 = ODriveCAN(1)
-odrive2.initCanBus()
-odrive2.set_torque(0.05)
+#odrive2 = ODriveCAN(1)
+#odrive2.initCanBus()
+#odrive2.set_torque(0.05)
 #odrive2.get_all_data_rtr()
 
 
 
-time.sleep(10)
+#time.sleep(10)
 
-odrive1.set_torque(0)
-odrive2.set_torque(0)
+#odrive1.set_torque(0)
+#odrive2.set_torque(0)
 
 #Torque Output Range.
 # 0.62
