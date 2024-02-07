@@ -298,15 +298,21 @@ class ODriveCAN:
         request_id = 0x09
         self.send_rtr_message(request_id)
 
-        # Wait for a response
-        response = self.canBus.recv(timeout=1.0)
+        # Print encoder feedback
+        for msg in self.canBus:
+            if msg.arbitration_id == (self.nodeID << 5 | 0x09): # 0x09: Get_Encoder_Estimates
+                pos, vel = struct.unpack('<ff', bytes(msg.data))
+                print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
-        if response:
-            pos, vel = struct.unpack('<ff', bytes(response.data))
+        # Wait for a response
+        #response = self.canBus.recv(timeout=1.0)
+
+        #if response:
+            #pos, vel = struct.unpack('<ff', bytes(response.data))
             #print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
-            return pos, vel
-        else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+           #return pos, vel
+        #else:
+            #print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
 
 
     def get_torque_rtr(self):
