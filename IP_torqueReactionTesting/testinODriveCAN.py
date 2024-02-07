@@ -18,6 +18,7 @@ def main():
     while True:
         #odrive.get_all_data_rtr()
         #odrive2.get_all_data_rtr()
+        pass
 
         
 
