@@ -5,13 +5,19 @@ from ODriveCAN import ODriveCAN
 odrive = ODriveCAN(0)
 odrive.initCanBus()
 
+odrive2 = ODriveCAN(1)
+odrive2.initCanBus()
+
+
 def main():
     # Set torque
     odrive.set_torque(.2)
+    odrive2.set_torque(.2)
+
 
     while True:
-        all_data = odrive.get_all_data_rtr()
-        #print(all_data)
+        odrive.get_all_data_rtr()
+        odrive2.get_all_data_rtr()
 
         
 
@@ -21,7 +27,9 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         odrive.set_torque(0)
+        odrive2.set_torque(0)
 
         odrive.bus_shutdown()
+        odrive2.bus_shutdown()
 
         print("Program interrupted by user. Exiting.")
