@@ -336,61 +336,69 @@ class ODriveCAN:
 
     def get_torque_rtr(self):
         request_id = 0x1C
+        expected_arbitration_id = (self.nodeID << 5) | request_id
+
         self.send_rtr_message(request_id)
 
-        # Wait for a response
         response = self.canBus.recv(timeout=1.0)
 
-        if response:
+        if response and response.arbitration_id == expected_arbitration_id:
             torque_target, torque_estimate = struct.unpack('<ff', bytes(response.data))
             print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
             return torque_target, torque_estimate
         else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+            print(f"No or incorrect response received for ODrive {self.nodeID}, request_id {request_id}")
+
 
 
     def get_bus_voltage_current_rtr(self):
         request_id = 0x17
+        expected_arbitration_id = (self.nodeID << 5) | request_id
+
         self.send_rtr_message(request_id)
 
-        # Wait for a response
         response = self.canBus.recv(timeout=1.0)
 
-        if response:
+        if response and response.arbitration_id == expected_arbitration_id:
             bus_voltage, bus_current = struct.unpack('<ff', bytes(response.data))
             print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
             return bus_voltage, bus_current
         else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+            print(f"No or incorrect response received for ODrive {self.nodeID}, request_id {request_id}")
+
 
 
     def get_iq_setpoint_measured_rtr(self):
         request_id = 0x14
+        expected_arbitration_id = (self.nodeID << 5) | request_id
+
         self.send_rtr_message(request_id)
 
-        # Wait for a response
         response = self.canBus.recv(timeout=1.0)
 
-        if response:
+        if response and response.arbitration_id == expected_arbitration_id:
             iq_setpoint, iq_measured = struct.unpack('<ff', bytes(response.data))
-            #print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
+            print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
             return iq_setpoint, iq_measured
         else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+            print(f"No or incorrect response received for ODrive {self.nodeID}, request_id {request_id}")
+
 
     def get_powers_rtr(self):
         request_id = 0x1D
+        expected_arbitration_id = (self.nodeID << 5) | request_id
+
         self.send_rtr_message(request_id)
 
-        # Wait for a response
         response = self.canBus.recv(timeout=1.0)
 
-        if response:
+        if response and response.arbitration_id == expected_arbitration_id:
             electrical_power, mechanical_power = struct.unpack('<ff', bytes(response.data))
-            #print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mecanical Power: {mechanical_power:.3f} [W]")
+            print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mechanical Power: {mechanical_power:.3f} [W]")
             return electrical_power, mechanical_power
         else:
-            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+            print(f"No or incorrect response received for ODrive {self.nodeID}, request_id {request_id}")
+
 
 
 
