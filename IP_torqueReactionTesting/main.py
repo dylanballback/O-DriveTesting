@@ -15,8 +15,8 @@ def main():
     print(f"Added Trial with ID: {trial_id}")
 
     # Define your torque values here
-    torques = [0, 0.1, 0]
-    measurement_interval = 0.01  # Time between measurements
+    torques = [0, 0.3, 0]
+    measurement_interval = 0.02  # Time between measurements
     torque_change_delay = 5  # Time to wait before changing torque
 
     # Capture the start time
