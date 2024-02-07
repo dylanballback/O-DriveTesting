@@ -201,7 +201,11 @@ class ODriveCAN:
             Pos_Estimate
             Vel_Estimate 
         """
-        pass
+        # Print encoder feedback
+        for msg in self.canBus:
+            if msg.arbitration_id == (self.nodeID << 5 | 0x09): # 0x09: Get_Encoder_Estimates
+                pos, vel = struct.unpack('<ff', bytes(msg.data))
+                print(f"pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
 
 
 #-------------------------------------- Motor Controls ----------------------------------------------------
