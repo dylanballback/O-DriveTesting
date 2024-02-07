@@ -397,3 +397,7 @@ time.sleep(10)
 
 odrive1.set_torque(0)
 odrive2.set_torque(0)
+
+#Torque Output Range.
+# 0.62
+# - 0.62
