@@ -318,7 +318,7 @@ class ODriveCAN:
 
         if response:
             torque_target, torque_estimate = struct.unpack('<ff', bytes(response.data))
-            #print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
+            print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
             return torque_target, torque_estimate
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
