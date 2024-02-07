@@ -382,7 +382,7 @@ class ODriveCAN:
         }
 
         # Format and print all data in one line
-        print("Data: {}, {}, {}, {}".format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
+        #print("Data: {}, {}, {}, {}".format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
 
         return all_data
 
