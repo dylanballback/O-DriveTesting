@@ -292,6 +292,7 @@ class ODriveCAN:
             print(f"Error sending RTR message to ODrive {self.nodeID}, request_id {request_id}: {str(e)}")
 
 
+    """
     def get_encoder_estimate_rtr(self):
         request_id = 0x09
         self.send_rtr_message(request_id)
@@ -305,6 +306,32 @@ class ODriveCAN:
             return pos, vel
         else:
             print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+    """
+    
+    
+
+
+    def get_encoder_estimate_rtr(self):
+        request_id = 0x09
+        expected_arbitration_id = (self.nodeID << 5) | request_id  # Calculate the expected arbitration_id
+
+        self.send_rtr_message(request_id)
+
+        # Wait for a response
+        response = self.canBus.recv(timeout=1.0)
+
+        if response:
+            # Check if the received message's arbitration_id matches the expected ID
+            if response.arbitration_id == expected_arbitration_id:
+                pos, vel = struct.unpack('<ff', bytes(response.data))
+                print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
+                return pos, vel
+            else:
+                print(f"Received message for ODrive {self.nodeID} with unexpected ID: {hex(response.arbitration_id)}")
+        else:
+            print(f"No response received for ODrive {self.nodeID}, request_id {request_id}")
+
+
 
 
     def get_torque_rtr(self):
