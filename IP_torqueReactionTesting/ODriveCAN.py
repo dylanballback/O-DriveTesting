@@ -364,7 +364,7 @@ class ODriveCAN:
         #power_data_formatted = format_data(power_data)
 
         # Print formatted data
-        print("Data: {}, {},  {}, {}, {}"
+        print("Data: {}, {},  {}, {}"
             .format(encoder_data_formatted, torque_data_formatted, voltage_current_data_formatted, iq_setpoint_measured_data_formatted))
 
         # Compile all data into a single structure (dictionary for better readability)
