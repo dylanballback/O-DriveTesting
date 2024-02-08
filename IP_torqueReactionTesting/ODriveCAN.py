@@ -323,7 +323,7 @@ class ODriveCAN:
         else:
             print(f"No IQ setpoint or measured message received for O-Drive {self.nodeID} within the timeout period.")
 
-
+    #This doesn't work the default cyclic message isn't set on O-Drive GUI yet. 
     def get_one_powers(self, timeout=1.0):
         start_time = time.time()
         while (time.time() - start_time) < timeout:
@@ -338,6 +338,56 @@ class ODriveCAN:
                 break
         else:
             print(f"No power message received for O-Drive {self.nodeID} within the timeout period.")
+
+
+
+
+    
+    def get_all_data(self):
+        # Collect data from each function
+        encoder_data = self.get_one_encoder_estimate() 
+        torque_data = self.get_one_bus_voltage_current()
+        voltage_current_data = self.get_one_bus_voltage_current()
+        iq_setpoint_measured_data = self.get_one_iq_setpoint_measured()
+        #power_data = self.get_powers_rtr()
+
+        # Format each value to 3 decimal places if they are numeric
+        def format_data(data):
+            if isinstance(data, tuple):
+                return tuple(format(x, '.3f') if isinstance(x, (int, float)) else x for x in data)
+            return data
+
+        encoder_data_formatted = format_data(encoder_data)
+        torque_data_formatted = format_data(torque_data)
+        voltage_current_data_formatted = format_data(voltage_current_data)
+        iq_setpoint_measured_data_formatted = format_data(iq_setpoint_measured_data)
+        #power_data_formatted = format_data(power_data)
+
+        # Print formatted data
+        print("Data: {}, {},  {}, {}, {}"
+            .format(encoder_data_formatted, torque_data_formatted, voltage_current_data_formatted, iq_setpoint_measured_data_formatted))
+
+        # Compile all data into a single structure (dictionary for better readability)
+        all_data = {
+            "encoder_data": encoder_data,
+            "torque_data": torque_data,
+            "voltage_current_data": voltage_current_data,
+            "iq_setpoint_measured_data": iq_setpoint_measured_data
+        }
+
+        # Format and print all data in one line not limiting how many decimal places printed.
+        #print("Data: {}, {}, {}, {}".format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
+
+        return all_data
+
+
+
+
+
+# 2/7/24 
+# Having a lot of issues trying to send muiltiple RTR message requests and getting back the correct data. 
+# Moving forward with just setting O-Drive to send data at cyclic message rate and reading with the above functions.
+
 
 #-------------------------------------- Motor Feedback with CAN RTR ----------------------------------------------------
 
