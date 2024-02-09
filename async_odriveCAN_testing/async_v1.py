@@ -511,7 +511,7 @@ async def main():
     
     # Start data collection in the background
     # This task will keep running and collect data into odrive_can.collected_data
-    data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.1, next_trial_id))
+    data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.001, next_trial_id))
     
     # Sequentially change torque and wait
     # Note: Replace odrive_can.set_torque() with the correct method to set torque if different
