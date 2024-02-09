@@ -416,18 +416,19 @@ class ODriveCAN:
         db = OdriveDatabase('odrive_data.db')
         db.add_odrive_data(trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
 
-    async def data_collection_loop(self, interval):
+    async def data_collection_loop(self, interval, next_trial_id):
         """
         Continuously collects and stores data at the specified interval.
 
         Para:
             interval (float): Time between data collection cycles, in seconds.
+            next_trial_id (int): Auto increments the trial id using function in Database code.
 
         Example:
             >>> await odrive_can.data_collection_loop(0.2)
         """
         while True:
-            await self.collect_and_store_data(2)
+            await self.collect_and_store_data(next_trial_id)
             await asyncio.sleep(interval)
     
 #testing torque and data collection of sync and async code
@@ -460,10 +461,14 @@ async def main():
     # Initialize ODriveCAN with a specific node ID
     nodeID = 1
     odrive_can = ODriveCAN(nodeID=nodeID)
+
+    # Fetch the next trial_id
+    next_trial_id = database.get_next_trial_id()
+    print(f"Using trial_id: {next_trial_id}")
     
     # Start data collection in the background
     # This task will keep running and collect data into odrive_can.collected_data
-    data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.1))
+    data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.1, next_trial_id))
     
     # Sequentially change torque and wait
     # Note: Replace odrive_can.set_torque() with the correct method to set torque if different

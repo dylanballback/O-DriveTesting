@@ -120,6 +120,26 @@ class OdriveDatabase:
         self.execute(sql)
 
 
+    def get_next_trial_id(self):
+        """
+        Fetches the next trial_id by finding the maximum trial_id in the database and adding 1.
+
+        Returns:
+            The next trial_id to be used.
+        """
+        try:
+            c = self.conn.cursor()
+            c.execute("SELECT MAX(trial_id) FROM ODriveData")
+            max_id = c.fetchone()[0]
+            if max_id is not None:
+                return max_id + 1
+            else:
+                return 1  # If table is empty, start with 1
+        except Error as e:
+            print(e)
+            return 1  # Default to 1 if there's an issue
+
+
 
     def add_odrive_data(self, trial_id, node_ID, time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power):
         """
