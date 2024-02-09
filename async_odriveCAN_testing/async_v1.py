@@ -23,6 +23,8 @@ class ODriveCAN:
         self.nodeID = nodeID
         self.canBus = can.interface.Bus(canBusID, bustype=canBusType)
         self.database = OdriveDatabase('odrive_data.db')
+        self.collected_data = []  # Initialize an empty list to store data
+
 
 
     async def async_recv(self, timeout=1.0):
@@ -360,6 +362,12 @@ class ODriveCAN:
 
         return all_data
 
+    #This function will take the collected data from the odrive and store each dictionary in a python list while the trial is running.
+    #Another function will then take the list at the end and upload it to the database.
+    async def collect_data(self):
+        """Collects data and appends it to the collected_data list."""
+        data = await self.get_all_data()  # Assuming this returns a dictionary of collected data
+        self.collected_data.append(data)
 
     async def collect_and_store_data(self):
         """
@@ -375,29 +383,38 @@ class ODriveCAN:
         iq_setpoint_measured = await self.get_one_iq_setpoint_measured(timeout=1.0)
         powers = await self.get_one_powers(timeout=1.0)
 
-        
         # Use datetime to format the current time as a string
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Example data preparation, adjust based on actual return structure of your methods
-        trial_id = 1  # Example trial_id, you might want to generate or increment this appropriately
+
+        # Prepare your data for insertion
+        # (Adjust according to the actual structure of your data and database schema)
+        trial_id = 1  # Example trial ID
         node_ID = self.nodeID
         position, velocity = pos_vel if pos_vel else (None, None)
         torque_target, torque_estimate = torque_target_estimate if torque_target_estimate else (None, None)
         bus_voltage, bus_current = bus_voltage_current if bus_voltage_current else (None, None)
         iq_setpoint, iq_measured = iq_setpoint_measured if iq_setpoint_measured else (None, None)
-        electrical_power, mechanical_power = 120, 110  # Example values, replace with actual data if available
+        electrical_power, mechanical_power = powers if powers else (None, None)
 
-        # Execute the synchronous database operation in a thread pool
+        # Execute the database operation in the thread pool
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(
             None, 
-            self.database.add_odrive_data, 
+            self.insert_data, 
             trial_id, node_ID, current_time, position, velocity, 
             torque_target, torque_estimate, bus_voltage, bus_current, 
             iq_setpoint, iq_measured, electrical_power, mechanical_power
         )
     
+
+    def insert_data(self, trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power):
+        """
+        Inserts the collected data into the database. This method should be run in the same thread where the database connection is created.
+        """
+        # This method assumes you modify your OdriveDatabase class to allow creating a new connection for each operation.
+        # Create a new instance of your database class or a new connection here
+        db = OdriveDatabase('odrive_data.db')
+        db.add_odrive_data(trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
 
     async def data_collection_loop(self, interval):
         """
@@ -440,31 +457,40 @@ class ODriveCAN:
 
 
 async def main():
-    nodeID = 1  # Example Node ID
+    # Initialize ODriveCAN with a specific node ID
+    nodeID = 1
     odrive_can = ODriveCAN(nodeID=nodeID)
-    odrive_can.initCanBus()  # Initialize CAN bus
-
-    # Start continuous data collection in the background
+    
+    # Start data collection in the background
+    # This task will keep running and collect data into odrive_can.collected_data
     data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.2))
     
-    # Sequentially set torques and wait, while data collection is ongoing
-    await odrive_can.set_torque_and_wait_async(0.1, 5)  # Set torque to 0.1 Nm, wait for 5 seconds
-    await odrive_can.set_torque_and_wait_async(0.2, 5)  # Set torque to 0.2 Nm, wait for 5 seconds
-    await odrive_can.set_torque_and_wait_async(0.0, 5)  # Set torque back to 0 Nm, wait for 5 seconds
-
-    # Optionally stop the data collection loop if needed
+    # Sequentially change torque and wait
+    # Note: Replace odrive_can.set_torque() with the correct method to set torque if different
+    # These methods are assumed to be synchronous. Wrap them in asyncio.run_in_executor if they are not.
+    await odrive_can.set_torque_and_wait_async(0.1, 5)  # Set torque to 0.1 Nm, wait 5 seconds
+    await odrive_can.set_torque_and_wait_async(0.2, 5)  # Set torque to 0.2 Nm, wait 5 seconds
+    await odrive_can.set_torque_and_wait_async(0.0, 5)  # Reset torque to 0 Nm, wait 5 seconds
+    
+    # Stop the data collection task
     data_collection_task.cancel()
     try:
-        await data_collection_task  # Attempt to cancel the ongoing task
+        await data_collection_task
     except asyncio.CancelledError:
-        print("Data collection loop cancelled.")
+        pass  # Task cancellation is expected
 
-    # Ensure clean shutdown
+    # Upload collected data to the database
+    database = OdriveDatabase('odrive_data.db')
+    if hasattr(odrive_can, 'collected_data'):
+        database.bulk_insert_odrive_data(odrive_can.collected_data)
+    else:
+        print("No data collected to upload to the database.")
+    
+    # Clean shutdown
     odrive_can.bus_shutdown()
 
 if __name__ == "__main__":
     asyncio.run(main())
-
 
 
 

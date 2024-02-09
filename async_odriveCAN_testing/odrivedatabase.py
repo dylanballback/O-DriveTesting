@@ -141,6 +141,22 @@ class OdriveDatabase:
         return self.execute(sql, (trial_id, node_ID, time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power))
 
 
+    def bulk_insert_odrive_data(self, data_list):
+        """Inserts multiple data records into the database."""
+        conn = self.create_connection()  # Create a new connection
+        try:
+            c = conn.cursor()
+            for data in data_list:
+                sql = '''INSERT INTO ODriveData(trial_id, node_ID, time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
+                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);'''
+                params = (data['trial_id'], data['node_ID'], data['time'], data['position'], data['velocity'], data['torque_target'], data['torque_estimate'], data['bus_voltage'], data['bus_current'], data['iq_setpoint'], data['iq_measured'], data['electrical_power'], data['mechanical_power'])
+                c.execute(sql, params)
+            conn.commit()
+        except Error as e:
+            print(e)
+        finally:
+            conn.close()
+
 
 
 
