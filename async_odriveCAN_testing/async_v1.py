@@ -24,6 +24,7 @@ class ODriveCAN:
         self.canBus = can.interface.Bus(canBusID, bustype=canBusType)
         self.database = OdriveDatabase('odrive_data.db')
         self.collected_data = []  # Initialize an empty list to store data
+        self.start_time = time.time()  # Capture the start time when the object is initialized
 
 
 
@@ -328,6 +329,7 @@ class ODriveCAN:
                 return electrical_power, mechanical_power
         return None, None
 
+
     
     async def get_all_data(self):
         """
@@ -373,6 +375,7 @@ class ODriveCAN:
         self.collected_data.append(data)
 
 
+
     async def collect_and_store_data(self, trial_id):
         """
         Collects data from the ODrive and stores it in the database asynchronously.
@@ -389,7 +392,9 @@ class ODriveCAN:
 
         # Use datetime to format the current time as a string
         #current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        current_time = time.time()
+
+        # Calculate elapsed time since the start of the program
+        current_time = time.time() - self.start_time
 
         # Prepare your data for insertion
         # (Adjust according to the actual structure of your data and database schema)
@@ -412,6 +417,7 @@ class ODriveCAN:
         )
     
 
+
     def insert_data(self, trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power):
         """
         Inserts the collected data into the database. This method should be run in the same thread where the database connection is created.
@@ -420,6 +426,7 @@ class ODriveCAN:
         # Create a new instance of your database class or a new connection here
         db = OdriveDatabase('odrive_data.db')
         db.add_odrive_data(trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
+
 
 
     async def data_collection_loop(self, interval, next_trial_id):
@@ -436,6 +443,7 @@ class ODriveCAN:
         while True:
             await self.collect_and_store_data(next_trial_id)
             await asyncio.sleep(interval)
+
 
 
 #testing torque and data collection of sync and async code
@@ -466,6 +474,9 @@ class ODriveCAN:
         """
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, self.set_torque_sync, torque, wait_time)
+
+
+
 
 
 async def main():
