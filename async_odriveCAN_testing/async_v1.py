@@ -363,41 +363,7 @@ class ODriveCAN:
 
         return all_data
 
-    '''
-    async def get_all_data(self):
-        """
-        Collects all relevant data from the ODrive asynchronously.
 
-        Returns:
-            A dictionary containing all collected data points.
-
-        Example:
-            >>> all_data = await odrive_can.get_all_data()
-            >>> print(all_data)
-        """
-        # Collect data asynchronously from each function
-        pos_vel = await self.get_one_encoder_estimate(timeout=1.0)
-        torque_target_estimate = await self.get_one_torque(timeout=1.0)
-        bus_voltage_current = await self.get_one_bus_voltage_current(timeout=1.0)
-        iq_setpoint_measured = await self.get_one_iq_setpoint_measured(timeout=1.0)
-        powers = await self.get_one_powers(timeout=1.0)
-
-        # Combine all collected data into a dictionary or any structure that suits your needs
-        all_data = {
-            "pos_vel": pos_vel,
-            "torque_target_estimate": torque_target_estimate,
-            "bus_voltage_current": bus_voltage_current,
-            "iq_setpoint_measured": iq_setpoint_measured,
-            "powers": powers,  
-        }
-
-        # Optionally print or process the collected data
-        # For example, print the data or store it in a database
-        print(f"Collected Data: {all_data}")
-
-        return all_data
-    '''
-        
 
     #This function will take the collected data from the odrive and store each dictionary in a python list while the trial is running.
     #Another function will then take the list at the end and upload it to the database.
@@ -405,6 +371,7 @@ class ODriveCAN:
         """Collects data and appends it to the collected_data list."""
         data = await self.get_all_data()  # Assuming this returns a dictionary of collected data
         self.collected_data.append(data)
+
 
     async def collect_and_store_data(self, trial_id):
         """
@@ -421,7 +388,8 @@ class ODriveCAN:
         powers = await self.get_one_powers(timeout=1.0)
 
         # Use datetime to format the current time as a string
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        #current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        current_time = time.time()
 
         # Prepare your data for insertion
         # (Adjust according to the actual structure of your data and database schema)
@@ -453,6 +421,7 @@ class ODriveCAN:
         db = OdriveDatabase('odrive_data.db')
         db.add_odrive_data(trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
 
+
     async def data_collection_loop(self, interval, next_trial_id):
         """
         Continuously collects and stores data at the specified interval.
@@ -467,7 +436,8 @@ class ODriveCAN:
         while True:
             await self.collect_and_store_data(next_trial_id)
             await asyncio.sleep(interval)
-    
+
+
 #testing torque and data collection of sync and async code
     def set_torque_sync(self, torque, wait_time):
         """
@@ -543,6 +513,8 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
 
 
 
@@ -678,3 +650,40 @@ if __name__ == "__main__":
         return all_data
 
     """
+
+
+'''
+    async def get_all_data(self):
+        """
+        Collects all relevant data from the ODrive asynchronously.
+
+        Returns:
+            A dictionary containing all collected data points.
+
+        Example:
+            >>> all_data = await odrive_can.get_all_data()
+            >>> print(all_data)
+        """
+        # Collect data asynchronously from each function
+        pos_vel = await self.get_one_encoder_estimate(timeout=1.0)
+        torque_target_estimate = await self.get_one_torque(timeout=1.0)
+        bus_voltage_current = await self.get_one_bus_voltage_current(timeout=1.0)
+        iq_setpoint_measured = await self.get_one_iq_setpoint_measured(timeout=1.0)
+        powers = await self.get_one_powers(timeout=1.0)
+
+        # Combine all collected data into a dictionary or any structure that suits your needs
+        all_data = {
+            "pos_vel": pos_vel,
+            "torque_target_estimate": torque_target_estimate,
+            "bus_voltage_current": bus_voltage_current,
+            "iq_setpoint_measured": iq_setpoint_measured,
+            "powers": powers,  
+        }
+
+        # Optionally print or process the collected data
+        # For example, print the data or store it in a database
+        print(f"Collected Data: {all_data}")
+
+        return all_data
+'''
+        

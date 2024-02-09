@@ -78,7 +78,7 @@ class OdriveDatabase:
             UniqueID INTEGER PRIMARY KEY AUTOINCREMENT,
             trial_id INTEGER NOT NULL,
             node_ID TEXT,
-            time TEXT,
+            time REAL,
             position REAL,
             velocity REAL,
             torque_target REAL,
