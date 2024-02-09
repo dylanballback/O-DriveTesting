@@ -442,7 +442,7 @@ class ODriveCAN:
 async def main():
     nodeID = 1  # Example Node ID
     odrive_can = ODriveCAN(nodeID=nodeID)
-    await odrive_can.initCanBus()  # Initialize CAN bus
+    odrive_can.initCanBus()  # Initialize CAN bus
 
     # Start continuous data collection in the background
     data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.2))
