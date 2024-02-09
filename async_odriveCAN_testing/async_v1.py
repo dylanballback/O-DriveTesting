@@ -528,9 +528,12 @@ async def main():
         pass  # Task cancellation is expected
 
     # Upload collected data to the database
-    if hasattr(odrive_can, 'collected_data'):
-        database.bulk_insert_odrive_data(odrive_can.collected_data)
-        time.sleep(5)
+    if hasattr(odrive_can, 'collected_data') and odrive_can.collected_data:
+        loop = asyncio.get_running_loop()
+
+        # Wait for the bulk insert to complete
+        await loop.run_in_executor(None, database.bulk_insert_odrive_data, odrive_can.collected_data)
+
         print("Completed Uploading Data to Database.")
     else:
         print("No data collected to upload to the database.")
