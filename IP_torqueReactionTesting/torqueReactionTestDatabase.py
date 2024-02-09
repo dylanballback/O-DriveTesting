@@ -36,14 +36,6 @@ class TorqueReactionTestDatabase:
         except Error as e:
             print(e)
 
-    def create_table(self, create_table_sql):
-        """ create table from the create_table_sql statement """
-        try:
-            c = self.conn.cursor()
-            c.execute(create_table_sql)
-        except Error as e:
-            print(e)
-
     def add_trial(self):
         """
             Add a new trial to the trials table
