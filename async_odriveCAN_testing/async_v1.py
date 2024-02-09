@@ -463,7 +463,7 @@ async def main():
     
     # Start data collection in the background
     # This task will keep running and collect data into odrive_can.collected_data
-    data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.2))
+    data_collection_task = asyncio.create_task(odrive_can.data_collection_loop(0.1))
     
     # Sequentially change torque and wait
     # Note: Replace odrive_can.set_torque() with the correct method to set torque if different
@@ -483,6 +483,8 @@ async def main():
     database = OdriveDatabase('odrive_data.db')
     if hasattr(odrive_can, 'collected_data'):
         database.bulk_insert_odrive_data(odrive_can.collected_data)
+        time.sleep(5)
+        print("Completed Uploading Data to Database.")
     else:
         print("No data collected to upload to the database.")
     
