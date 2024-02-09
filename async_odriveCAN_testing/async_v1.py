@@ -462,7 +462,7 @@ class ODriveCAN:
             next_trial_id (int): Auto increments the trial id using function in Database code.
 
         Example:
-            >>> await odrive_can.data_collection_loop(0.2)
+            >>> await odrive_can.data_collection_loop(0.2, next_trial_id)
         """
         while True:
             await self.collect_and_store_data(next_trial_id)
