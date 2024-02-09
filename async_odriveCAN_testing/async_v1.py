@@ -369,7 +369,7 @@ class ODriveCAN:
         data = await self.get_all_data()  # Assuming this returns a dictionary of collected data
         self.collected_data.append(data)
 
-    async def collect_and_store_data(self):
+    async def collect_and_store_data(self, trial_id):
         """
         Collects data from the ODrive and stores it in the database asynchronously.
 
@@ -388,7 +388,7 @@ class ODriveCAN:
 
         # Prepare your data for insertion
         # (Adjust according to the actual structure of your data and database schema)
-        trial_id = 1  # Example trial ID
+        trial_id = trial_id  
         node_ID = self.nodeID
         position, velocity = pos_vel if pos_vel else (None, None)
         torque_target, torque_estimate = torque_target_estimate if torque_target_estimate else (None, None)
@@ -427,7 +427,7 @@ class ODriveCAN:
             >>> await odrive_can.data_collection_loop(0.2)
         """
         while True:
-            await self.collect_and_store_data()
+            await self.collect_and_store_data(2)
             await asyncio.sleep(interval)
     
 #testing torque and data collection of sync and async code
