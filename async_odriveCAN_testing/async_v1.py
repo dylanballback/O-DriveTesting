@@ -331,6 +331,41 @@ class ODriveCAN:
     
     async def get_all_data(self):
         """
+        Collects all relevant data from the ODrive asynchronously and concurrently.
+
+        Returns:
+            A dictionary containing all collected data points.
+        """
+        # Start all get data tasks concurrently
+        tasks = [
+            self.get_one_encoder_estimate(),
+            self.get_one_torque(),
+            self.get_one_bus_voltage_current(),
+            self.get_one_iq_setpoint_measured(),
+            self.get_one_powers()
+        ]
+        results = await asyncio.gather(*tasks)
+
+        # Unpack results (ensure the order matches the tasks order)
+        pos_vel, torque_target_estimate, bus_voltage_current, iq_setpoint_measured, powers = results
+
+        # Combine all collected data into a dictionary or any structure that suits your needs
+        all_data = {
+            "pos_vel": pos_vel or (None, None),  # Default to (None, None) if result is None
+            "torque_target_estimate": torque_target_estimate or (None, None),
+            "bus_voltage_current": bus_voltage_current or (None, None),
+            "iq_setpoint_measured": iq_setpoint_measured or (None, None),
+            "powers": powers or (None, None),
+        }
+
+        # Optionally print or process the collected data
+        print(f"Collected Data: {all_data}")
+
+        return all_data
+
+    '''
+    async def get_all_data(self):
+        """
         Collects all relevant data from the ODrive asynchronously.
 
         Returns:
@@ -361,6 +396,8 @@ class ODriveCAN:
         print(f"Collected Data: {all_data}")
 
         return all_data
+    '''
+        
 
     #This function will take the collected data from the odrive and store each dictionary in a python list while the trial is running.
     #Another function will then take the list at the end and upload it to the database.
@@ -440,7 +477,11 @@ class ODriveCAN:
             torque (float): Target torque for the motor.
             wait_time (float): Time to wait after setting the torque, in seconds.
         """
+        print(" ")
+        print(" ")
         print(f"Setting torque to {torque} Nm (synchronously)")
+        print(" ")
+        print(" ")
         self.set_torque(torque)  # Assuming set_torque is your existing synchronous method
         time.sleep(wait_time)  # Synchronous delay
 
