@@ -462,6 +462,8 @@ async def main():
     nodeID = 1
     odrive_can = ODriveCAN(nodeID=nodeID)
 
+    #Database path
+    database = OdriveDatabase('odrive_data.db')
     # Fetch the next trial_id
     next_trial_id = database.get_next_trial_id()
     print(f"Using trial_id: {next_trial_id}")
@@ -485,7 +487,6 @@ async def main():
         pass  # Task cancellation is expected
 
     # Upload collected data to the database
-    database = OdriveDatabase('odrive_data.db')
     if hasattr(odrive_can, 'collected_data'):
         database.bulk_insert_odrive_data(odrive_can.collected_data)
         time.sleep(5)
