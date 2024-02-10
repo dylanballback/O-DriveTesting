@@ -239,7 +239,7 @@ class ODriveCAN:
     async def recv_all(self):
         while self.running:
             await asyncio.sleep(0)
-            msg = self.bus.recv(timeout=0)
+            msg = self.canBus.recv(timeout=0)
             if msg is not None:
                 self.process_can_message(msg)
 
