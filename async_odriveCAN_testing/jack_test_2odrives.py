@@ -294,9 +294,9 @@ async def controller(odrive):
         
 # Run multiple busses.
 async def main():
-    odrive1 = ODriveCAN(1)
+    odrive1 = ODriveCAN(0)
     odrive1.initCanBus()
-    odrive2 = ODriveCAN(2)
+    odrive2 = ODriveCAN(1)
     odrive2.initCanBus()
     #bus3 = Bus()
     await asyncio.gather(
