@@ -2,6 +2,8 @@ import asyncio
 import can
 import struct
 import time
+from odrivedatabase import OdriveDatabase
+
 
 class ODriveCAN:
     def __init__(self, nodeID, canBusID="can0", canBusType="socketcan"):
@@ -11,6 +13,9 @@ class ODriveCAN:
         self.canBus = can.interface.Bus(canBusID, bustype=canBusType)
         self.latest_data = {}
         self.running = True
+        self.database = OdriveDatabase('odrive_data.db')
+        self.collected_data = []  # Initialize an empty list to store data
+        self.start_time = time.time()  # Capture the start time when the object is initialized
 
     
 
@@ -145,12 +150,31 @@ class ODriveCAN:
         elif arbitration_id == (self.nodeID << 5 | 0x1D):  # Powers
             self.latest_data['power'] = struct.unpack('<ff', data)
 
-    async def collect_data_at_interval(self, interval):
+    async def collect_data_at_interval(self, interval, trial_id):
         """Collects the latest data at set intervals."""
         while self.running:
             current_data_snapshot = self.latest_data.copy()  # Take a snapshot of the latest data
             print(f"Collected Data at {time.time()}: {current_data_snapshot}")
             await asyncio.sleep(interval)
+        self.insert_collected_data_into_db(trial_id)
+
+
+    def insert_collected_data_into_db(self, trial_id):
+        for data_point in self.collected_data:
+            current_time, data = data_point
+            position, velocity = data.get('encoder_estimate', (None, None))
+            torque_target, torque_estimate = data.get('torque', (None, None))
+            bus_voltage, bus_current = data.get('bus_voltage_current', (None, None))
+            iq_setpoint, iq_measured = data.get('iq_set_measured', (None, None))
+            electrical_power, mechanical_power = data.get('power', (None, None))
+            # Assuming trial_id and node_ID need to be set appropriately
+            trial_id = trial_id  
+            node_ID = self.nodeID
+            self.insert_data(trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
+
+    def insert_data(self, trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power):
+        self.database.add_odrive_data(trial_id, node_ID, current_time, position, velocity, torque_target, torque_estimate, bus_voltage, bus_current, iq_setpoint, iq_measured, electrical_power, mechanical_power)
+
 
     def start(self):
         """Starts the continuous reading and data collection tasks."""
@@ -176,10 +200,19 @@ async def main():
     # Initialize CAN bus and prepare for operations
     odrive_can.initCanBus()
 
+    #Database path
+    database = OdriveDatabase('odrive_data.db')
+    # Fetch the next trial_id
+    next_trial_id = database.get_next_trial_id()
+    print(f"Using trial_id: {next_trial_id}")
+
+
     # Start continuous CAN reading and data collection in the background
     loop = asyncio.get_event_loop()
     continuous_reading_task = loop.create_task(odrive_can.continuous_can_reading())
-    data_collection_task = loop.create_task(odrive_can.collect_data_at_interval(0.1))
+    data_collection_task = loop.create_task(odrive_can.collect_data_at_interval(0.1, next_trial_id))
+    
+    
 
     # Sequentially set torque values
     await odrive_can.set_torque_async(0.1, 5)  # Set torque to 0.1 Nm, wait 5 seconds
