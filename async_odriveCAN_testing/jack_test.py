@@ -232,7 +232,7 @@ class ODriveCAN:
         while datetime.now() < stop_at:
             message = self.canBus.recv(timeout=0)
             if message is not None:
-                print(message)
+                #print(message)
                 self.process_can_message(message)
             
 
