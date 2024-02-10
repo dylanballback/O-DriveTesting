@@ -206,4 +206,6 @@ if __name__ == "__main__":
     # Initialize ODriveCAN to node_id 0 
     odrive = ODriveCAN(1)
     odrive.initCanBus()
+    odrive.set_torque(0.1)
     odrive.main()
+    odrive.set_torque(0)
