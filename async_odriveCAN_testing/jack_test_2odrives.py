@@ -287,10 +287,12 @@ class ODriveCAN:
         asyncio.run(self.loop(*others))
             
 
-async def controller(odrive):
-        odrive.set_torque(0.2)
+async def controller(odrive1, odrive2):
+        odrive1.set_torque(0.1)
+        odrive2.set_torque(0.2)
         await asyncio.sleep(15)
-        odrive.running = False
+        odrive1.running = False
+        odrive2.running = False
         
 # Run multiple busses.
 async def main():
@@ -300,11 +302,13 @@ async def main():
     #Set up Node_ID 1 
     odrive2 = ODriveCAN(1)
     odrive2.initCanBus()
-    #bus3 = Bus()
+    #odrive3 = ODriveCAN(2)
+    #odrive3.initCanBus()
     await asyncio.gather(
-        odrive1.loop(controller(odrive1)),
-        odrive2.loop(controller(odrive2))
-        #bus3.loop(controller(bus3)),
+        odrive1.loop(),
+        odrive2.loop(),
+        #odrive3.loop(),
+        controller(odrive1, odrive2)
     )
 
 if __name__ == "__main__":
