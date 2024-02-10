@@ -6,6 +6,8 @@ import time
 class ODriveCAN:
     def __init__(self, nodeID, canBusID="can0", canBusType="socketcan"):
         self.nodeID = nodeID
+        self.canBusID = canBusID
+        self.canBusType = canBusType
         self.canBus = can.interface.Bus(canBusID, bustype=canBusType)
         self.latest_data = {}
         self.running = True
@@ -169,7 +171,7 @@ class ODriveCAN:
         await asyncio.sleep(duration)
 
 async def main():
-    odrive_can = ODriveCAN(nodeID=1, canBusID="can0", canBusType="socketcan")
+    odrive_can = ODriveCAN(1)
 
     # Initialize CAN bus and prepare for operations
     odrive_can.initCanBus()
