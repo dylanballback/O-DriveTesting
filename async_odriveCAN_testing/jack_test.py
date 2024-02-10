@@ -5,6 +5,11 @@ import time
 from datetime import datetime, timedelta
 from odrivedatabase import OdriveDatabase
 
+"""
+Testing if recv timeout=0 still gets messages.
+"""
+
+
 class ODriveCAN:
     def __init__(self, nodeID, canBusID="can0", canBusType="socketcan"):
         """
@@ -25,6 +30,8 @@ class ODriveCAN:
         self.database = OdriveDatabase('odrive_data.db')
         self.collected_data = []  # Initialize an empty list to store data
         self.start_time = time.time()  # Capture the start time when the object is initialized
+        self.latest_data = {}
+        self.running = True
 
 
 
@@ -191,14 +198,43 @@ class ODriveCAN:
 
 #-------------------------------------- Motor Controls END-------------------------------------------------
 
+    def process_can_message(self, message):
+        """Processes received CAN messages and updates the latest data."""
+        arbitration_id = message.arbitration_id
+        data = message.data
+        if arbitration_id == (self.nodeID << 5 | 0x09):  # Encoder estimate
+            position, velocity = struct.unpack('<ff', data)
+            self.latest_data['encoder_estimate'] = (position, velocity)
+            print(f"Encoder Estimate - Position: {position:.3f} turns, Velocity: {velocity:.3f} turns/s")
+        elif arbitration_id == (self.nodeID << 5 | 0x1C):  # Torque
+            torque_target, torque_estimate = struct.unpack('<ff', data)
+            self.latest_data['torque'] = (torque_target, torque_estimate)
+            print(f"Torque - Target: {torque_target:.3f} Nm, Estimate: {torque_estimate:.3f} Nm")
+        elif arbitration_id == (self.nodeID << 5 | 0x17):  # Bus voltage and current
+            bus_voltage, bus_current = struct.unpack('<ff', data)
+            self.latest_data['bus_voltage_current'] = (bus_voltage, bus_current)
+            print(f"Bus Voltage and Current - Voltage: {bus_voltage:.3f} V, Current: {bus_current:.3f} A")
+        elif arbitration_id == (self.nodeID << 5 | 0x14):  # IQ setpoint and measured
+            iq_setpoint, iq_measured = struct.unpack('<ff', data)
+            self.latest_data['iq_set_measured'] = (iq_setpoint, iq_measured)
+            print(f"IQ Setpoint and Measured - Setpoint: {iq_setpoint:.3f} A, Measured: {iq_measured:.3f} A")
+        elif arbitration_id == (self.nodeID << 5 | 0x1D):  # Powers
+            electrical_power, mechanical_power = struct.unpack('<ff', data)
+            self.latest_data['power'] = (electrical_power, mechanical_power)
+            print(f"Powers - Electrical: {electrical_power:.3f} W, Mechanical: {mechanical_power:.3f} W")
+
+
+
 
     def main(self):
         stop_at = datetime.now() + timedelta(seconds=10)
 
         while datetime.now() < stop_at:
-            msg = self.canBus.recv(timeout=0)
-            if msg is not None:
-                print(msg)
+            message = self.canBus.recv(timeout=0)
+            if message is not None:
+                print(message)
+                self.process_can_message(message)
+            
 
 
 
