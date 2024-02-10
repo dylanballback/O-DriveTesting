@@ -216,23 +216,28 @@ class ODriveCAN:
         data = message.data
         if arbitration_id == (self.nodeID << 5 | 0x09):  # Encoder estimate
             position, velocity = struct.unpack('<ff', data)
-            self.latest_data['encoder_estimate'] = (position, velocity)
+            self.position = position
+            self.velocity = velocity
             print(f"Encoder Estimate - Position: {position:.3f} turns, Velocity: {velocity:.3f} turns/s")
         elif arbitration_id == (self.nodeID << 5 | 0x1C):  # Torque
             torque_target, torque_estimate = struct.unpack('<ff', data)
-            self.latest_data['torque'] = (torque_target, torque_estimate)
+            self.torque_target = torque_target
+            self.torque_estimate = torque_estimate
             print(f"Torque - Target: {torque_target:.3f} Nm, Estimate: {torque_estimate:.3f} Nm")
         elif arbitration_id == (self.nodeID << 5 | 0x17):  # Bus voltage and current
             bus_voltage, bus_current = struct.unpack('<ff', data)
-            self.latest_data['bus_voltage_current'] = (bus_voltage, bus_current)
+            self.bus_voltage = bus_voltage
+            self.bus_current = bus_current
             print(f"Bus Voltage and Current - Voltage: {bus_voltage:.3f} V, Current: {bus_current:.3f} A")
         elif arbitration_id == (self.nodeID << 5 | 0x14):  # IQ setpoint and measured
             iq_setpoint, iq_measured = struct.unpack('<ff', data)
-            self.latest_data['iq_set_measured'] = (iq_setpoint, iq_measured)
+            self.iq_setpoint = iq_setpoint
+            self.iq_measured = iq_measured
             print(f"IQ Setpoint and Measured - Setpoint: {iq_setpoint:.3f} A, Measured: {iq_measured:.3f} A")
         elif arbitration_id == (self.nodeID << 5 | 0x1D):  # Powers
             electrical_power, mechanical_power = struct.unpack('<ff', data)
-            self.latest_data['power'] = (electrical_power, mechanical_power)
+            self.electrical_power = electrical_power
+            self.mechanical_power = mechanical_power
             print(f"Powers - Electrical: {electrical_power:.3f} W, Mechanical: {mechanical_power:.3f} W")
 
 
