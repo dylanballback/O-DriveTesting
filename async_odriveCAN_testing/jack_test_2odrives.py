@@ -288,8 +288,24 @@ class ODriveCAN:
             
 
 async def controller(odrive1, odrive2):
-        odrive1.set_torque(0.1)
-        odrive2.set_torque(0.2)
+        odrive1.set_torque(0)
+        odrive2.set_torque(0)
+
+        stop_at = datetime.now() + timedelta(seoncds=15)
+        while datetime.now() < stop_at:
+            await asyncio.sleep(0)
+            x1 = odrive1.velocity -9.5
+            print(x1)
+            if x1 > 0.2:
+                x1 = 0.2
+            odrive1.set_torque()
+            x2 = odrive2.velocity -9.5
+            print(x2)
+            if x2 > 0.2:
+                x2 = 0.2
+            odrive2.set_torque()
+            print(x1, x2)
+
         await asyncio.sleep(15)
         odrive1.running = False
         odrive2.running = False
