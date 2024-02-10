@@ -11,7 +11,7 @@ Testing if recv timeout=0 still gets messages.
 
 
 class ODriveCAN:
-    def __init__(self, nodeID, canBusID="can0", canBusType="socketcan"):
+    def __init__(self, nodeID, canBusID="can0", canBusType="socketcan", position=None, velocity=None, torque_target=None, torque_estimate=None, bus_voltage=None, bus_current=None, iq_setpoint=None, iq_measured=None, electrical_power=None, mechanical_power=None):
         """
         Initializes the ODriveCAN object for interacting with an ODrive controller via CAN.
 
@@ -32,6 +32,17 @@ class ODriveCAN:
         self.start_time = time.time()  # Capture the start time when the object is initialized
         self.latest_data = {}
         self.running = True
+        #O-Drive Data
+        self.position = position
+        self.velocity = velocity
+        self.torque_target = torque_target
+        self.torque_estimate = torque_estimate
+        self.bus_voltage = bus_voltage
+        self.bus_current = bus_current
+        self.iq_setpoint = iq_setpoint
+        self.iq_measured = iq_measured
+        self.electrical_power = electrical_power
+        self.mechanical_power = mechanical_power
 
 
 
@@ -198,6 +209,7 @@ class ODriveCAN:
 
 #-------------------------------------- Motor Controls END-------------------------------------------------
 
+
     def process_can_message(self, message):
         """Processes received CAN messages and updates the latest data."""
         arbitration_id = message.arbitration_id
@@ -224,24 +236,61 @@ class ODriveCAN:
             print(f"Powers - Electrical: {electrical_power:.3f} W, Mechanical: {mechanical_power:.3f} W")
 
 
+    async def recv_all(self):
+        while self.running:
+            await asyncio.sleep(0)
+            msg = self.bus.recv(timeout=0)
+            if msg is not None:
+                self.process_can_message(msg)
+
+    
+
+    async def save_data(self, timeout=0.1):
+        # Fetch the next trial_id
+        next_trial_id = self.database.get_next_trial_id()
+        print(f"Using trial_id: {next_trial_id}")
+        node_id = self.nodeID
+        while self.running:
+            await asyncio.sleep(timeout)
+            # Calculate elapsed time since the start of the program
+            current_time = time.time() - self.start_time
+            self.database.add_odrive_data(
+                next_trial_id,
+                node_id,
+                current_time,
+                self.position,
+                self.velocity,
+                self.torque_target,
+                self.torque_estimate,
+                self.bus_voltage,
+                self.bus_current,
+                self.iq_setpoint,
+                self.iq_measured,
+                self.electrical_power,
+                self.mechanical_power
+            )
 
 
-    def main(self):
-        stop_at = datetime.now() + timedelta(seconds=10)
+    async def loop(self, *others):
+        await asyncio.gather(
+            self.recv_all(),
+            self.save_data(),
+            *others,
+        )
 
-        while datetime.now() < stop_at:
-            message = self.canBus.recv(timeout=0)
-            if message is not None:
-                #print(message)
-                self.process_can_message(message)
+    def run(self, *others):
+        asyncio.run(self.loop(*others))
             
 
+async def controller(odrive):
+        odrive.set_torque(0.2)
+        await asyncio.sleep(5)
+        odrive.running = False
+        
 
 
 if __name__ == "__main__":
     # Initialize ODriveCAN to node_id 0 
     odrive = ODriveCAN(1)
     odrive.initCanBus()
-    odrive.set_torque(0.1)
-    odrive.main()
-    odrive.set_torque(0)
+    odrive.run(controller(odrive))
