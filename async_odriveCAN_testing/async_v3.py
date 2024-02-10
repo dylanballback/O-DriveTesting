@@ -25,10 +25,12 @@ class ODriveCAN:
         self.database = OdriveDatabase('odrive_data.db')
         self.collected_data = []  # Initialize an empty list to store data
         self.start_time = time.time()  # Capture the start time when the object is initialized
+        self.latest_data = {}
+        self.running = True
 
 
 
-    async def async_recv(self, timeout=0):
+    async def async_recv(self, timeout=1.0):
         """
         Asynchronously receives a CAN message with a specified timeout.
 
@@ -327,6 +329,61 @@ class ODriveCAN:
                 return electrical_power, mechanical_power
         return None, None
 
+#----------------- Trying to continously read can data and parse it-----------------------------------------------------------------------------
+
+    async def continuous_can_reading(self):
+        """Continuously reads CAN messages and updates the latest data."""
+        while self.running:
+            message = await self.async_recv()
+            if message:
+                self.process_can_message(message)
+
+    async def async_recv(self):
+        """Asynchronously receives a CAN message."""
+        loop = asyncio.get_event_loop()
+        message = await loop.run_in_executor(None, self.canBus.recv)
+        return message
+
+    def process_can_message(self, message):
+        """Processes received CAN messages and updates the latest data."""
+        arbitration_id = message.arbitration_id
+        data = message.data
+        if arbitration_id == (self.nodeID << 5 | 0x09):  # Encoder estimate
+            self.latest_data['encoder_estimate'] = struct.unpack('<ff', data)
+        elif arbitration_id == (self.nodeID << 5 | 0x1C):  # Torque
+            self.latest_data['torque'] = struct.unpack('<ff', data)
+        elif arbitration_id == (self.nodeID << 5 | 0x17):  # Bus voltage and current
+            self.latest_data['bus_voltage_current'] = struct.unpack('<ff', data)
+        elif arbitration_id == (self.nodeID << 5 | 0x14):  # IQ setpoint and measured
+            self.latest_data['iq_set_measured'] = struct.unpack('<ff', data)
+        elif arbitration_id == (self.nodeID << 5 | 0x1D):  # Powers
+            self.latest_data['power'] = struct.unpack('<ff', data)
+
+    async def collect_data_at_interval(self, interval, trial_id):
+        """Collects the latest data at set intervals."""
+        while self.running:
+            current_data_snapshot = self.latest_data.copy()  # Take a snapshot of the latest data
+            print(f"Collected Data at {time.time()}: {current_data_snapshot}")
+            await asyncio.sleep(interval)
+        
+
+    async def collect_data_at_interval(self, interval, trial_id):
+        """Collects the latest data at set intervals and formats it."""
+        while self.running:
+            current_time = time.time() - self.start_time  # Assuming you want to track time relative to start
+            # Create a dictionary with the structure of all_data
+            formatted_data = {
+                "pos_vel": self.latest_data.get('encoder_estimate', (None, None)),
+                "torque_target_estimate": self.latest_data.get('torque', (None, None)),
+                "bus_voltage_current": self.latest_data.get('bus_voltage_current', (None, None)),
+                "iq_set_measured": self.latest_data.get('iq_set_measured', (None, None)),
+                "powers": self.latest_data.get('power', (None, None)),
+            }
+            # Here, instead of just printing, you append the snapshot to the collected_data list
+            self.collected_data.append((current_time, formatted_data))
+            print(f"Collected Data at {current_time}: {formatted_data}")
+            await asyncio.sleep(interval)
+
 
     
     async def get_all_data(self):
@@ -522,177 +579,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
-
-
-
-
-    """
-    def get_one_encoder_estimate(self, timeout=1.0):
-        start_time = time.time()
-        while (time.time() - start_time) < timeout:
-            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
-            if msg is None:
-                print("Timeout occurred, no message received.")
-                break
-
-            if msg.arbitration_id == (self.nodeID << 5 | 0x09):  # Encoder estimate
-                pos, vel = struct.unpack('<ff', bytes(msg.data))
-                print(f"O-Drive {self.nodeID} - pos: {pos:.3f} [turns], vel: {vel:.3f} [turns/s]")
-                break
-        else:
-            print(f"No encoder estimate message received for O-Drive {self.nodeID} within the timeout period.")
-
-    
-
-    # Function to print torque feedback for a specific O-Drive one time
-    def get_one_torque(self, timeout=1.0):
-        start_time = time.time()
-        while (time.time() - start_time) < timeout:
-            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))  # Adjust timeout for recv
-            if msg is None:
-                print("Timeout occurred, no message received.")
-                break
-
-            if msg.arbitration_id == (self.nodeID << 5 | 0x1C):  # 0x1C: Get_Torques
-                torque_target, torque_estimate = struct.unpack('<ff', bytes(msg.data))
-                print(f"O-Drive {self.nodeID} - Torque Target: {torque_target:.3f} [Nm], Torque Estimate: {torque_estimate:.3f} [Nm]")
-                break
-        else:
-            print(f"No torque message received for O-Drive {self.nodeID} within the timeout period.")
-
-
-
-    def get_one_bus_voltage_current(self, timeout=1.0):
-        start_time = time.time()
-        while (time.time() - start_time) < timeout:
-            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
-            if msg is None:
-                print("Timeout occurred, no message received.")
-                break
-
-            if msg.arbitration_id == (self.nodeID << 5 | 0x17):  # Bus voltage and current
-                bus_voltage, bus_current = struct.unpack('<ff', bytes(msg.data))
-                print(f"O-Drive {self.nodeID} - Bus Voltage: {bus_voltage:.3f} [V], Bus Current: {bus_current:.3f} [A]")
-                break
-        else:
-            print(f"No bus voltage or current message received for O-Drive {self.nodeID} within the timeout period.")
-
-
-    def get_one_iq_setpoint_measured(self, timeout=1.0):
-        start_time = time.time()
-        while (time.time() - start_time) < timeout:
-            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
-            if msg is None:
-                print("Timeout occurred, no message received.")
-                break
-
-            if msg.arbitration_id == (self.nodeID << 5 | 0x14):  # IQ setpoint and measured
-                iq_setpoint, iq_measured = struct.unpack('<ff', bytes(msg.data))
-                print(f"O-Drive {self.nodeID} - Iq Setpoint: {iq_setpoint:.3f} [A], Iq Measured: {iq_measured:.3f} [A]")
-                break
-        else:
-            print(f"No IQ setpoint or measured message received for O-Drive {self.nodeID} within the timeout period.")
-
-
-    #This doesn't work the default cyclic message isn't set on O-Drive GUI yet. 
-    def get_one_powers(self, timeout=1.0):
-        start_time = time.time()
-        while (time.time() - start_time) < timeout:
-            msg = self.canBus.recv(timeout=timeout - (time.time() - start_time))
-            if msg is None:
-                print("Timeout occurred, no message received.")
-                break
-
-            if msg.arbitration_id == (self.nodeID << 5 | 0x1D):  # Powers
-                electrical_power, mechanical_power = struct.unpack('<ff', bytes(msg.data))
-                print(f"O-Drive {self.nodeID} - Electrical Power: {electrical_power:.3f} [W], Mechanical Power: {mechanical_power:.3f} [W]")
-                break
-        else:
-            print(f"No power message received for O-Drive {self.nodeID} within the timeout period.")
-
-
-
-    
-    def get_all_data(self):
-        # Collect data from each function
-        encoder_data = self.get_one_encoder_estimate() 
-        torque_data = self.get_one_bus_voltage_current()
-        voltage_current_data = self.get_one_bus_voltage_current()
-        iq_setpoint_measured_data = self.get_one_iq_setpoint_measured()
-        power_data = self.get_one_powers()
-
-        # Format each value to 3 decimal places if they are numeric
-        def format_data(data):
-            if isinstance(data, tuple):
-                return tuple(format(x, '.3f') if isinstance(x, (int, float)) else x for x in data)
-            return data
-
-        encoder_data_formatted = format_data(encoder_data)
-        torque_data_formatted = format_data(torque_data)
-        voltage_current_data_formatted = format_data(voltage_current_data)
-        iq_setpoint_measured_data_formatted = format_data(iq_setpoint_measured_data)
-        power_data_formatted = format_data(power_data)
-
-        # Print formatted data
-        print("Data: {}, {},  {}, {}"
-            .format(encoder_data_formatted,
-                    torque_data_formatted,
-                    voltage_current_data_formatted,
-                    iq_setpoint_measured_data_formatted,
-                    power_data_formatted
-                    ))
-
-        # Compile all data into a single structure (dictionary for better readability)
-        all_data = {
-            "encoder_data": encoder_data,
-            "torque_data": torque_data,
-            "voltage_current_data": voltage_current_data,
-            "iq_setpoint_measured_data": iq_setpoint_measured_data,
-            "power_data": power_data_formatted
-        }
-
-        # Format and print all data in one line not limiting how many decimal places printed.
-        #print("Data: {}, {}, {}, {}".format(encoder_data, torque_data, voltage_current_data, iq_setpoint_measured_data))
-
-        return all_data
-
-    """
-
-
-'''
-    async def get_all_data(self):
-        """
-        Collects all relevant data from the ODrive asynchronously.
-
-        Returns:
-            A dictionary containing all collected data points.
-
-        Example:
-            >>> all_data = await odrive_can.get_all_data()
-            >>> print(all_data)
-        """
-        # Collect data asynchronously from each function
-        pos_vel = await self.get_one_encoder_estimate(timeout=1.0)
-        torque_target_estimate = await self.get_one_torque(timeout=1.0)
-        bus_voltage_current = await self.get_one_bus_voltage_current(timeout=1.0)
-        iq_setpoint_measured = await self.get_one_iq_setpoint_measured(timeout=1.0)
-        powers = await self.get_one_powers(timeout=1.0)
-
-        # Combine all collected data into a dictionary or any structure that suits your needs
-        all_data = {
-            "pos_vel": pos_vel,
-            "torque_target_estimate": torque_target_estimate,
-            "bus_voltage_current": bus_voltage_current,
-            "iq_setpoint_measured": iq_setpoint_measured,
-            "powers": powers,  
-        }
-
-        # Optionally print or process the collected data
-        # For example, print the data or store it in a database
-        print(f"Collected Data: {all_data}")
-
-        return all_data
-'''
-        

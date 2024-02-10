@@ -156,7 +156,7 @@ class ODriveCAN:
             current_data_snapshot = self.latest_data.copy()  # Take a snapshot of the latest data
             print(f"Collected Data at {time.time()}: {current_data_snapshot}")
             await asyncio.sleep(interval)
-        self.insert_collected_data_into_db(trial_id)
+        
 
 
     def insert_collected_data_into_db(self, trial_id):
