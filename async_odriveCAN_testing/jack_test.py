@@ -193,7 +193,7 @@ class ODriveCAN:
 
 
     def main(self):
-        stop_at = datetime.now() + time.delta(seconds=10)
+        stop_at = datetime.now() + timedelta(seconds=10)
 
         while datetime.now() < stop_at:
             msg = self.canBus.recv(timeout=0)
