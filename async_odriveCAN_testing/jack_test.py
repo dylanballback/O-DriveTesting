@@ -289,7 +289,7 @@ class ODriveCAN:
 
 async def controller(odrive):
         odrive.set_torque(0.2)
-        await asyncio.sleep(5)
+        await asyncio.sleep(15)
         odrive.running = False
         
 
