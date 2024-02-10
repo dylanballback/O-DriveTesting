@@ -276,6 +276,11 @@ class ODriveCAN:
             )
 
 
+    async def get_velocity(self):
+        while self.running and self.velocity is None:
+            await asyncio.sleep(0)
+        return self.velocity
+
     async def loop(self, *others):
         await asyncio.gather(
             self.recv_all(),
@@ -294,12 +299,12 @@ async def controller(odrive1, odrive2):
         stop_at = datetime.now() + timedelta(seconds=15)
         while datetime.now() < stop_at:
             await asyncio.sleep(0)
-            x1 = odrive1.velocity -9.5
+            x1 = await odrive1.get_velocity -9.5 
             print(x1)
             if x1 > 0.2:
                 x1 = 0.2
             odrive1.set_torque()
-            x2 = odrive2.velocity -9.5
+            x2 = await odrive2.get_velocity -9.5
             print(x2)
             if x2 > 0.2:
                 x2 = 0.2
