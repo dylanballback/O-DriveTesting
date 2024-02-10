@@ -292,6 +292,9 @@ class ODriveCAN:
         asyncio.run(self.loop(*others))
             
 
+def clamp(x, lower, upper):
+    return lower if x < lower else upper if x > upper else x
+
 async def controller(odrive1, odrive2):
         odrive1.set_torque(0)
         odrive2.set_torque(0)
@@ -300,18 +303,16 @@ async def controller(odrive1, odrive2):
         while datetime.now() < stop_at:
             await asyncio.sleep(0)
             x1 = await odrive1.get_velocity() -9.5 
-            print(x1)
-            if x1 > 0.2:
-                x1 = 0.2
+            #print(x1)
+            clamp(x1, 0, 0.2)
             odrive1.set_torque(x1)
             x2 = await odrive2.get_velocity() -9.5
-            print(x2)
-            if x2 > 0.2:
-                x2 = 0.2
+            #print(x2)
+            clamp(x2, 0, 0.2)
             odrive2.set_torque(x2)
             print(x1, x2)
 
-        await asyncio.sleep(15)
+        #await asyncio.sleep(15) #no longer need this the timedelta =15 runs the program for 15 seconds.
         odrive1.running = False
         odrive2.running = False
         
