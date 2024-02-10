@@ -28,7 +28,7 @@ class ODriveCAN:
 
 
 
-    async def async_recv(self, timeout=0):
+    async def async_recv(self, timeout=1):
         """
         Asynchronously receives a CAN message with a specified timeout.
 
