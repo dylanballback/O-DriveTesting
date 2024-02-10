@@ -291,7 +291,7 @@ async def controller(odrive1, odrive2):
         odrive1.set_torque(0)
         odrive2.set_torque(0)
 
-        stop_at = datetime.now() + timedelta(seoncds=15)
+        stop_at = datetime.now() + timedelta(seconds=15)
         while datetime.now() < stop_at:
             await asyncio.sleep(0)
             x1 = odrive1.velocity -9.5
