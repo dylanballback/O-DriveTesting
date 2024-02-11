@@ -277,6 +277,9 @@ class ODriveCAN:
 
 
     async def get_velocity(self):
+        """
+        This function makes sure that the returned velocity is not 'None'
+        """
         while self.running and self.velocity is None:
             await asyncio.sleep(0)
         return self.velocity
@@ -291,7 +294,6 @@ class ODriveCAN:
     def run(self, *others):
         asyncio.run(self.loop(*others))
             
-
 def clamp(x, lower, upper):
     return lower if x < lower else upper if x > upper else x
 
