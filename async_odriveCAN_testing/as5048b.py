@@ -47,7 +47,7 @@ class as5048b:
 
         print(self.angle)
 
-        time.sleep(0.1)
+        time.sleep(0.001)
 
 
 ## Example code
@@ -56,5 +56,4 @@ encoder.calibrate_encoder()
 
 while (True):
     encoder.read_angle_synch()
-
 
