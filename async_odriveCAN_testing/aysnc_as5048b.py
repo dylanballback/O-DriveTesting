@@ -8,8 +8,8 @@ from smbus import SMBus
 @dataclass
 class Encoder_as5048b:
     bus: SMBus = field(default_factory=lambda: SMBus(1))
-    address: int = 0xFE
-    angle_reg: int = 0xFE
+    address: int = 0x40 # AS5048B default address
+    angle_reg: int = 0xFE # AS5048B Register
     angle: float = 0.0
     offset: float = 0.0
     running: bool = True
