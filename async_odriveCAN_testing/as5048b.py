@@ -49,7 +49,7 @@ class as5048b:
 
         time.sleep(0.001)
 
-"""
+
 ## Example code
 encoder = as5048b()
 encoder.calibrate_encoder()
@@ -57,4 +57,4 @@ encoder.calibrate_encoder()
 while (True):
     encoder.read_angle_synch()
 
-"""
+
