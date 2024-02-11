@@ -45,7 +45,7 @@ async def controller(encoder):
     stop_at = datetime.now() + timedelta(seconds=15)
     
     while datetime.now() < stop_at:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.001)
         print("Encoder angle:", encoder.angle)
     
     encoder.running = False
