@@ -47,7 +47,7 @@ class as5048b:
 
         print(self.angle)
 
-        time.sleep(0.01)
+        time.sleep(0.1)
 
 
 ## Example code
