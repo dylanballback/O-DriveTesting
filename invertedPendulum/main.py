@@ -46,13 +46,13 @@ async def main():
     #encoder.run(controller(encoder))
 
     #Initalize PID Controller (Make setpoint between -4 and 4)
-    pid = pid.PID(kp=1.0, ki=0.1, kd=0.01, setpoint=(-4, 4), lower_limit=-0.2, upper_limit=0.2)
+    my_pid = pid.PID(kp=1.0, ki=0.1, kd=0.01, setpoint=(-4, 4), lower_limit=-0.2, upper_limit=0.2)
 
 
     #add each odrive to the async loop so they will run.
     await asyncio.gather(
         odrive1.loop(),
-        controller(odrive1, encoder, pid), 
+        controller(odrive1, encoder, my_pid), 
         encoder.run(controller(encoder)) #This runs the external encoder code
     )
 
