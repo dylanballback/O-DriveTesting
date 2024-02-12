@@ -53,7 +53,7 @@ async def main():
     await asyncio.gather(
         odrive1.loop(),
         controller(odrive1, encoder, my_pid), 
-        encoder.run(controller(encoder)) #This runs the external encoder code
+        encoder.loop() #This runs the external encoder code
     )
 
 if __name__ == "__main__":
