@@ -52,7 +52,7 @@ async def main():
     #add each odrive to the async loop so they will run.
     await asyncio.gather(
         odrive1.loop(),
-        controller(odrive1), 
+        controller(odrive1, encoder, pid), 
         encoder.run(controller(encoder)) #This runs the external encoder code
     )
 
