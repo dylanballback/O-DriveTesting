@@ -79,12 +79,12 @@ async def controller(encoder):
     Args:
         encoder (Encoder_as5048b): The encoder instance to monitor.
     """
-    stop_at = datetime.now() + timedelta(seconds=15)
+    #stop_at = datetime.now() + timedelta(seconds=15)
     
-    while datetime.now() < stop_at:
+    #while datetime.now() < stop_at:
+    while True:
         await asyncio.sleep(0.001) # Reduce sleep to get angles faster
         print("Encoder angle:", encoder.angle)
-        return encoder.angle
     
     encoder.running = False # Stop the encoder's listening loop
 
