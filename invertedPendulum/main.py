@@ -14,7 +14,7 @@ async def controller(odrive1, encoder, pid):
         odrive1.set_torque(0)
 
         #Run for set time delay example runs for 15 seconds.
-        stop_at = datetime.now() + timedelta(seconds=15)
+        stop_at = datetime.now() + timedelta(seconds=120)
         while datetime.now() < stop_at:
             await asyncio.sleep(0) #Need this for async to work.
             
