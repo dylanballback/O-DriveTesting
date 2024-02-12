@@ -1,8 +1,8 @@
 import pyodrivecan
 import asyncio
 from datetime import datetime, timedelta
-from aysnc_as5048b import aysnc_as5048b
-from pid import pid
+import aysnc_as5048b
+import pid
 
 #Functions to clamp a variables upper and lower limit.        
 def clamp(x, lower, upper):
