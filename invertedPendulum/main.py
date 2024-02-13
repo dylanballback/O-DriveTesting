@@ -93,13 +93,13 @@ async def main():
     pid_table_init(database, pid_table_name)
 
     #PID Const
-    kp = 2.0
+    kp = 3.0
     ki = 0.0
-    kd = 0.002
+    kd = 0.01
     pid_trial_notes = "Here we can take notes on our pid_values"
 
     #Initalize PID Controller (Make setpoint between -4 and 4)
-    my_pid = pid.PID(kp, ki, kd, setpoint=(-4, 4), lower_limit=-0.2, upper_limit=0.2)
+    my_pid = pid.PID(kp, ki, kd, setpoint=(-4, 4), lower_limit=-0.4, upper_limit=0.4)
 
     pid_data = (next_trial_id, kp, ki, kd, pid_trial_notes)
     #Upload PID parameters and notes to database
