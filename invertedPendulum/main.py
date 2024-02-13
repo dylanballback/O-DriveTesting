@@ -28,6 +28,7 @@ async def upload_encoder_data(database, encoder_table_name, encoder, next_trial_
     """
     This will be an aysnc function that will take the latest encoder value and upload it to the database.
     """
+    await asyncio.sleep(0) # Non-blocking sleep to yield control
     #Define the columns of the encoderData table
     columns = ["trial_id", "angle", "time"]
 
