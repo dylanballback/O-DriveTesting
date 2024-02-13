@@ -110,8 +110,9 @@ async def main():
     odrive1 = pyodrivecan.ODriveCAN(0)
     odrive1.initCanBus()
     
+    print(odrive1.database)
     #This sets up the database path the same as odrive1 object.
-    database = pyodrivecan.OdriveDatabase(odrive1.database)
+    database = pyodrivecan.OdriveDatabase('odrive_database.db')
 
     #This gets the next trial id from the database
     next_trial_id = database.get_next_trial_id()

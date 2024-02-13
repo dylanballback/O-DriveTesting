@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+import pyodrivecan
 
 from smbus import SMBus
 
@@ -24,6 +25,7 @@ class Encoder_as5048b:
     angle: float = 0.0     # Initialized angle
     offset: float = 0.0    # Initial offset
     running: bool = True   # Control flag for running the loop
+    database: database = pyodrivecan.OdriveDatabase('odrive_database.db')
 
 
     def read_angle(self):
@@ -49,6 +51,8 @@ class Encoder_as5048b:
         while self.running:
             await asyncio.sleep(0) # Non-blocking sleep to yield control
             self.angle = self.read_angle() # Update the current angle
+
+
 
     async def loop(self, *others):
         """Runs the listen_to_angle method alongside other asynchronous tasks.
