@@ -68,25 +68,26 @@ class Encoder_as5048b:
         self.database.create_user_defined_table(self.table_name, table_columns_type)
 
 
-    async def upload_encoder_data(self): 
+    async def save_angle_loop(self): 
         """
         This will be an aysnc function that will take the latest encoder value and upload it to the database.
         """
-        await asyncio.sleep(0) # Non-blocking sleep to yield control
-        #Define the columns of the encoderData table
-        columns = ["trial_id", "angle", "time"]
+        while self.running:
+            await asyncio.sleep(0) # Non-blocking sleep to yield control
+            #Define the columns of the encoderData table
+            columns = ["trial_id", "angle", "time"]
 
-        next_trial_id = 1
+            next_trial_id = 1
 
-        current_angle = self.angle
-        #print(current_angle)
-        
-        current_time = datetime.now()
+            current_angle = self.angle
+            #print(current_angle)
+            
+            current_time = datetime.now()
 
-        values = [next_trial_id, current_angle, current_time]
+            values = [next_trial_id, current_angle, current_time]
 
 
-        self.database.insert_into_user_defined_table(self.table_name, columns, values)
+            self.database.insert_into_user_defined_table(self.table_name, columns, values)
 
     async def loop(self, *others):
         """Runs the listen_to_angle method alongside other asynchronous tasks.
@@ -97,7 +98,7 @@ class Encoder_as5048b:
         if others:
             await asyncio.gather(
                 self.listen_to_angle(),
-                self.upload_encoder_data(),
+                self.save_angle_loop(),
                 *others,
             )
         else:
