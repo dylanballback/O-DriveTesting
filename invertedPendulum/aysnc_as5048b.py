@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 import pyodrivecan
+import time
 
 from smbus import SMBus
 
@@ -28,6 +29,7 @@ class Encoder_as5048b:
     printing: bool = False    # Control flag for printing encoder angle
     database: database = pyodrivecan.OdriveDatabase('odrive_data.db')
     table_name: table_name = 'encoderData'
+    start_time: start_time = time.time()  # Capture the start time when the object is initialized
 
 
 
@@ -83,7 +85,8 @@ class Encoder_as5048b:
             current_angle = self.angle
             #print(current_angle)
             
-            current_time = datetime.now()
+            # Calculate elapsed time since the start of the program
+            current_time = time.time() - self.start_time
 
             values = [next_trial_id, current_angle, current_time]
             print(values)
