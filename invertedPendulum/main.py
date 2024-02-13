@@ -6,43 +6,6 @@ import pid
 
 
 
-#Function to setup Custom Encoder Table in the Database 
-def encoder_table_init(database, encoder_table_name):
-
-    #Define the table column name and SQL data type
-    table_columns_type = [
-         ("angle", "REAL"),
-         ("time", "REAL")
-    ]
-
-    #Create encoderData table
-    database.create_user_defined_table(encoder_table_name, table_columns_type)
-
-
-"""
-How can I make sure that my data from the odrive and the data from my exteral encoder match up with respect to time? 
-Data from O-Drive and Data from 
-"""
-
-async def upload_encoder_data(database, encoder_table_name, encoder, next_trial_id): 
-    """
-    This will be an aysnc function that will take the latest encoder value and upload it to the database.
-    """
-    await asyncio.sleep(0) # Non-blocking sleep to yield control
-    #Define the columns of the encoderData table
-    columns = ["trial_id", "angle", "time"]
-
-    current_angle = encoder.angle
-    
-    current_time = datetime.now()
-
-    values = [next_trial_id, current_angle, current_time]
-
-    database.insert_into_user_defined_table(encoder_table_name, columns, values)
-
-
-
-
 #Function to setup Custom PID parameters Table in the  Database
 def pid_table_init(database,  pid_table_name):
 
@@ -56,7 +19,6 @@ def pid_table_init(database,  pid_table_name):
 
     #Create encoderData table
     database.create_user_defined_table(pid_table_name, table_columns_type)
-
 
 
 
@@ -113,21 +75,16 @@ async def main():
     
     print(odrive1.database)
     #This sets up the database path the same as odrive1 object.
-    database = pyodrivecan.OdriveDatabase('odrive_database.db')
+    database = pyodrivecan.OdriveDatabase('odrive_data.db')
 
     #This gets the next trial id from the database
     next_trial_id = database.get_next_trial_id()
     print(f"Using trial_id: {next_trial_id}")
 
-    #Encoder Table Name
-    encoder_table_name = 'encoderData'
-
-    #Create the Encoder Database Table with the Initalization Function
-    encoder_table_init(database, encoder_table_name)
-
     #Set up Encoder 
     encoder = aysnc_as5048b.Encoder_as5048b()
     encoder.calibrate()
+    encoder.encoder_table_init()
 
     #PID Parameters Table Name
     pid_table_name = 'pidParameters'
@@ -153,7 +110,6 @@ async def main():
         odrive1.loop(),
         controller(odrive1, encoder, my_pid), 
         encoder.loop(), #This runs the external encoder code
-        upload_encoder_data(database, encoder_table_name, encoder, next_trial_id) 
     )
 
 

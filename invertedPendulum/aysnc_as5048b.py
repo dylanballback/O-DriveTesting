@@ -25,7 +25,10 @@ class Encoder_as5048b:
     angle: float = 0.0     # Initialized angle
     offset: float = 0.0    # Initial offset
     running: bool = True   # Control flag for running the loop
+    printing: bool = False    # Control flag for printing encoder angle
     database: database = pyodrivecan.OdriveDatabase('odrive_database.db')
+    table_name: table_name = 'encoderData'
+
 
 
     def read_angle(self):
@@ -52,7 +55,38 @@ class Encoder_as5048b:
             await asyncio.sleep(0) # Non-blocking sleep to yield control
             self.angle = self.read_angle() # Update the current angle
 
+    #Function to setup Custom Encoder Table in the Database 
+    def encoder_table_init(self):
 
+        #Define the table column name and SQL data type
+        table_columns_type = [
+            ("angle", "REAL"),
+            ("time", "REAL")
+        ]
+
+        #Create encoderData table
+        self.database.create_user_defined_table(self.table_name, table_columns_type)
+
+
+    async def upload_encoder_data(self): 
+        """
+        This will be an aysnc function that will take the latest encoder value and upload it to the database.
+        """
+        await asyncio.sleep(0) # Non-blocking sleep to yield control
+        #Define the columns of the encoderData table
+        columns = ["trial_id", "angle", "time"]
+
+        next_trial_id = 1
+
+        current_angle = self.angle
+        print(current_angle)
+        
+        current_time = datetime.now()
+
+        values = [next_trial_id, current_angle, current_time]
+
+
+        self.database.insert_into_user_defined_table(self.table_name, columns, values)
 
     async def loop(self, *others):
         """Runs the listen_to_angle method alongside other asynchronous tasks.
@@ -63,6 +97,7 @@ class Encoder_as5048b:
         if others:
             await asyncio.gather(
                 self.listen_to_angle(),
+                self.upload_encoder_data(),
                 *others,
             )
         else:
@@ -83,6 +118,8 @@ async def controller(encoder):
     Args:
         encoder (Encoder_as5048b): The encoder instance to monitor.
     """
+    #Create the Encoder Database Table with the Initalization Function
+    
     #stop_at = datetime.now() + timedelta(seconds=15)
     
     #while datetime.now() < stop_at:
