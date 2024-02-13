@@ -11,7 +11,7 @@ def encoder_table_init(database, encoder_table_name):
 
     #Define the table column name and SQL data type
     table_columns_type = [
-         ("angle", "REAL")
+         ("angle", "REAL"),
          ("time", "REAL")
     ]
 
