@@ -26,7 +26,7 @@ class Encoder_as5048b:
     offset: float = 0.0    # Initial offset
     running: bool = True   # Control flag for running the loop
     printing: bool = False    # Control flag for printing encoder angle
-    database: database = pyodrivecan.OdriveDatabase('odrive_database.db')
+    database: database = pyodrivecan.OdriveDatabase('odrive_data.db')
     table_name: table_name = 'encoderData'
 
 
@@ -79,7 +79,7 @@ class Encoder_as5048b:
         next_trial_id = 1
 
         current_angle = self.angle
-        print(current_angle)
+        #print(current_angle)
         
         current_time = datetime.now()
 

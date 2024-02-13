@@ -70,7 +70,7 @@ async def controller(odrive1, encoder, pid):
 # Run multiple busses.
 async def main():
     #Set up Node_ID 0
-    odrive1 = pyodrivecan.ODriveCAN(0)
+    odrive1 = pyodrivecan.ODriveCAN(3)
     odrive1.initCanBus()
     
     print(odrive1.database)
@@ -105,12 +105,16 @@ async def main():
     #Upload PID parameters and notes to database
     upload_pid_parameters(database, pid_table_name, pid_data)
 
-    #add each odrive to the async loop so they will run.
-    await asyncio.gather(
-        odrive1.loop(),
-        controller(odrive1, encoder, my_pid), 
-        encoder.loop(), #This runs the external encoder code
-    )
+    try:
+        #add each odrive to the async loop so they will run.
+        await asyncio.gather(
+            odrive1.loop(),
+            controller(odrive1, encoder, my_pid), 
+            encoder.loop(), #This runs the external encoder code
+        )
+    except KeyboardInterrupt:
+         odrive1.set_torque(0)
+         
 
 
 if __name__ == "__main__":
