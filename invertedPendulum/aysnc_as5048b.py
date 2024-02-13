@@ -72,12 +72,13 @@ class Encoder_as5048b:
         """
         This will be an aysnc function that will take the latest encoder value and upload it to the database.
         """
+        next_trial_id = self.database.get_next_trial_id()
+        
         while self.running:
             await asyncio.sleep(0) # Non-blocking sleep to yield control
             #Define the columns of the encoderData table
             columns = ["trial_id", "angle", "time"]
 
-            next_trial_id = 1
 
             current_angle = self.angle
             #print(current_angle)
@@ -95,14 +96,12 @@ class Encoder_as5048b:
         Args:
             *others: Additional asyncio tasks to run concurrently.
         """
-        if others:
-            await asyncio.gather(
-                self.listen_to_angle(),
-                self.save_angle_loop(),
-                *others,
-            )
-        else:
-            await self.listen_to_angle()
+        await asyncio.gather(
+            self.listen_to_angle(),
+            self.save_angle_loop(),
+            *others,
+        )
+        
 
     def run(self, *others):
         """A convenience method to start the asynchronous loop.
