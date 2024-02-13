@@ -57,7 +57,7 @@ async def controller(odrive1, encoder, pid):
             print(f"PID Output: {pid_output}, Current Angle: {current_angle}")
 
             #Send pid_output to control motor Torque
-            odrive1.set_torque(pid_output)
+            odrive1.set_torque(- pid_output)
 
             
         #await asyncio.sleep(15) #no longer need this the timedelta =15 runs the program for 15 seconds.
@@ -93,9 +93,9 @@ async def main():
     pid_table_init(database, pid_table_name)
 
     #PID Const
-    kp = 1.0
-    ki = 0.1
-    kd = 0.001
+    kp = 2.0
+    ki = 0.0
+    kd = 0.002
     pid_trial_notes = "Here we can take notes on our pid_values"
 
     #Initalize PID Controller (Make setpoint between -4 and 4)
@@ -114,7 +114,7 @@ async def main():
         )
     except KeyboardInterrupt:
          odrive1.set_torque(0)
-         
+
 
 
 if __name__ == "__main__":
