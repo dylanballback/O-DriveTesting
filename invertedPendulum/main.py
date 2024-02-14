@@ -98,8 +98,8 @@ async def main():
     kd = 0.1
     pid_trial_notes = "Here we can take notes on our pid_values"
 
-    #Initalize PID Controller (Make setpoint between -4 and 4)
-    my_pid = pid.PID(kp, ki, kd, setpoint=(-4, 4), lower_limit=-0.4, upper_limit=0.4)
+    #Initalize PID Controller (Make setpoint between -2 and 2)
+    my_pid = pid.PID(kp, ki, kd, setpoint=(-2, 2), lower_limit=-0.4, upper_limit=0.4)
 
     pid_data = (next_trial_id, kp, ki, kd, pid_trial_notes)
     #Upload PID parameters and notes to database
