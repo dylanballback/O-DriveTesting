@@ -93,9 +93,9 @@ async def main():
     pid_table_init(database, pid_table_name)
 
     #PID Const
-    kp = 3.2
+    kp = 3.3
     ki = 0.01
-    kd = 0.2
+    kd = 0.3
     pid_trial_notes = "Here we can take notes on our pid_values"
 
     #Initalize PID Controller (Make setpoint between -2 and 2)
