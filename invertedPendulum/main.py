@@ -94,7 +94,7 @@ async def main():
 
     #PID Const
     kp = 3.3
-    ki = 0.01
+    ki = 0.045
     kd = 0.3
     pid_trial_notes = "Here we can take notes on our pid_values"
 
