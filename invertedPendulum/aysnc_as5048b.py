@@ -91,7 +91,7 @@ class Encoder_as5048b:
             current_time = time.time() - self.start_time
 
             values = [next_trial_id, current_angle, current_time]
-            print(values)
+            #print(values)
 
             self.database.insert_into_user_defined_table(self.table_name, columns, values)
 
