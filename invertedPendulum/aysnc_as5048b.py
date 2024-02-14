@@ -116,7 +116,8 @@ class Encoder_as5048b:
         """
         asyncio.run(self.loop(*others))
 
-
+    
+async def controller(encoder):
     """A simple control loop that prints the encoder's angle for a set duration.
 
     Args:
