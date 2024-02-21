@@ -1,12 +1,16 @@
 import pyodrivecan
 import asyncio
 import math
+from datetime import datetime, timedelta
+
 
 mass = 0.2  # Kg
 length = 0.1  # Meters
 
 async def controller(odrive):
-    while odrive.running:
+    #Run for set time delay example runs for 15 seconds.
+    stop_at = datetime.now() + timedelta(seconds=15)
+    while datetime.now() < stop_at:
         current_position_rev = await odrive.get_position()  # Assuming this is async and correct method to get position
         current_position_rad = current_position_rev * 2 * math.pi
 
@@ -22,17 +26,25 @@ async def controller(odrive):
 
         await asyncio.sleep(0.015)  # 15ms sleep, adjust based on your control loop requirements
 
-if __name__ == "__main__":
-    # Initialize ODriveCAN to node_id 10 
-    odrive = pyodrivecan.ODriveCAN(10)
+
+#Set up Node_ID 10
+odrive = pyodrivecan.ODriveCAN(10)
+
+# Run multiple busses.
+async def main():
+    #Initalize odrive
     odrive.initCanBus()
-    odrive.running = True  # Ensure there's a mechanism to update this flag
-    
+
+    #add each odrive to the async loop so they will run.
+    await asyncio.gather(
+        odrive.loop(),
+        controller(odrive) 
+    )
+
+
+if __name__ == "__main__":
     try:
-        asyncio.gather(
-            odrive.loop(),
-            controller(odrive)
-            )  
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("KeyboardInterrupt caught, stopping...")
         odrive.running = False
