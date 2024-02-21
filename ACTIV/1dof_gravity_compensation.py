@@ -11,7 +11,7 @@ async def controller(odrive):
     #Run for set time delay example runs for 15 seconds.
     stop_at = datetime.now() + timedelta(seconds=15)
     while datetime.now() < stop_at:
-        current_position_rev = odrive.position()  # Assuming this is async and correct method to get position
+        current_position_rev = odrive.position
         current_position_rad = current_position_rev * 2 * math.pi
 
         # Calculate next torque
