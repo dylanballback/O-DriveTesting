@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # Initialize ODriveCAN to node_id 10 
     odrive = pyodrivecan.ODriveCAN(10)
     odrive.initCanBus()
-    
+    odrive.running = True  # Ensure there's a mechanism to update this flag
     
     try:
         asyncio.gather(
