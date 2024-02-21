@@ -47,5 +47,6 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("KeyboardInterrupt caught, stopping...")
+        odrive.set_torque(0)
         odrive.running = False
         # Perform any additional cleanup if necessary
