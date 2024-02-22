@@ -23,7 +23,7 @@ async def controller(odrive):
         next_torque = max(-0.129, min(0.129, next_torque))
         
         # Set the calculated torque
-        #odrive.set_torque(next_torque)  # Assuming this is an async method
+        odrive.set_torque(next_torque)  # Assuming this is an async method
         print(f"Current position {current_position_rev} (revs), Torque Set to {next_torque} (Nm)")
 
         await asyncio.sleep(0.015)  # 15ms sleep, adjust based on your control loop requirements
