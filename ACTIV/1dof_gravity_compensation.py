@@ -8,7 +8,7 @@ mass = 0.2  # Kg
 length = 0.1  # Meters
 
 async def controller(odrive):
-    await(1)
+    await asyncio.sleep(1)
 
     #Run for set time delay example runs for 15 seconds.
     stop_at = datetime.now() + timedelta(seconds=15)
