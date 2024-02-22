@@ -14,7 +14,7 @@ async def controller(odrive):
     stop_at = datetime.now() + timedelta(seconds=60)
     while datetime.now() < stop_at:
         current_position_rev = odrive.position
-        
+
         # Convert to radians and adjust to be within -pi to pi
         current_position_rad = (current_position_rev * 2 * math.pi) % (2 * math.pi)
         if current_position_rad > math.pi:
@@ -28,7 +28,7 @@ async def controller(odrive):
         
         # Set the calculated torque
         odrive.set_torque(next_torque)  # Assuming this is an async method
-        print(f"Current position {current_position_rev} (revs), Torque Set to {next_torque} (Nm)")
+        print(f"Current position {current_position_rev} (revs), Current Position {current_position_rad} (rad), Torque Set to {next_torque} (Nm)")
 
         await asyncio.sleep(0.015)  # 15ms sleep, adjust based on your control loop requirements
 
