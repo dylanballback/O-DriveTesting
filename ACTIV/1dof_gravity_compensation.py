@@ -11,7 +11,7 @@ async def controller(odrive):
     await asyncio.sleep(1)
 
     #Run for set time delay example runs for 15 seconds.
-    stop_at = datetime.now() + timedelta(seconds=15)
+    stop_at = datetime.now() + timedelta(seconds=60)
     while datetime.now() < stop_at:
         current_position_rev = odrive.position
         current_position_rad = current_position_rev * 2 * math.pi
