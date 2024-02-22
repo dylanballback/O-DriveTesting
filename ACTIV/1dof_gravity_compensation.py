@@ -14,7 +14,11 @@ async def controller(odrive):
     stop_at = datetime.now() + timedelta(seconds=60)
     while datetime.now() < stop_at:
         current_position_rev = odrive.position
-        current_position_rad = current_position_rev * 2 * math.pi
+        
+        # Convert to radians and adjust to be within -pi to pi
+        current_position_rad = (current_position_rev * 2 * math.pi) % (2 * math.pi)
+        if current_position_rad > math.pi:
+            current_position_rad -= 2 * math.pi
 
         # Calculate next torque
         next_torque = math.sin(current_position_rad) * mass * length * 9.8
