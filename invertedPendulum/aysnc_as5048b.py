@@ -50,8 +50,9 @@ class Encoder_as5048b:
     def calibrate(self):
         """Calibrates the encoder by setting the current angle as the zero offset."""
         self.offset = self.read_angle()
+        print("Calibration Complete move to top, you have 5 seconds.")
         time.sleep(5) #Wait 5 seconds after calibrate to move to top
-        print("Calibration Complete")
+        print("5 Seconds Over, Going to run controller.")
 
     async def listen_to_angle(self):
         """An asynchronous loop that continuously reads the encoder's angle."""

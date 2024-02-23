@@ -42,15 +42,30 @@ def clamp(x, lower, upper):
 
 #Example of how you can create a controller to get data from the O-Drives and then send motor comands based on that data.
 async def controller(odrive1, encoder, pid):
+        odrive1.clear_errors(identify=False)
+        await asyncio.sleep(0.2)
+        odrive1.setAxisState1("closed_loop_control")
+        await asyncio.sleep(0.2)
         odrive1.set_torque(0)
 
+
+        # Define angle thresholds for detecting the pendulum has fallen
+        angle_threshold_min = -30  # Minimum angle threshold
+        angle_threshold_max = 30   # Maximum angle threshold
+
         #Run for set time delay example runs for 15 seconds.
-        stop_at = datetime.now() + timedelta(seconds=120)
+        stop_at = datetime.now() + timedelta(seconds=100000)
         while datetime.now() < stop_at:
             await asyncio.sleep(0) #Need this for async to work.
             
             #Get the current angle of the encoder
             current_angle = encoder.angle
+
+            # Check if the pendulum has fallen by comparing the current angle with the thresholds
+            if current_angle < angle_threshold_min or current_angle > angle_threshold_max:
+                print("Pendulum has fallen. Initiating emergency stop.")
+                odrive1.estop()
+                break  # Exit the loop to stop further execution
 
             #Input the current encoder angle into the PID Controller and get its pid_output
             pid_output = pid.update(current_value=current_angle)
@@ -62,6 +77,7 @@ async def controller(odrive1, encoder, pid):
             
         #await asyncio.sleep(15) #no longer need this the timedelta =15 runs the program for 15 seconds.
         odrive1.running = False
+        odrive1.estop()
 
 
 
@@ -113,7 +129,8 @@ async def main():
             encoder.loop(), #This runs the external encoder code
         )
     except KeyboardInterrupt:
-         odrive1.set_torque(0)
+         odrive1.estop()
+
 
 
 
