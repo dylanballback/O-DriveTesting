@@ -44,7 +44,7 @@ def clamp(x, lower, upper):
 async def controller(odrive1, encoder, pid):
         odrive1.clear_errors(identify=False)
         await asyncio.sleep(0.2)
-        odrive1.setAxisState1("closed_loop_control")
+        odrive1.setAxisState("closed_loop_control")
         await asyncio.sleep(0.2)
         odrive1.set_torque(0)
 
