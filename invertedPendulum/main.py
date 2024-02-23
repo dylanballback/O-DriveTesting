@@ -50,9 +50,10 @@ async def controller(odrive1, encoder, pid):
 
 
         # Define angle thresholds for detecting the pendulum has fallen
-        angle_threshold_min = -30  # Minimum angle threshold
-        angle_threshold_max = 30   # Maximum angle threshold
+        angle_threshold_min = -40  # Minimum angle threshold
+        angle_threshold_max = 40   # Maximum angle threshold
 
+        await asyncio.sleep(2)
         #Run for set time delay example runs for 15 seconds.
         stop_at = datetime.now() + timedelta(seconds=100000)
         while datetime.now() < stop_at:
@@ -63,7 +64,7 @@ async def controller(odrive1, encoder, pid):
 
             # Check if the pendulum has fallen by comparing the current angle with the thresholds
             if current_angle < angle_threshold_min or current_angle > angle_threshold_max:
-                print("Pendulum has fallen. Initiating emergency stop.")
+                #print("Pendulum has fallen. Initiating emergency stop.")
                 odrive1.estop()
                 break  # Exit the loop to stop further execution
 
@@ -111,7 +112,7 @@ async def main():
     #PID Const
     kp = 3.3
     ki = 0.069
-    kd = 0.3
+    kd = 0.31
     pid_trial_notes = "Here we can take notes on our pid_values"
 
     #Initalize PID Controller (Make setpoint between -2 and 2)
