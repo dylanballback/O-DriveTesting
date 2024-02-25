@@ -46,6 +46,13 @@ async def main():
     odrive.initCanBus()
 
     
+    print("Put Arm at bottom center to calibrate Zero Position.")
+    await asyncio.sleep(5)
+    odrive.set_absolute_position()
+    await asyncio.sleep(1)
+    current_position = odrive.position
+    print("Encoder Absolute Position Set: {current_position}")
+
     #odrive.setAxisState("closed_loop_control")
 
     #add each odrive to the async loop so they will run.
