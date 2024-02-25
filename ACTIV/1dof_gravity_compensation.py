@@ -4,7 +4,7 @@ import math
 from datetime import datetime, timedelta
 
 
-mass = 0.085  # Kg
+mass = 0.095  # Kg
 length = 0.1  # Meters
 
 async def controller(odrive):
