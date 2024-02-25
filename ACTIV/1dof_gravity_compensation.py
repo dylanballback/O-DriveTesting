@@ -4,7 +4,7 @@ import math
 from datetime import datetime, timedelta
 
 
-mass = 0.2  # Kg
+mass = 0.085  # Kg
 length = 0.1  # Meters
 
 async def controller(odrive):
@@ -24,7 +24,7 @@ async def controller(odrive):
         next_torque = math.sin(current_position_rad) * mass * length * 9.8
 
         # Limit next_torque to between -0.129 and 0.129
-        next_torque = max(-0.129, min(0.129, next_torque))
+        next_torque = max(-0.1, min(0.1, next_torque))
         
         # Set the calculated torque
         odrive.set_torque(next_torque)  # Assuming this is an async method
@@ -33,13 +33,20 @@ async def controller(odrive):
         await asyncio.sleep(0.015)  # 15ms sleep, adjust based on your control loop requirements
 
 
-#Set up Node_ID 10
-odrive = pyodrivecan.ODriveCAN(10)
+#Set up Node_ID 10 ACTIV NODE ID = 10
+odrive = pyodrivecan.ODriveCAN(0)
 
 # Run multiple busses.
 async def main():
+    odrive.clear_errors(identify=False)
+    print("Cleared Errors")
+    await asyncio.sleep(1)
+
     #Initalize odrive
     odrive.initCanBus()
+
+    
+    #odrive.setAxisState("closed_loop_control")
 
     #add each odrive to the async loop so they will run.
     await asyncio.gather(
@@ -53,6 +60,6 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("KeyboardInterrupt caught, stopping...")
-        odrive.set_torque(0)
-        odrive.running = False
+        odrive.estop()
+        
         # Perform any additional cleanup if necessary
