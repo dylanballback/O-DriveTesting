@@ -31,7 +31,7 @@ async def controller(odrive):
         odrive.set_torque(next_torque) 
         print(f"Normalized position {normalized_position} (revs), Current Position {current_position_rad} (rad), Torque Set to {next_torque} (Nm)")
 
-        await asyncio.sleep(0.0001)  # 15ms sleep, adjust based on your control loop requirements
+        await asyncio.sleep(0.001)  # 15ms sleep, adjust based on your control loop requirements
 
 
 #Set up Node_ID 10 ACTIV NODE ID = 10
