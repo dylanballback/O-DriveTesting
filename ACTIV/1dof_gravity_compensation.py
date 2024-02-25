@@ -48,7 +48,7 @@ async def main():
     
     print("Put Arm at bottom center to calibrate Zero Position.")
     await asyncio.sleep(5)
-    odrive.set_absolute_position()
+    odrive.set_absolute_position(position=0)
     await asyncio.sleep(1)
     current_position = odrive.position
     print(f"Encoder Absolute Position Set: {current_position}")
