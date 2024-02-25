@@ -70,4 +70,3 @@ if __name__ == "__main__":
         print("KeyboardInterrupt caught, stopping...")
         odrive.estop()
         
-        # Perform any additional cleanup if necessary
