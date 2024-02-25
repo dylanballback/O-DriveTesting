@@ -11,7 +11,7 @@ async def controller(odrive):
     await asyncio.sleep(1)
 
     #Run for set time delay example runs for 15 seconds.
-    stop_at = datetime.now() + timedelta(seconds=60)
+    stop_at = datetime.now() + timedelta(seconds=10000)
     while datetime.now() < stop_at:
         current_position_rev = odrive.position
 
@@ -30,7 +30,7 @@ async def controller(odrive):
         odrive.set_torque(next_torque)  # Assuming this is an async method
         print(f"Current position {current_position_rev} (revs), Current Position {current_position_rad} (rad), Torque Set to {next_torque} (Nm)")
 
-        await asyncio.sleep(0.015)  # 15ms sleep, adjust based on your control loop requirements
+        await asyncio.sleep(0)  # 15ms sleep, adjust based on your control loop requirements
 
 
 #Set up Node_ID 10 ACTIV NODE ID = 10
@@ -51,7 +51,7 @@ async def main():
     odrive.set_absolute_position()
     await asyncio.sleep(1)
     current_position = odrive.position
-    print("Encoder Absolute Position Set: {current_position}")
+    print(f"Encoder Absolute Position Set: {current_position}")
 
     #odrive.setAxisState("closed_loop_control")
 
