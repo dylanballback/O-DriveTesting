@@ -4,8 +4,8 @@ import math
 from datetime import datetime, timedelta
 
 
-mass = 0.095  # Kg
-length = 0.1  # Meters
+mass = 0.12  # Kg weights = 0.090
+length = 0.11  # Meters
 
 async def controller(odrive):
     await asyncio.sleep(1)
@@ -25,13 +25,13 @@ async def controller(odrive):
         next_torque = math.sin(current_position_rad) * mass * length * 9.8
 
         # Limit next_torque to between -0.129 and 0.129
-        next_torque = max(-0.1, min(0.1, next_torque))
+        next_torque = max(-0.2, min(0.2, next_torque))
         
         # Set the calculated torque
         odrive.set_torque(next_torque) 
         print(f"Normalized position {normalized_position} (revs), Current Position {current_position_rad} (rad), Torque Set to {next_torque} (Nm)")
 
-        await asyncio.sleep(0.001)  # 15ms sleep, adjust based on your control loop requirements
+        await asyncio.sleep(0.0015)  # 15ms sleep, adjust based on your control loop requirements
 
 
 #Set up Node_ID 10 ACTIV NODE ID = 10
@@ -48,7 +48,7 @@ async def main():
 
     
     print("Put Arm at bottom center to calibrate Zero Position.")
-    await asyncio.sleep(5)
+    await asyncio.sleep(1)
     odrive.set_absolute_position(position=0)
     await asyncio.sleep(1)
     current_position = odrive.position
