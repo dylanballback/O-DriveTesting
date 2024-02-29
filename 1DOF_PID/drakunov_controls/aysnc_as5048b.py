@@ -134,10 +134,13 @@ class Encoder_as5048b:
         tasks to run concurrently.
         """
         while self.running:
-            await asyncio.sleep(0) # Non-blocking sleep to yield control
-            self.angle = self.read_angle() # Update the current angle
-            self.update_rotation_counter(self.angle)  # Update rotation counter
+            await asyncio.sleep(0)  # Non-blocking sleep to yield control
+            current_angle = self.read_angle()  # Read current angle
+            if self.previous_angle is not None:  # Ensure previous_angle is initialized
+                self.update_rotation_counter(current_angle, self.previous_angle)
+            self.angle = current_angle  # Update the current angle
             await self.calculate_angular_velocity()  # Calculate angular velocity
+            self.previous_angle = current_angle  # Update previous angle for next iteration
 
 
 
