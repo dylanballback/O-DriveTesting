@@ -163,7 +163,7 @@ async def main():
     controller_param_table_name = 'controllerParameters'
 
     #Create the PID Parameters Database Table with the Initalization Function
-    upload_controller_parameters(database, controller_param_table_name)
+    controller_param_table_init(database, controller_param_table_name)
 
     #Controller Consts
     J_zz = 0.001666667
