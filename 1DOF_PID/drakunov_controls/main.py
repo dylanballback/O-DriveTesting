@@ -39,7 +39,7 @@ def controller_data_table_init(database, controller_data_table_name):
     table_columns_type = [
         ("current_time", "REAL"),
         ("omega_z", "REAL"),
-        ("u_Z", "REAL"),
+        ("u_Z", "REAL")
     ]
 
     #Create table
@@ -156,7 +156,7 @@ async def main():
 
     #Set up Encoder 
     encoder = aysnc_as5048b.Encoder_as5048b()
-    encoder.calibrate()
+    #encoder.calibrate()
     encoder.encoder_table_init()
 
     #Controller Parameters Table Name
