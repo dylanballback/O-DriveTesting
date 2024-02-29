@@ -122,7 +122,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
             #Send pid_output to control motor Torque
-            odrive1.set_torque(controller_torque_output_clamped)
+            odrive1.set_torque(-controller_torque_output_clamped)
 
             data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
             #Add to database
