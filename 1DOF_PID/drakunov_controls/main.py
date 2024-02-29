@@ -146,7 +146,7 @@ async def main():
     odrive1 = pyodrivecan.ODriveCAN(0)
     odrive1.initCanBus()
     
-    print(odrive1.database)
+    #print(odrive1.database)
     #This sets up the database path the same as odrive1 object.
     database = pyodrivecan.OdriveDatabase('odrive_data.db')
 
