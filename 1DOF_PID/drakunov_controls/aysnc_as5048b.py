@@ -27,6 +27,7 @@ class Encoder_as5048b:
     - database (pyodrivecan.OdriveDatabase): Database object for storing encoder data.
     - table_name (str): Name of the table for storing encoder data.
     - start_time (float): Captures the start time when the object is initialized.
+    - total_rotations (int): Track total rotations of encoder.
     """
     bus: SMBus = field(default_factory=lambda: SMBus(1))
     address: int = 0x40  # AS5048B default address
@@ -41,6 +42,7 @@ class Encoder_as5048b:
     database: pyodrivecan.OdriveDatabase = field(default_factory=lambda: pyodrivecan.OdriveDatabase('odrive_data.db'))
     table_name: str = 'encoderData'  # Name of the table for storing encoder data
     start_time: float = time.time()  # Capture the start time when the object is initialized
+    total_rotations: int = 0  # Add this line to track total rotations
 
 
 
@@ -65,6 +67,21 @@ class Encoder_as5048b:
             # Handle the error appropriately, possibly by logging or retrying
             return self.angle  # Return the last known angle or a default value
 
+    def update_rotation_counter(self, current_angle, previous_angle):
+        """
+        Updates the total rotation counter based on the detected direction of rotation. This method determines
+        whether a full rotation has occurred by comparing the current and previous angles against a defined threshold,
+        indicative of passing through the 0-degree mark.
+
+        Parameters:
+            current_angle (float): The current angle reading from the encoder.
+        """
+        # Threshold to determine a wrap-around event
+        wrap_threshold = 300  # Adjust based on your application's needs
+        if previous_angle > wrap_threshold and current_angle < (360 - wrap_threshold):
+            self.total_rotations += 1
+        elif current_angle > wrap_threshold and previous_angle < (360 - wrap_threshold):
+            self.total_rotations -= 1
 
     def calibrate(self):
         """
@@ -119,6 +136,7 @@ class Encoder_as5048b:
         while self.running:
             await asyncio.sleep(0) # Non-blocking sleep to yield control
             self.angle = self.read_angle() # Update the current angle
+            self.update_rotation_counter(self.angle)  # Update rotation counter
             await self.calculate_angular_velocity()  # Calculate angular velocity
 
 
