@@ -170,7 +170,7 @@ async def main():
     K = 1
     controller_trial_notes = "Here we can take notes on our controller"
 
-    controller_param_data = (next_trial_id, J_zz, K, controller_trial_notes)
+    controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
     #Upload PID parameters and notes to database
     upload_controller_parameters(database, controller_param_table_name, controller_param_data)
 
