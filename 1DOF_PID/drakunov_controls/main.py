@@ -120,10 +120,11 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
             #Input the current encoder angular velocity into the Controller and get its torque output
             controller_torque_output = control_law_single_axis(J_zz, K, current_angular_velocity)
-            print(f"PID Output: {controller_torque_output}, Current Angular Velocity: {current_angular_velocity}")
+            controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
+            print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
             #Send pid_output to control motor Torque
-            odrive1.set_torque(controller_torque_output)
+            odrive1.set_torque(controller_torque_output_clamped)
 
             data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
             #Add to database
