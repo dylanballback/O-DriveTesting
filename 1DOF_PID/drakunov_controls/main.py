@@ -46,7 +46,7 @@ def controller_data_table_init(database, controller_data_table_name):
     database.create_user_defined_table(controller_data_table_name, table_columns_type)
 
 
-async def upload_controller_data(database, controller_data_table_name, controller_data):
+def upload_controller_data(database, controller_data_table_name, controller_data):
     """
     Asynchronously uploads the latest encoder value and related data to the database.
 
@@ -60,10 +60,8 @@ async def upload_controller_data(database, controller_data_table_name, controlle
 
     values = controller_data
 
-    #database.insert_into_user_defined_table(controller_data_table_name, columns, values)
-    # Use run_in_executor to run the synchronous database insert operation in a background thread
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, database.insert_into_user_defined_table, controller_data_table_name, columns, values)
+    database.insert_into_user_defined_table(controller_data_table_name, columns, values)
+    
 
 
 
@@ -128,7 +126,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
             data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
             #Add to database
-            upload_controller_data( database, controller_data_table_name, data)
+            upload_controller_data(database, controller_data_table_name, data)
           
 
             
