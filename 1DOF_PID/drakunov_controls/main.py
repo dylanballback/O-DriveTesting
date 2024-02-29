@@ -103,7 +103,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         #Run for set time delay example runs for 15 seconds.
         stop_at = datetime.now() + timedelta(seconds=100000)
         while datetime.now() < stop_at:
-            await asyncio.sleep(0) #Need this for async to work.
+            await asyncio.sleep(0.005) #Need this for async to work.
             
             #Get the current angle of the encoder
             #current_angle = encoder.angle
