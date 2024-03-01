@@ -98,7 +98,7 @@ class Encoder_as5048b:
         print("5 Seconds Over, Going to run controller.")
 
 
-    async def calculate_angular_velocity(self):
+    def calculate_angular_velocity(self):
         """
         Asynchronously calculates and updates the angular velocity in radians per second.
 
@@ -190,7 +190,7 @@ class Encoder_as5048b:
             if self.previous_angle is not None:  # Ensure previous_angle is initialized
                 self.update_rotation_counter(current_angle, self.previous_angle)
             self.angle = current_angle  # Update the current angle
-            await self.calculate_angular_velocity()  # Calculate angular velocity
+            self.calculate_angular_velocity()  # Calculate angular velocity
             self.previous_angle = current_angle  # Update previous angle for next iteration
 
 
