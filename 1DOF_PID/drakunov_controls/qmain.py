@@ -183,7 +183,7 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current
     
 
     # Apply PD control law
-    omega_desired = Kp * e - Kd * current_angular_velocity
+    omega_desired = Kp * e + Kd * current_angular_velocity
     
     return omega_desired
 
@@ -255,7 +255,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             
           
             # Clamping the output torque to be withing the min and max of the O-Drive Controller
-            controller_torque_output_clamped= clamp(controller_torque_output, -0.05, 0.05)
+            controller_torque_output_clamped= clamp(controller_torque_output, -0.07, 0.07)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
             print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.15f} Nm;   Current Angular Velocity: {current_angular_velocity:.15f} rad/s")
