@@ -308,7 +308,7 @@ async def main():
 
     #For Quaternion Control Desired Angular Velocity PD Controller
     Kp = 1
-    Kd = 0.00.1
+    Kd = 0.001
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
