@@ -109,13 +109,19 @@ class Encoder_as5048b:
         """
         current_angle = self.read_angle()
         current_time = time.time()
-        angle_difference = current_angle - self.previous_angle
+
+        # Update the total rotations counter
+        self.update_rotation_counter(current_angle, self.previous_angle)
+
+        # Calculate the continuous angle
+        continuous_angle_deg = self.get_continuous_angle()
+
+        angle_difference = continuous_angle_deg - (self.previous_angle + (self.total_rotations * 360))
         time_difference = current_time - self.previous_time
 
         # Convert angle difference from degrees to radians
         angle_difference_radians = math.radians(angle_difference)
 
-        # Calculate angular velocity (radians per second)
         if time_difference != 0:  # Avoid division by zero
             self.angular_velocity = angle_difference_radians / time_difference
 
@@ -123,6 +129,15 @@ class Encoder_as5048b:
         self.previous_angle = current_angle
         self.previous_time = current_time
 
+
+    def get_continuous_angle(self):
+        """
+        Calculates a continuous angle that accounts for the total number of rotations.
+
+        Returns:
+            float: The continuous angle in degrees.
+        """
+        return self.angle + (self.total_rotations * 360)
 
 
     async def listen_to_angle(self):
