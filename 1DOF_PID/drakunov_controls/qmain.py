@@ -311,12 +311,12 @@ async def main():
 
     #Controller Consts
     J_zz = 0.001666667
-    K = 2.5
+    K = 2
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 0.04
-    Kd = 5
+    Kp = 0.02
+    Kd = 15
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
