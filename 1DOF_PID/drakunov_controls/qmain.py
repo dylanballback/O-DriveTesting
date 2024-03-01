@@ -163,7 +163,7 @@ def control_law_single_axis(J_zz, K, omega_z):
     return u_z
 
 
-def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd):
+def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity):
     """
     Calculate the desired angular velocity based on quaternion error.
 
@@ -181,8 +181,9 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd):
     e_prev = angle_error_prev  
     de_dt = (e - e_prev) / dt
     
+
     # Apply PD control law
-    omega_desired = Kp * e - Kd * de_dt
+    omega_desired = Kp * e - Kd * current_angular_velocity
     
     return omega_desired
 
@@ -232,8 +233,12 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             #omega_desired = calculate_w_desired(q_error, q_error_prev, dt, Kp, Kd)
             #print(f"Current Angle: {current_angle} deg;   Desired Angular Velocity: {omega_desired} rad/s")
             
+              
+            # Get the current angluar velocity of the encoder
+            current_angular_velocity = encoder.angular_velocity
 
-            omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd)
+
+            omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity)
 
             # Update previous quaternion error
             #q_error_prev = q_error
@@ -248,10 +253,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             # Assuming omega_z is the component of omega_desired along the z-axis
             controller_torque_output = control_law_single_axis(J_zz, K, omega_desired)
             
-            
-            # Get the current angluar velocity of the encoder
-            current_angular_velocity = encoder.angular_velocity
-
+          
             # Clamping the output torque to be withing the min and max of the O-Drive Controller
             controller_torque_output_clamped= clamp(controller_torque_output, -0.05, 0.05)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
