@@ -201,7 +201,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         angle_error_prev = 0
         #q_desired = angle_to_quaternion(desired_attitude_deg)
         #q_error_prev = np.array([1, 0, 0, 0])  # Assume starting with no error
-        
+        dt = 0.05
 
         await asyncio.sleep(2)
         #Run for set time delay example runs for 15 seconds.
@@ -210,8 +210,8 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             
 
             current_time = time.time()  # Capture the current time
-            dt = current_time - last_time  # Calculate dt as the difference between current time and last time
-            print(dt)
+            #dt = current_time - last_time  # Calculate dt as the difference between current time and last time
+            #print(dt)
             await asyncio.sleep(dt)  # Sleep for the duration of the time step
 
             #Get the current angle of the encoder
