@@ -160,6 +160,9 @@ def control_law_single_axis(J_zz, K, omega_z, omega_desired):
     - u_z: Control input (torque) about the z-axis in Nm.
     """
     u_z = -J_zz * K * (omega_z - omega_desired)
+    print("   ")
+    print(f"Omega current = {omega_z}, Omega Desired = {omega_desired}")
+    print("   ")
     return u_z
 
 
@@ -318,7 +321,7 @@ async def main():
     Kp = 0.02
     Kd = 15
     desired_attitude_deg = 30 #Degrees
-    omega_desired = 0.5 #rad/s
+    omega_desired = 1 #rad/s
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
     #Upload PID parameters and notes to database
