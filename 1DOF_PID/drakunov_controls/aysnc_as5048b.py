@@ -43,6 +43,7 @@ class Encoder_as5048b:
     table_name: str = 'encoderData'  # Name of the table for storing encoder data
     start_time: float = time.time()  # Capture the start time when the object is initialized
     total_rotations: int = 0  # Add this line to track total rotations
+    total_accumulated_angle: float = 0.0  # Track the total accumulated angle in degrees
 
 
 
@@ -129,6 +130,35 @@ class Encoder_as5048b:
         self.previous_angle = current_angle
         self.previous_time = current_time
 
+    def update_rotation_counter_and_accumulated_angle(self, current_angle):
+        """
+        Updates the total rotation counter and the total accumulated angle based on the direction of rotation.
+        This method increments the total rotations counter when passing through 0 degrees clockwise,
+        and decrements when passing counterclockwise. It also updates the total accumulated angle.
+        """
+        angle_threshold = 10  # Threshold to detect a wrap-around, avoiding noise around 0 degrees
+        max_angle = 360
+        rotation_detected = False
+
+        # Detect clockwise rotation (passing through 0 degrees)
+        if self.previous_angle > (max_angle - angle_threshold) and current_angle < angle_threshold:
+            self.total_rotations += 1
+            rotation_detected = True
+        
+        # Detect counterclockwise rotation
+        elif self.previous_angle < angle_threshold and current_angle > (max_angle - angle_threshold):
+            self.total_rotations -= 1
+            rotation_detected = True
+
+        # Update the total accumulated angle
+        if rotation_detected:
+            self.total_accumulated_angle = self.total_rotations * max_angle
+        else:
+            # Update the accumulated angle based on the current angle and total rotations
+            self.total_accumulated_angle = self.total_rotations * max_angle + current_angle
+
+        self.previous_angle = current_angle  # Update the previous angle for the next calculation
+
 
     def get_continuous_angle(self):
         """
@@ -151,6 +181,8 @@ class Encoder_as5048b:
         while self.running:
             await asyncio.sleep(0)  # Non-blocking sleep to yield control
             current_angle = self.read_angle()  # Read current angle
+            
+            self.update_rotation_counter_and_accumulated_angle(current_angle)  # Update rotations and accumulated angle
             if self.previous_angle is not None:  # Ensure previous_angle is initialized
                 self.update_rotation_counter(current_angle, self.previous_angle)
             self.angle = current_angle  # Update the current angle

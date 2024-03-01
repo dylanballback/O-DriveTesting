@@ -217,7 +217,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
     
             #Get the current angle of the encoder
-            current_angle = encoder.angle
+            current_angle = encoder.total_accumulated_angle
             #print(f"Current Angle: {current_angle}")
 
             angle_error = desired_attitude_deg - current_angle
