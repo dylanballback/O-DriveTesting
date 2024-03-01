@@ -311,7 +311,7 @@ async def main():
 
     #Controller Consts
     J_zz = 0.001666667
-    K = 2.5
+    K = 4
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
