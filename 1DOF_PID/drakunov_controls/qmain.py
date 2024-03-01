@@ -208,16 +208,14 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         #Run for set time delay example runs for 15 seconds.
         stop_at = datetime.now() + timedelta(seconds=100000)
         while datetime.now() < stop_at:
-            
+            # Sleep for a fixed duration to maintain loop frequency
+            await asyncio.sleep(fixed_duration)
+
 
             current_time = time.time()  # Capture the current time
             dt = current_time - last_time  # Calculate dt as the difference between current time and last time
-            
 
-            while datetime.now() < stop_at:
-                # Sleep for a fixed duration to maintain loop frequency
-                await asyncio.sleep(fixed_duration)
-
+    
             #Get the current angle of the encoder
             current_angle = encoder.angle
             #print(f"Current Angle: {current_angle}")
