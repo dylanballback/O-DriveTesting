@@ -108,30 +108,34 @@ class Encoder_as5048b:
 
         Note: This method should be called repeatedly in a loop to continuously update the angular velocity.
         """
-        current_angle = self.read_angle()
-        current_time = time.time()
+        current_angle = self.read_angle()  # Get the current angle from the encoder
+        current_time = time.time()  # Get the current time
 
-        # Update the total rotations counter
-        self.update_rotation_counter(current_angle, self.previous_angle)
-
-        # Calculate the continuous angle
-        continuous_angle_deg = self.get_continuous_angle()
-
-        angle_difference = continuous_angle_deg - (self.previous_angle + (self.total_rotations * 360))
-        time_difference = current_time - self.previous_time
-
-        # Convert angle difference from degrees to radians
-        angle_difference_radians = math.radians(angle_difference)
-
-        if time_difference != 0:  # Avoid division by zero
-            self.angular_velocity = angle_difference_radians / time_difference
+        # Check for angle wrapping
+        # Threshold set to 1% is 3.6 of the full scale
+        angle_threshold = 6
+        if current_angle < angle_threshold and self.previous_angle > (360 - angle_threshold):
+            # Wrapped around clockwise
+            angle_difference = (current_angle + 360) - self.previous_angle
+        elif self.previous_angle < angle_threshold and current_angle > (360 - angle_threshold):
+            # Wrapped around counterclockwise
+            angle_difference = current_angle - (self.previous_angle + 360)
         else:
-            print("Time difference is zero or too small, check the timing of your readings.")
+            # No wrapping occurred
+            angle_difference = current_angle - self.previous_angle
 
-        # Update previous angle and time for the next calculation
+        time_difference = current_time - self.previous_time  # Calculate the time difference
+
+        # Calculate the angular velocity, ensuring time difference is not zero
+        if time_difference > 0:
+            self.angular_velocity = math.radians(angle_difference) / time_difference
+        else:
+            # Handle the case where time_difference is zero
+            self.angular_velocity = 0
+
+        # Update the previous angle and time for the next iteration
         self.previous_angle = current_angle
         self.previous_time = current_time
-
 
 
     def update_rotation_counter_and_accumulated_angle(self, current_angle):
