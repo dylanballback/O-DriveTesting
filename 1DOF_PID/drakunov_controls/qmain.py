@@ -211,7 +211,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
             current_time = time.time()  # Capture the current time
             dt = current_time - last_time  # Calculate dt as the difference between current time and last time
-
+            print(dt)
             await asyncio.sleep(dt)  # Sleep for the duration of the time step
 
             #Get the current angle of the encoder
@@ -253,7 +253,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             controller_torque_output_clamped= clamp(controller_torque_output, -0.3, 0.3)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
-            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
+            #print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
 
             #Send controller output torque to motor
             odrive1.set_torque(controller_torque_output_clamped)
@@ -303,12 +303,12 @@ async def main():
 
     #Controller Consts
     J_zz = 0.001666667
-    K = 5
+    K = 1
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 2
-    Kd = 0.2
+    Kp = 1
+    Kd = 0.00.1
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
