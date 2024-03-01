@@ -251,7 +251,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             
             # Use the desired angular velocity to compute the control torque
             # Assuming omega_z is the component of omega_desired along the z-axis
-            controller_torque_output = control_law_single_axis(J_zz, K, omega_desired)
+            controller_torque_output = control_law_single_axis(J_zz, K, current_angular_velocity, omega_desired)
             
           
             # Clamping the output torque to be withing the min and max of the O-Drive Controller
