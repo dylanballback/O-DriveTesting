@@ -147,7 +147,7 @@ def clamp(x, lower, upper):
     return lower if x < lower else upper if x > upper else x
 
 
-def control_law_single_axis(J_zz, K, omega_z):
+def control_law_single_axis(J_zz, K, omega_z, omega_desired):
     """
     Calculate the control input (torque) for rotation about the z-axis.
 
@@ -159,7 +159,7 @@ def control_law_single_axis(J_zz, K, omega_z):
     Returns:
     - u_z: Control input (torque) about the z-axis in Nm.
     """
-    u_z = -J_zz * K * omega_z
+    u_z = -J_zz * K * (omega_z - omega_desired)
     return u_z
 
 
@@ -190,7 +190,7 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current
 
 
 #Example of how you can create a controller to get data from the O-Drives and then send motor comands based on that data.
-async def controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg):
+async def controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg, omega_desired):
         odrive1.clear_errors(identify=False)
         await asyncio.sleep(0.2)
         odrive1.setAxisState("closed_loop_control")
@@ -238,7 +238,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             current_angular_velocity = encoder.angular_velocity
 
 
-            omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity)
+            #omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity)
 
             # Update previous quaternion error
             #q_error_prev = q_error
@@ -318,6 +318,7 @@ async def main():
     Kp = 0.02
     Kd = 15
     desired_attitude_deg = 30 #Degrees
+    omega_desired = 0.5 #rad/s
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
     #Upload PID parameters and notes to database
@@ -334,7 +335,7 @@ async def main():
         #add each odrive to the async loop so they will run.
         await asyncio.gather(
             odrive1.loop(),
-            controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg), 
+            controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg, omega_desired), 
             encoder.loop(), #This runs the external encoder code
         )
     except KeyboardInterrupt:
