@@ -201,7 +201,8 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         angle_error_prev = 0
         #q_desired = angle_to_quaternion(desired_attitude_deg)
         #q_error_prev = np.array([1, 0, 0, 0])  # Assume starting with no error
-        dt = 0.05
+        fixed_duration = 0.005  # Fixed sleep duration to control loop frequency
+        
 
         await asyncio.sleep(2)
         #Run for set time delay example runs for 15 seconds.
@@ -210,9 +211,12 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             
 
             current_time = time.time()  # Capture the current time
-            #dt = current_time - last_time  # Calculate dt as the difference between current time and last time
-            #print(dt)
-            await asyncio.sleep(dt)  # Sleep for the duration of the time step
+            dt = current_time - last_time  # Calculate dt as the difference between current time and last time
+            
+
+            while datetime.now() < stop_at:
+                # Sleep for a fixed duration to maintain loop frequency
+                await asyncio.sleep(fixed_duration)
 
             #Get the current angle of the encoder
             current_angle = encoder.angle
@@ -230,6 +234,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             #omega_desired = calculate_w_desired(q_error, q_error_prev, dt, Kp, Kd)
             #print(f"Current Angle: {current_angle} deg;   Desired Angular Velocity: {omega_desired} rad/s")
             
+
             omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd)
 
             # Update previous quaternion error
@@ -250,7 +255,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             current_angular_velocity = encoder.angular_velocity
 
             # Clamping the output torque to be withing the min and max of the O-Drive Controller
-            controller_torque_output_clamped= clamp(controller_torque_output, -0.3, 0.3)
+            controller_torque_output_clamped= clamp(controller_torque_output, -0.15, 0.15)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
             #print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
@@ -262,6 +267,9 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             last_angle = current_angle
             angle_error_prev = angle_error
             last_time = current_time  # Update last_time for the next iteration
+
+            # Example print to debug dt values
+            print(f"dt: {dt:.3f} seconds")
 
 
             data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
@@ -307,8 +315,8 @@ async def main():
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 1
-    Kd = 0.001
+    Kp = 0.2
+    Kd = 0.02
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
