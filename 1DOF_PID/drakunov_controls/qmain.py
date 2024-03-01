@@ -160,9 +160,9 @@ def control_law_single_axis(J_zz, K, omega_z, omega_desired):
     - u_z: Control input (torque) about the z-axis in Nm.
     """
     u_z = -J_zz * K * (omega_z - omega_desired)
-    print("   ")
-    print(f"Omega current = {omega_z}, Omega Desired = {omega_desired}")
-    print("   ")
+    #print("   ")
+    #print(f"Omega current = {omega_z}, Omega Desired = {omega_desired}")
+    #print("   ")
     return u_z
 
 
