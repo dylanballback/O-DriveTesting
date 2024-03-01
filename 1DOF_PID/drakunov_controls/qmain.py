@@ -286,6 +286,8 @@ async def main():
         )
     except KeyboardInterrupt:
          odrive1.estop()
+    finally:
+        odrive1.estop()
 
 
 
