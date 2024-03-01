@@ -125,10 +125,14 @@ class Encoder_as5048b:
 
         if time_difference != 0:  # Avoid division by zero
             self.angular_velocity = angle_difference_radians / time_difference
+        else:
+            print("Time difference is zero or too small, check the timing of your readings.")
 
         # Update previous angle and time for the next calculation
         self.previous_angle = current_angle
         self.previous_time = current_time
+
+
 
     def update_rotation_counter_and_accumulated_angle(self, current_angle):
         """
