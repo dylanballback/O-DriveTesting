@@ -256,7 +256,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             controller_torque_output_clamped= clamp(controller_torque_output, -0.15, 0.15)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
-            #print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
+            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
 
             #Send controller output torque to motor
             odrive1.set_torque(controller_torque_output_clamped)
@@ -267,7 +267,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             last_time = current_time  # Update last_time for the next iteration
 
             # Example print to debug dt values
-            print(f"dt: {dt:.3f} seconds")
+            #print(f"dt: {dt:.3f} seconds")
 
 
             data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
