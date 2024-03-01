@@ -182,7 +182,7 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd):
     de_dt = (e - e_prev) / dt
     
     # Apply PD control law
-    omega_desired = Kp * e + Kd * de_dt
+    omega_desired = Kp * e - Kd * de_dt
     
     return omega_desired
 
@@ -220,7 +220,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             current_angle = encoder.total_accumulated_angle
             #print(f"Current Angle: {current_angle}")
 
-            angle_error = desired_attitude_deg - current_angle
+            angle_error = current_angle - desired_attitude_deg
 
             # Convert Current Angle from Encoder to quaternion
             #q_current = angle_to_quaternion(current_angle)
@@ -256,7 +256,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             controller_torque_output_clamped= clamp(controller_torque_output, -0.05, 0.05)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
-            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
+            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.15f} Nm;   Current Angular Velocity: {current_angular_velocity:.15f} rad/s")
 
             #Send controller output torque to motor
             odrive1.set_torque(controller_torque_output_clamped)
