@@ -109,13 +109,6 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             # Get the current angluar velocity of the encoder
             current_angular_velocity = encoder.angular_velocity
 
-
-            # Check if the pendulum has fallen by comparing the current angle with the thresholds
-            #if current_angle < angle_threshold_min or current_angle > angle_threshold_max:
-                #print("Pendulum has fallen. Initiating emergency stop.")
-                #odrive1.estop()
-                #break  # Exit the loop to stop further execution
-
             #Input the current encoder angular velocity into the Controller and get its torque output
             controller_torque_output = control_law_single_axis(J_zz, K, current_angular_velocity)
             controller_torque_output_clamped= clamp(controller_torque_output, -0.3, 0.3)
@@ -123,16 +116,14 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
             print(f"Controller Clampped Output: {controller_torque_output_clamped:.10f} (Nm),                    Current Angular Velocity: {current_angular_velocity:.10f} (Rad/s)")
 
-            #Send pid_output to control motor Torque
+            #Send controller output torque to motor
             odrive1.set_torque(controller_torque_output_clamped)
 
             data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
             #Add to database
             upload_controller_data(database, controller_data_table_name, data)
           
-
-            
-        #await asyncio.sleep(15) #no longer need this the timedelta =15 runs the program for 15 seconds.
+   
         odrive1.running = False
         odrive1.estop()
 
@@ -167,7 +158,7 @@ async def main():
 
     #Controller Consts
     J_zz = 0.001666667
-    K = 5
+    K = 2
     controller_trial_notes = "Here we can take notes on our controller"
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
