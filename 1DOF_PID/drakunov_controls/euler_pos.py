@@ -318,7 +318,7 @@ async def main():
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 0.0000001
+    Kp = 0.000000000001
     Kd = 15
     desired_attitude_deg = 30 #Degrees
 
