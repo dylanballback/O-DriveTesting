@@ -316,7 +316,7 @@ async def main():
 
     #For Quaternion Control Desired Angular Velocity PD Controller
     Kp = 0.02
-    Kd = 15
+    Kd = 10
     desired_attitude_deg = 30 #Degrees
     omega_desired = 1 #rad/s
 

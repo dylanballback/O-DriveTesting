@@ -182,10 +182,10 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current
     de_dt = (e - e_prev) / dt
     
     # Apply PD control law
-    #omega_desired = Kp * e + Kd * de_dt
+    omega_desired = Kp * e + Kd * de_dt
 
     #PD Control with Angular Acceleration from encoder
-    omega_desired = Kp * e + Kd * current_angular_velocity
+    #omega_desired = Kp * e + Kd * current_angular_velocity
     
     return omega_desired
 
