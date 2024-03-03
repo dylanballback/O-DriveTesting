@@ -157,7 +157,7 @@ async def main():
     controller_param_table_init(database, controller_param_table_name)
 
     #Controller Consts
-    J_zz = 0.001666667
+    J_zz = 0.0026433333333333335
     K = 30
     controller_trial_notes = "Here we can take notes on our controller"
 
