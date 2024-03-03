@@ -182,7 +182,7 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current
     de_dt = (e - e_prev) / dt
     
     # Apply PD control law
-    omega_desired = Kp * e + Kd * de_dt
+    omega_desired = (Kp * e) + (Kd * de_dt)
 
     #PD Control with Angular Acceleration from encoder
     #omega_desired = Kp * e + Kd * current_angular_velocity
@@ -319,7 +319,7 @@ async def main():
 
     #For Quaternion Control Desired Angular Velocity PD Controller
     Kp = 0.000000000001
-    Kd = 15
+    Kd = 0.1
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
