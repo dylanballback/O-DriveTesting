@@ -61,7 +61,7 @@ class Encoder_as5048b:
         try:
             data = self.bus.read_i2c_block_data(self.address, self.angle_reg, 2)
             angle = data[0] * 256 + data[1]
-            angle *= 360 / 16383  # Convert raw data to angle in degrees
+            angle *= 90 / 16383  # Convert raw data to angle in degrees
             return angle - self.offset  # Adjust by offset
         except Exception as e:
             print(f"Error reading angle: {e}")
