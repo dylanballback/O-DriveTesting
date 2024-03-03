@@ -213,14 +213,14 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
 
             current_time = time.time()  # Capture the current time
-            dt = current_time - last_time  # Calculate dt as the difference between current time and last time
-
+            #dt = current_time - last_time  # Calculate dt as the difference between current time and last time
+            dt = fixed_duration
     
             #Get the current angle of the encoder
             current_angle = encoder.total_accumulated_angle
             #print(f"Current Angle: {current_angle}")
 
-            angle_error = desired_attitude_deg - current_angle
+            angle_error = current_angle - desired_attitude_deg 
 
             # Convert Current Angle from Encoder to quaternion
             #q_current = angle_to_quaternion(current_angle)
