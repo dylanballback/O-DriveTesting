@@ -259,7 +259,7 @@ async def main():
 
     #For Control Desired Angular Velocity PD Controller
     Kp = 0.2
-    Kd = 0
+    Kd = 0.000001
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
