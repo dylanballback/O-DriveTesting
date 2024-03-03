@@ -113,7 +113,7 @@ class Encoder_as5048b:
 
         # Check for angle wrapping
         # Threshold set to 1% is 3.6 of the full scale
-        angle_threshold = 6
+        angle_threshold = 3.6
         if current_angle < angle_threshold and self.previous_angle > (360 - angle_threshold):
             # Wrapped around clockwise
             angle_difference = (current_angle + 360) - self.previous_angle
