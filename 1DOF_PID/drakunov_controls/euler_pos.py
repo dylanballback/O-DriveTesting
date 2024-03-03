@@ -170,7 +170,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
     last_angle = 0 
     angle_error_prev = 0
 
-    fixed_duration = 0.001 # Fixed sleep duration to control loop frequency
+    fixed_duration = 0.0001 # Fixed sleep duration to control loop frequency
     
     #Run for set time delay example runs for 15 seconds.
     stop_at = datetime.now() + timedelta(seconds=100000)
@@ -259,7 +259,7 @@ async def main():
 
     #For Control Desired Angular Velocity PD Controller
     Kp = 0.000000000001
-    Kd = 0.01
+    Kd = 0.001
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
