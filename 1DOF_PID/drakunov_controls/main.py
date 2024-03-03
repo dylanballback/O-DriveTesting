@@ -158,7 +158,7 @@ async def main():
 
     #Controller Consts
     J_zz = 0.0026433333333333335
-    K = 30
+    K = 40
     controller_trial_notes = "Here we can take notes on our controller"
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
