@@ -125,8 +125,7 @@ class Encoder_as5048b:
             # Convert angle difference from degrees to radians and divide by time difference
             self.angular_velocity = math.radians(angle_difference) / time_difference
         else:
-            #self.angular_velocity = 0
-            pass
+            self.angular_velocity = 0
 
         # Update the previous angle and time for the next iteration
         self.previous_angle = current_angle
