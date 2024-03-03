@@ -200,9 +200,8 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
         # Clamping the output torque to be withing the min and max of the O-Drive Controller
         controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
-        #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
         
-        #print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
+        print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
 
         #Send controller output torque to motor
         odrive1.set_torque(controller_torque_output_clamped)
@@ -258,7 +257,7 @@ async def main():
     K = 2
 
     #For Control Desired Angular Velocity PD Controller
-    Kp = 0.04
+    Kp = 0.08
     Kd = 0.0000001
     desired_attitude_deg = 30 #Degrees
 
