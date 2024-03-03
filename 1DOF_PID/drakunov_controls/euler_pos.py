@@ -170,7 +170,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
     last_angle = 0 
     angle_error_prev = 0
 
-    fixed_duration = 0.005 # Fixed sleep duration to control loop frequency
+    fixed_duration = 0.001 # Fixed sleep duration to control loop frequency
     
     #Run for set time delay example runs for 15 seconds.
     stop_at = datetime.now() + timedelta(seconds=100000)
