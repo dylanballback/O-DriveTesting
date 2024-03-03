@@ -253,7 +253,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             current_angular_velocity = encoder.angular_velocity
 
             # Clamping the output torque to be withing the min and max of the O-Drive Controller
-            controller_torque_output_clamped= clamp(controller_torque_output, -0.15, 0.15)
+            controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
             print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
@@ -313,7 +313,7 @@ async def main():
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 0.01
+    Kp = 0.001
     Kd = 15
     desired_attitude_deg = 30 #Degrees
 
