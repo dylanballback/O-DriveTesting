@@ -110,27 +110,21 @@ class Encoder_as5048b:
         """
         current_angle = self.read_angle()  # Get the current angle from the encoder
         current_time = time.time()  # Get the current time
-
-        # Check for angle wrapping
-        # Threshold set to 1% is 3.6 of the full scale
-        angle_threshold = 3.6
-        if current_angle < angle_threshold and self.previous_angle > (360 - angle_threshold):
-            # Wrapped around clockwise
-            angle_difference = (current_angle + 360) - self.previous_angle
-        elif self.previous_angle < angle_threshold and current_angle > (360 - angle_threshold):
-            # Wrapped around counterclockwise
-            angle_difference = current_angle - (self.previous_angle + 360)
-        else:
-            # No wrapping occurred
-            angle_difference = current_angle - self.previous_angle
+        
+        angle_difference = current_angle - self.previous_angle
+        
+        # Correct for the wraparound.
+        if angle_difference > 180:
+            angle_difference -= 360  # Clockwise rotation
+        elif angle_difference < -180:
+            angle_difference += 360  # Counter-clockwise rotation
 
         time_difference = current_time - self.previous_time  # Calculate the time difference
 
-        # Calculate the angular velocity, ensuring time difference is not zero
         if time_difference > 0:
+            # Convert angle difference from degrees to radians and divide by time difference
             self.angular_velocity = math.radians(angle_difference) / time_difference
         else:
-            # Handle the case where time_difference is zero
             self.angular_velocity = 0
 
         # Update the previous angle and time for the next iteration
