@@ -261,7 +261,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
-            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
+            print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
 
             #Send controller output torque to motor
             odrive1.set_torque(controller_torque_output_clamped)
@@ -318,8 +318,8 @@ async def main():
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 0.002
-    Kd = 10
+    Kp = 0.0001
+    Kd = 15
     desired_attitude_deg = 30 #Degrees
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
