@@ -139,12 +139,15 @@ def upload_controller_data(database, controller_data_table_name, controller_data
     
 
 
+
+
+
 #Functions to clamp a variables upper and lower limit.        
 def clamp(x, lower, upper):
     return lower if x < lower else upper if x > upper else x
 
 
-def control_law_single_axis(J_zz, K, omega_z, omega_desired):
+def control_law_single_axis(J_zz, K, omega_z):
     """
     Calculate the control input (torque) for rotation about the z-axis.
 
@@ -156,14 +159,11 @@ def control_law_single_axis(J_zz, K, omega_z, omega_desired):
     Returns:
     - u_z: Control input (torque) about the z-axis in Nm.
     """
-    u_z = -J_zz * K * (omega_z - omega_desired)
-    #print("   ")
-    #print(f"Omega current = {omega_z}, Omega Desired = {omega_desired}")
-    #print("   ")
+    u_z = -J_zz * K * omega_z
     return u_z
 
 
-def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity):
+def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd):
     """
     Calculate the desired angular velocity based on quaternion error.
 
@@ -181,16 +181,15 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current
     e_prev = angle_error_prev  
     de_dt = (e - e_prev) / dt
     
-
     # Apply PD control law
-    omega_desired = Kp * e + Kd * current_angular_velocity
+    omega_desired = Kp * e + Kd * de_dt
     
     return omega_desired
 
 
 
 #Example of how you can create a controller to get data from the O-Drives and then send motor comands based on that data.
-async def controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg, omega_desired):
+async def controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg):
         odrive1.clear_errors(identify=False)
         await asyncio.sleep(0.2)
         odrive1.setAxisState("closed_loop_control")
@@ -221,7 +220,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             current_angle = encoder.total_accumulated_angle
             #print(f"Current Angle: {current_angle}")
 
-            angle_error = current_angle - desired_attitude_deg
+            angle_error = desired_attitude_deg - current_angle
 
             # Convert Current Angle from Encoder to quaternion
             #q_current = angle_to_quaternion(current_angle)
@@ -233,12 +232,8 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             #omega_desired = calculate_w_desired(q_error, q_error_prev, dt, Kp, Kd)
             #print(f"Current Angle: {current_angle} deg;   Desired Angular Velocity: {omega_desired} rad/s")
             
-              
-            # Get the current angluar velocity of the encoder
-            current_angular_velocity = encoder.angular_velocity
 
-
-            #omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity)
+            omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd)
 
             # Update previous quaternion error
             #q_error_prev = q_error
@@ -251,14 +246,17 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
             
             # Use the desired angular velocity to compute the control torque
             # Assuming omega_z is the component of omega_desired along the z-axis
-            controller_torque_output = control_law_single_axis(J_zz, K, current_angular_velocity, omega_desired)
+            controller_torque_output = control_law_single_axis(J_zz, K, omega_desired)
             
-          
+            
+            # Get the current angluar velocity of the encoder
+            current_angular_velocity = encoder.angular_velocity
+
             # Clamping the output torque to be withing the min and max of the O-Drive Controller
-            controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
+            controller_torque_output_clamped= clamp(controller_torque_output, -0.15, 0.15)
             #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
-            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.15f} Nm;   Current Angular Velocity: {current_angular_velocity:.15f} rad/s")
+            print(f"Current Angle: {current_angle} deg;    Desired Angular Velocity: {omega_desired} rad/s;   Controller Clampped Output: {controller_torque_output_clamped:.10f} Nm;   Current Angular Velocity: {current_angular_velocity:.10f} rad/s")
 
             #Send controller output torque to motor
             odrive1.set_torque(controller_torque_output_clamped)
@@ -311,14 +309,13 @@ async def main():
 
     #Controller Consts
     J_zz = 0.001666667
-    K = 20
+    K = 1
     controller_trial_notes = "Here we can take notes on our controller"
 
     #For Quaternion Control Desired Angular Velocity PD Controller
-    Kp = 0.02
-    Kd = 15
+    Kp = 0.1
+    Kd = 0.05
     desired_attitude_deg = 30 #Degrees
-    omega_desired = 1 #rad/s
 
     controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
     #Upload PID parameters and notes to database
@@ -335,7 +332,7 @@ async def main():
         #add each odrive to the async loop so they will run.
         await asyncio.gather(
             odrive1.loop(),
-            controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg, omega_desired), 
+            controller(odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg), 
             encoder.loop(), #This runs the external encoder code
         )
     except KeyboardInterrupt:
