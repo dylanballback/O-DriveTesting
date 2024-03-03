@@ -205,7 +205,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         #print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
 
         #Send controller output torque to motor
-        #odrive1.set_torque(controller_torque_output_clamped)
+        odrive1.set_torque(controller_torque_output_clamped)
 
 
         last_angle = current_angle
