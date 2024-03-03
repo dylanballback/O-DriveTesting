@@ -199,7 +199,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         controller_torque_output = control_law_single_axis(J_zz, K, omega_desired)
 
         # Clamping the output torque to be withing the min and max of the O-Drive Controller
-        controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
+        controller_torque_output_clamped= clamp(controller_torque_output, -0.15, 0.15)
         #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
 
         print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
