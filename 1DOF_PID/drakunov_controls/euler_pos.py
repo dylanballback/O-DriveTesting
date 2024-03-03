@@ -255,7 +255,7 @@ async def main():
     controller_param_table_init(database, controller_param_table_name)
 
     #Controller Consts
-    J_zz = 0.001666667
+    J_zz = 0.0026433333333333335
     K = 1
 
     #For Control Desired Angular Velocity PD Controller
