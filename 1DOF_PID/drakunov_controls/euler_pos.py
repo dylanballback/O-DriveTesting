@@ -255,7 +255,7 @@ async def main():
 
     #Controller Consts
     J_zz = 0.0026433333333333335
-    K = 1
+    K = 2
 
     #For Control Desired Angular Velocity PD Controller
     Kp = 0.01
