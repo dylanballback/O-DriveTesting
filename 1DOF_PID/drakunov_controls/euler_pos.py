@@ -169,8 +169,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
     last_time = time.time()  # Capture the current time
     last_angle = 0 
     angle_error_prev = 0
-    #q_desired = angle_to_quaternion(desired_attitude_deg)
-    #q_error_prev = np.array([1, 0, 0, 0])  # Assume starting with no error
+
     fixed_duration = 0.005 # Fixed sleep duration to control loop frequency
     
     #Run for set time delay example runs for 15 seconds.
