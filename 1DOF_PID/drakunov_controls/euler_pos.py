@@ -258,7 +258,7 @@ async def main():
     K = 2
 
     #For Control Desired Angular Velocity PD Controller
-    Kp = 0.025
+    Kp = 0.028
     Kd = 0.0000001
     desired_attitude_deg = 30 #Degrees
 
