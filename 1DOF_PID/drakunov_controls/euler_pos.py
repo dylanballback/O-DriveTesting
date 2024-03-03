@@ -170,7 +170,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
     last_angle = 0 
     angle_error_prev = 0
 
-    fixed_duration = 0.01 # Fixed sleep duration to control loop frequency
+    fixed_duration = 0.0001 # Fixed sleep duration to control loop frequency
     
     #Run for set time delay example runs for 15 seconds.
     stop_at = datetime.now() + timedelta(seconds=100000)
@@ -201,7 +201,7 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         # Clamping the output torque to be withing the min and max of the O-Drive Controller
         controller_torque_output_clamped= clamp(controller_torque_output, -0.15, 0.15)
         #print(f"Controller Raw Output: {controller_torque_output}, Controller Clampped Output: {controller_torque_output_clamped}, Current Angular Velocity: {current_angular_velocity}")
-
+        
         print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
 
         #Send controller output torque to motor
