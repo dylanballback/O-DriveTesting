@@ -8,7 +8,6 @@ import math
 from smbus import SMBus
 import socketio
 
-
 @dataclass
 class Encoder_as5048b:
     """
