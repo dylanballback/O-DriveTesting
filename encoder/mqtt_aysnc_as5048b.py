@@ -6,11 +6,13 @@ import time
 import math
 
 from smbus import SMBus
-import socketio
-
+import paho.mqtt.client as mqtt
 
 @dataclass
 class Encoder_as5048b:
+    # Add MQTT client setup
+    mqtt_client = mqtt.Client()
+    mqtt_topic = "encoder/angle"
     """
     A class to represent an AS5048B magnetic rotary encoder.
 
@@ -45,18 +47,18 @@ class Encoder_as5048b:
     start_time: float = time.time()  # Capture the start time when the object is initialized
     total_rotations: int = 0  # Add this line to track total rotations
     total_accumulated_angle: float = 0.0  # Track the total accumulated angle in degrees
-    ws_uri: str = 'http://192.168.1.12:5000'  # Flask-SocketIO server URI
+    mqtt_client: mqtt.Client = field(default_factory=lambda: mqtt.Client())
+    mqtt_topic: str = "encoder/angle"
+    mqtt_broker: str = "test.mosquitto.org"
+    mqtt_port: int = 1883
 
-    sio = socketio.AsyncClient()  # Initialize the Socket.IO client
+    def __post_init__(self):
+        self.mqtt_client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        self.mqtt_client.loop_start()
 
-    
-    def connect(self):
-        self.sio.connect(self.ws_uri)
-        print("Connected to the server")
-
-    async def send_angle_via_socketio(self, angle):
-        """Sends the encoder angle over Socket.IO."""
-        await self.sio.emit('encoder_data', {'angle': angle})
+    def publish_angle(self, angle):
+        """Publishes the encoder angle over MQTT."""
+        self.mqtt_client.publish(self.mqtt_topic, str(angle))
 
     def read_angle(self):
         """
@@ -73,6 +75,10 @@ class Encoder_as5048b:
             data = self.bus.read_i2c_block_data(self.address, self.angle_reg, 2)
             angle = data[0] * 256 + data[1]
             angle *= 90 / 16383  # Convert raw data to angle in degrees
+
+            # Publish the current angle after adjustment
+            self.publish_angle(self.angle)
+
             return angle - self.offset  # Adjust by offset
             
         except Exception as e:
@@ -193,11 +199,9 @@ class Encoder_as5048b:
         and calculating the angular velocity at each iteration. It uses a non-blocking sleep to yield control, allowing other
         tasks to run concurrently.
         """
-        self.connect() #Connect to Websocket
         while self.running:
             await asyncio.sleep(0)  # Non-blocking sleep to yield control
             current_angle = self.read_angle()  # Read current angle
-            await self.send_angle_via_socketio(current_angle)
             
             self.update_rotation_counter_and_accumulated_angle(current_angle)  # Update rotations and accumulated angle
             if self.previous_angle is not None:  # Ensure previous_angle is initialized
@@ -249,7 +253,6 @@ class Encoder_as5048b:
         """
         next_trial_id = self.database.get_next_trial_id()
         
-
         while self.running:
             await asyncio.sleep(0) # Non-blocking sleep to yield control
             #Define the columns of the encoderData table
