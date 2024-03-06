@@ -6,10 +6,13 @@ import time
 import math
 
 from smbus import SMBus
-
+import paho.mqtt.client as mqtt
 
 @dataclass
 class Encoder_as5048b:
+    # Add MQTT client setup
+    mqtt_client = mqtt.Client()
+    mqtt_topic = "encoder/angle"
     """
     A class to represent an AS5048B magnetic rotary encoder.
 
@@ -44,8 +47,18 @@ class Encoder_as5048b:
     start_time: float = time.time()  # Capture the start time when the object is initialized
     total_rotations: int = 0  # Add this line to track total rotations
     total_accumulated_angle: float = 0.0  # Track the total accumulated angle in degrees
+    mqtt_client: mqtt.Client = field(default_factory=lambda: mqtt.Client())
+    mqtt_topic: str = "encoder/angle"
+    mqtt_broker: str = "test.mosquitto.org"
+    mqtt_port: int = 1883
 
+    def __post_init__(self):
+        self.mqtt_client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        self.mqtt_client.loop_start()
 
+    def publish_angle(self, angle):
+        """Publishes the encoder angle over MQTT."""
+        self.mqtt_client.publish(self.mqtt_topic, str(angle))
 
     def read_angle(self):
         """
@@ -62,7 +75,12 @@ class Encoder_as5048b:
             data = self.bus.read_i2c_block_data(self.address, self.angle_reg, 2)
             angle = data[0] * 256 + data[1]
             angle *= 90 / 16383  # Convert raw data to angle in degrees
+
+            # Publish the current angle after adjustment
+            self.publish_angle(self.angle)
+
             return angle - self.offset  # Adjust by offset
+            
         except Exception as e:
             print(f"Error reading angle: {e}")
             # Handle the error appropriately, possibly by logging or retrying
