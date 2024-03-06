@@ -54,9 +54,9 @@ class Encoder_as5048b:
         self.sio.connect(self.ws_uri)
         print("Connected to the server")
 
-    async def send_angle_via_socketio(self, angle):
+    def send_angle_via_socketio(self, angle):
         """Sends the encoder angle over Socket.IO."""
-        await self.sio.emit('encoder_data', {'angle': angle})
+        self.sio.emit('encoder_data', {'angle': angle})
 
     def read_angle(self):
         """
@@ -197,7 +197,7 @@ class Encoder_as5048b:
         while self.running:
             await asyncio.sleep(0)  # Non-blocking sleep to yield control
             current_angle = self.read_angle()  # Read current angle
-            await self.send_angle_via_socketio(current_angle)
+            self.send_angle_via_socketio(current_angle) #Send angle through websocket
             
             self.update_rotation_counter_and_accumulated_angle(current_angle)  # Update rotations and accumulated angle
             if self.previous_angle is not None:  # Ensure previous_angle is initialized
