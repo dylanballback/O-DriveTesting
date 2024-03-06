@@ -47,12 +47,16 @@ class Encoder_as5048b:
     total_accumulated_angle: float = 0.0  # Track the total accumulated angle in degrees
     ws_uri: str = 'http://192.168.1.12:5000'  # Flask-SocketIO server URI
 
-    sio = socketio.AsyncClient()  # Initialize the Socket.IO client
+    sio = socketio.Client()  # Initialize the Socket.IO client
 
     
-    def connect(self):
-        self.sio.connect(self.ws_uri)
-        print("Connected to the server")
+    def connect_to_server(self):
+        """Connects to the WebSocket server."""
+        try:
+            self.sio.connect(self.ws_uri)
+            print("Connected to the server")
+        except socketio.exceptions.ConnectionError as e:
+            print(f"Connection failed: {e}")
 
     def send_angle_via_socketio(self, angle):
         """Sends the encoder angle over Socket.IO."""
@@ -193,7 +197,7 @@ class Encoder_as5048b:
         and calculating the angular velocity at each iteration. It uses a non-blocking sleep to yield control, allowing other
         tasks to run concurrently.
         """
-        self.connect() #Connect to Websocket
+        self.connect_to_server() #Connect to Websocket
         while self.running:
             await asyncio.sleep(0)  # Non-blocking sleep to yield control
             current_angle = self.read_angle()  # Read current angle
