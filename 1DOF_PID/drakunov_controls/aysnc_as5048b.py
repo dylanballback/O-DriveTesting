@@ -200,7 +200,7 @@ class Encoder_as5048b:
         while self.running:
             await asyncio.sleep(0)  # Non-blocking sleep to yield control
             current_angle = self.read_angle()  # Read current angle
-            self.send_angle_via_socketio(current_angle) #Send angle through websocket
+            self.send_angle_via_socketio(self.angular_velocity) #Send angle through websocket
             
             self.update_rotation_counter_and_accumulated_angle(self.total_accumulated_angle)  # Update rotations and accumulated angle
             if self.previous_angle is not None:  # Ensure previous_angle is initialized
