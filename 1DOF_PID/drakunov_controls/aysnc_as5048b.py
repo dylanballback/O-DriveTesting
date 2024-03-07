@@ -113,24 +113,26 @@ class Encoder_as5048b:
         Note: This method should be called repeatedly in a loop to continuously update the angular velocity.
         """
         current_angle = self.read_angle()  # Get the current angle from the encoder in degrees
+
+        # Calculate the new total accumulated angle based on the current reading
+        # This logic should be similar to what's in update_rotations_and_accumulated_angle
+        # Assuming that method has already been called to update total_accumulated_angle accurately
+        current_total_accumulated_angle = self.total_accumulated_angle
+
         current_time = time.time()  # Get the current time
 
-        # Convert angle from degrees to radians for calculation
-        current_angle_radians = math.radians(current_angle)
-        previous_angle_radians = math.radians(self.previous_angle)
-
-        # Calculate the shortest path difference between angles in radians
-        angle_difference = (current_angle_radians - previous_angle_radians + math.pi) % (2 * math.pi) - math.pi
+        # Calculate the change in the total accumulated angle in radians
+        angle_difference_radians = math.radians(current_total_accumulated_angle - self.previous_total_accumulated_angle)
 
         time_difference = current_time - self.previous_time  # Calculate the time difference
 
         if time_difference > 0:
-            self.angular_velocity = angle_difference / time_difference
+            self.angular_velocity = angle_difference_radians / time_difference
         else:
             self.angular_velocity = 0
 
-        # Update the previous angle and time for the next iteration
-        self.previous_angle = current_angle
+        # Update the previous total accumulated angle and time for the next iteration
+        self.previous_total_accumulated_angle = current_total_accumulated_angle
         self.previous_time = current_time
 
 
