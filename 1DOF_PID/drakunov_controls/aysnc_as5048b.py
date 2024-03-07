@@ -133,29 +133,20 @@ class Encoder_as5048b:
 
     def update_rotations_and_accumulated_angle(self, current_angle):
         """
-        Correctly updates the total rotation count and accumulated angle based on the current angle reading.
-        This method accounts for wrap-around at 0/360 degrees to correctly adjust the rotation count
-        and updates the total accumulated angle.
+        Updates the total accumulated angle based on the current angle reading, taking into account the full
+        and partial rotations to accurately track the encoder's movement over time.
         
         Args:
             current_angle (float): The current angle reading from the encoder.
         """
-        angle_difference = current_angle - self.previous_angle
-        if angle_difference < -180:  # Clockwise wrap around
-            angle_difference += 360
-        elif angle_difference > 180:  # Counterclockwise wrap around
-            angle_difference -= 360
-        
-        # Update total accumulated angle with the difference
+        # Calculate the shortest path difference between angles
+        angle_difference = (current_angle - self.previous_angle + 180) % 360 - 180
+
+        # Update the total accumulated angle with the difference
         self.total_accumulated_angle += angle_difference
 
-        # Detect full rotations and update total_rotations accordingly
-        if self.total_accumulated_angle >= 360:
-            self.total_rotations += int(self.total_accumulated_angle / 360)
-            self.total_accumulated_angle %= 360  # Keep within 0-360 degrees
-        elif self.total_accumulated_angle < 0:
-            self.total_rotations += int(self.total_accumulated_angle / 360) - 1
-            self.total_accumulated_angle %= 360  # Correct to positive angle representation
+        # For visual tracking or other purposes, calculate total rotations from the total accumulated angle
+        self.total_rotations = int(self.total_accumulated_angle / 360)
 
         # Update the previous angle for the next calculation
         self.previous_angle = current_angle
