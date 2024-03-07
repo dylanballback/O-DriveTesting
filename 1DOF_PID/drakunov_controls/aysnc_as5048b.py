@@ -133,28 +133,29 @@ class Encoder_as5048b:
 
     def update_rotations_and_accumulated_angle(self, current_angle):
         """
-        Updates the total rotation count and accumulated angle based on the current angle reading.
-        This method accounts for wrap-around at 0/360 degrees to increase or decrease the rotation count
-        and correctly calculates the total accumulated angle.
-
+        Correctly updates the total rotation count and accumulated angle based on the current angle reading.
+        This method accounts for wrap-around at 0/360 degrees to correctly adjust the rotation count
+        and updates the total accumulated angle.
+        
         Args:
             current_angle (float): The current angle reading from the encoder.
         """
-        angle_threshold = 10  # Threshold to detect a wrap-around, avoiding noise around 0 degrees
-        max_angle = 360
-        rotation_detected = False
+        angle_difference = current_angle - self.previous_angle
+        if angle_difference < -180:  # Clockwise wrap around
+            angle_difference += 360
+        elif angle_difference > 180:  # Counterclockwise wrap around
+            angle_difference -= 360
+        
+        # Update total accumulated angle with the difference
+        self.total_accumulated_angle += angle_difference
 
-        # Detect clockwise rotation (passing through 0 degrees)
-        if self.previous_angle > (max_angle - angle_threshold) and current_angle < angle_threshold:
-            self.total_rotations += 1
-            rotation_detected = True
-        # Detect counterclockwise rotation
-        elif self.previous_angle < angle_threshold and current_angle > (max_angle - angle_threshold):
-            self.total_rotations -= 1
-            rotation_detected = True
-
-        # Update the total accumulated angle considering full rotations and the current angle
-        self.total_accumulated_angle = self.total_rotations * max_angle + current_angle
+        # Detect full rotations and update total_rotations accordingly
+        if self.total_accumulated_angle >= 360:
+            self.total_rotations += int(self.total_accumulated_angle / 360)
+            self.total_accumulated_angle %= 360  # Keep within 0-360 degrees
+        elif self.total_accumulated_angle < 0:
+            self.total_rotations += int(self.total_accumulated_angle / 360) - 1
+            self.total_accumulated_angle %= 360  # Correct to positive angle representation
 
         # Update the previous angle for the next calculation
         self.previous_angle = current_angle
