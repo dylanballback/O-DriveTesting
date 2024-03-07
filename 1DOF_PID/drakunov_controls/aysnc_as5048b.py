@@ -46,6 +46,7 @@ class Encoder_as5048b:
     total_accumulated_angle: float = 0.0  # Track the total accumulated angle in degrees
     ws_uri: str = 'http://192.168.1.12:5000'  # Flask-SocketIO server URI
     previous_total_accumulated_angle: float = 0.0  # To store the previous total accumulated angle
+    omega_dt: float = 0.0 #To store the dt used for angular velocity calulation
 
     sio = socketio.Client()  # Initialize the Socket.IO client
 
@@ -125,10 +126,10 @@ class Encoder_as5048b:
         # Calculate the change in the total accumulated angle in radians
         angle_difference_radians = math.radians(current_total_accumulated_angle - self.previous_total_accumulated_angle)
 
-        time_difference = current_time - self.previous_time  # Calculate the time difference
+        self.omega_dt = current_time - self.previous_time  # Calculate the time difference
 
-        if time_difference > 0:
-            self.angular_velocity = angle_difference_radians / time_difference
+        if self.omega_dt > 0:
+            self.angular_velocity = angle_difference_radians / self.omega_dt
         else:
             self.angular_velocity = 0
 
@@ -157,18 +158,6 @@ class Encoder_as5048b:
 
         # Update the previous angle for the next calculation
         self.previous_angle = current_angle
-
-
-
-    def get_continuous_angle(self):
-        """
-        Calculates a continuous angle that accounts for the total number of rotations.
-
-        Returns:
-            float: The continuous angle in degrees.
-        """
-        return self.angle + (self.total_rotations * 360)
-
 
 
     async def listen_to_angle(self):
@@ -200,13 +189,16 @@ class Encoder_as5048b:
         This method defines the structure of the table with columns for the angle and timestamp.
         It then creates this table in the database, ready for storing encoder readings.
         """
-
+        #next_trial_id, current_time, current_angle, current_accumulated_angle, current_angular_velocity, omega_dt
 
         #Define the table column name and SQL data type
         table_columns_type = [
             ("time", "REAL"),
             ("angle", "REAL"),
-            ("velocity", "REAL")
+            ("accumulated_angle", "REAL"),
+            ("total_rotations", "REAL"),
+            ("velocity", "REAL"),
+            ("omega_dt", "REAL")
         ]
 
         #Create encoderData table
@@ -237,7 +229,7 @@ class Encoder_as5048b:
         while self.running:
             await asyncio.sleep(0) # Non-blocking sleep to yield control
             #Define the columns of the encoderData table
-            columns = ["trial_id", "time", "angle", "velocity"]
+            columns = ["trial_id", "time", "angle", "accumulated_angle", "total_rotations", "velocity", "omega_dt"]
 
             #Get latest angle to add to database
             current_angle = self.angle
@@ -246,11 +238,20 @@ class Encoder_as5048b:
             #Get latest angular velocity to add to database
             current_angular_velocity = self.angular_velocity
             #print(current_angular_velocity)
+
+            #Get latest total accumulated angle
+            current_accumulated_angle = self.total_accumulated_angle
             
+            #Get latest total accumulated angle
+            total_rotations = self.total_rotations
+
+            #Get latest angular veloctity dt used for the calulcation
+            omega_dt = self.omega_dt
+
             # Calculate elapsed time since the start of the program
             current_time = time.time() - self.start_time
 
-            values = [next_trial_id, current_time, current_angle, current_angular_velocity]
+            values = [next_trial_id, current_time, current_angle, current_accumulated_angle, total_rotations, current_angular_velocity, omega_dt]
             #print(values)
 
             #Enter latest data in values into the database encoder table.

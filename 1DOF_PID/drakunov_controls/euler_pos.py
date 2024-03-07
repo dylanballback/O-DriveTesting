@@ -16,10 +16,14 @@ def controller_param_table_init(database,  controller_param_table_name):
     - database: The database instance where the table will be created.
     - controller_param_table_name: The name of the table to be created.
     """
+
     #Define the table column name and SQL data type
     table_columns_type = [
         ("J_zz", "REAL"),
         ("K", "REAL"),
+        ("Kp", "REAL"),
+        ("Kd", "REAL"),
+        ("target_deg", "REAL"),
         ("notes", "TEXT")
     ]
 
@@ -37,7 +41,7 @@ def upload_controller_parameters(database, controller_param_table_name, controll
     - controller_params_data: The data (parameters) to be uploaded.
     """
      #Define the columns of the PID Parameters table
-     columns = ["trial_id", "J_zz", "K", "notes"]
+     columns = ["trial_id", "J_zz", "K", "Kp", "Kd", "target_deg", "notes"]
 
      values = controller_params_data
 
@@ -53,11 +57,28 @@ def controller_data_table_init(database, controller_data_table_name):
     Parameters:
     - database: The database instance where the table will be created.
     - controller_data_table_name: The name of the table to create.
+
+
+    
+        #Prepare data for websocket
+        websocket_data = {
+            "angle_setpoint" : desired_attitude_deg,
+            "current_angle" : current_angle,
+            "angle_error" : angle_error,
+            "current_angular_velocity" : current_angular_velocity,
+            "omega_desired" : omega_desired,
+            "controller_torque_output" : controller_torque_output,
+            "controller_torque_output_clamped" : controller_torque_output_clamped,
+        }
     """    
     table_columns_type = [
         ("current_time", "REAL"),
-        ("omega_z", "REAL"),
-        ("u_Z", "REAL")
+        ("current_angle", "REAL"),
+        ("angle_error", "REAL"),
+        ("current_omega", "REAL"),
+        ("omega_desired", "REAL"),
+        ("u_raw", "REAL"),
+        ("u_clamped", "REAL")
     ]
 
     #Create table
@@ -74,12 +95,13 @@ def upload_controller_data(database, controller_data_table_name, controller_data
     - controller_data: The data to be uploaded.
     """
     #Define the columns of the PID Parameters table
-    columns = ["trial_id", "current_time", "omega_z", "u_Z"]
+    columns = ["trial_id", "current_time", "current_angle", "angle_error", "current_omega", "omega_desired", "u_raw", "u_clamped"]
 
     values = controller_data
 
     database.insert_into_user_defined_table(controller_data_table_name, columns, values)
     
+
 
 
 #Functions to clamp a variables upper and lower limit.        
@@ -98,6 +120,7 @@ def clamp(x, lower, upper):
     return lower if x < lower else upper if x > upper else x
 
 
+
 def control_law_single_axis(J_zz, K, omega_z):
     """
     Calculates the control input (torque) for rotation about the z-axis based on the current and desired angular velocity.
@@ -113,6 +136,7 @@ def control_law_single_axis(J_zz, K, omega_z):
     """
     u_z = -J_zz * K * omega_z
     return u_z
+
 
 
 def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity):
@@ -140,6 +164,7 @@ def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current
     omega_desired = (Kp * e) + (Kd * de_dt)
   
     return omega_desired
+
 
 
 
@@ -181,25 +206,27 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
 
 
         current_time = time.time()  # Capture the current time
-        #dt = current_time - last_time  # Calculate dt as the difference between current time and last time
-        dt = fixed_duration
+        dt = current_time - last_time  # Calculate dt as the difference between current time and last time
+        #print(f"dt: {dt}")
+        #dt = fixed_duration
 
         #Get the current angle of the encoder
         current_angle = encoder.angle
         #print(f"Current Angle: {current_angle}")
 
+        #Calulate theta bar AKA angle error
         angle_error = current_angle - desired_attitude_deg 
 
         # Get the current angluar velocity of the encoder
         current_angular_velocity = encoder.angular_velocity
 
+        # Calulating the omega desired based on current error using PD controller
         omega_desired = calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity)
 
-        # Use the desired angular velocity to compute the control torque
-        # Assuming omega_z is the component of omega_desired along the z-axis
+        # Use the desired omega to compute the control torque
         controller_torque_output = control_law_single_axis(J_zz, K, omega_desired)
 
-        # Clamping the output torque to be withing the min and max of the O-Drive Controller
+        # Clamping the output torque to be withing the min and max of the O-Drive Controller (Max Torque limit of motor for 1DOF is 0.6 NM)
         controller_torque_output_clamped= clamp(controller_torque_output, -0.1, 0.1)
         
         print(f"Current: {current_angle}; Error: {angle_error};  Desired Angular Velocity: {omega_desired:.10f};  Current Angular Velocity: {current_angular_velocity:.10f};  Controller Clampped Output: {controller_torque_output_clamped:.10f}")
@@ -212,11 +239,24 @@ async def controller(odrive1, encoder, database, controller_data_table_name, nex
         angle_error_prev = angle_error
         last_time = current_time  # Update last_time for the next iteration
 
-        # Example print to debug dt values
-        #print(f"dt: {dt:.3f} seconds")
+        """
+        #Prepare data for websocket
+        websocket_data = {
+            "angle_setpoint" : desired_attitude_deg,
+            "current_angle" : current_angle,
+            "angle_error" : angle_error,
+            "current_angular_velocity" : current_angular_velocity,
+            "omega_desired" : omega_desired,
+            "controller_torque_output" : controller_torque_output,
+            "controller_torque_output_clamped" : controller_torque_output_clamped,
+        }
+
+        #Send data through websocket
+        send_websocket_data(data)
+        """
 
 
-        data = [next_trial_id, encoder.previous_time, current_angular_velocity, controller_torque_output]
+        data = [next_trial_id, current_time, current_angle, angle_error, current_angular_velocity, omega_desired, controller_torque_output, controller_torque_output_clamped]
         #Add to database
         upload_controller_data(database, controller_data_table_name, data)
         
@@ -262,7 +302,9 @@ async def main():
     Kd = 0.0000001
     desired_attitude_deg = 30 #Degrees
 
-    controller_param_data = (next_trial_id, J_zz, K, "Some notes about the controller trial")
+    #Format data to upload to database
+    controller_param_data = (next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg, "Some notes about the controller trial")
+    
     #Upload PID parameters and notes to database
     upload_controller_parameters(database, controller_param_table_name, controller_param_data)
 
@@ -271,7 +313,6 @@ async def main():
     #Set up Controller database table
     controller_data_table_init(database, controller_data_table_name)
 
-    # odrive1, encoder, database, controller_data_table_name, next_trial_id, J_zz, K, Kp, Kd, desired_attitude_deg
 
     try:
         #add each odrive to the async loop so they will run.
