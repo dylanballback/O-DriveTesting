@@ -186,9 +186,6 @@ class Encoder_as5048b:
             current_angle = self.read_angle()  # Read current angle
             # Update total rotations and accumulated angle based on the new reading
             self.update_rotations_and_accumulated_angle(current_angle)
-            
-            if self.previous_angle is not None:  # Ensure previous_angle is initialized
-               self.update_rotation_counter(current_angle, self.previous_angle)
             self.angle = current_angle  # Update the current angle
             self.calculate_angular_velocity()  # Calculate angular velocity
             self.send_angle_via_socketio(self.angular_velocity) #Send angle through websocket
