@@ -188,7 +188,7 @@ class Encoder_as5048b:
             self.update_rotations_and_accumulated_angle(current_angle)
             self.angle = current_angle  # Update the current angle
             self.calculate_angular_velocity()  # Calculate angular velocity
-            self.send_angle_via_socketio(self.angular_velocity) #Send angle through websocket
+            self.send_angle_via_socketio(self.total_accumulated_angle) #Send angle through websocket
             self.previous_angle = current_angle  # Update previous angle for next iteration
 
 
