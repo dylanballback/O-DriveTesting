@@ -202,7 +202,7 @@ class Encoder_as5048b:
             current_angle = self.read_angle()  # Read current angle
             
             
-            self.update_rotation_counter_and_accumulated_angle(self.total_accumulated_angle)  # Update rotations and accumulated angle
+            self.update_rotation_counter_and_accumulated_angle(current_angle)  # Update rotations and accumulated angle
             if self.previous_angle is not None:  # Ensure previous_angle is initialized
                self.update_rotation_counter(current_angle, self.previous_angle)
             self.angle = current_angle  # Update the current angle
