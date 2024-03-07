@@ -125,21 +125,14 @@ class Encoder_as5048b:
         """
         current_angle = self.read_angle()  # Get the current angle from the encoder
         current_time = time.time()  # Get the current time
-        
-        angle_difference = current_angle - self.previous_angle
-        
-        # Correct for the wraparound.
-        if angle_difference > 180:
-            angle_difference -= 360  # Clockwise rotation
-        elif angle_difference < -180:
-            angle_difference += 360  # Counter-clockwise rotation
+
+        # Calculate the shortest path difference between angles
+        angle_difference = (current_angle - self.previous_angle + 180) % 360 - 180
 
         time_difference = current_time - self.previous_time  # Calculate the time difference
 
         if time_difference > 0:
-            # Convert angle difference from degrees to radians and divide by time difference
             self.angular_velocity = math.radians(angle_difference) / time_difference
-            #print(time_difference)
         else:
             self.angular_velocity = 0
 
