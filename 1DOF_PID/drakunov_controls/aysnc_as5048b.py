@@ -45,6 +45,7 @@ class Encoder_as5048b:
     total_rotations: int = 0  # Add this line to track total rotations
     total_accumulated_angle: float = 0.0  # Track the total accumulated angle in degrees
     ws_uri: str = 'http://192.168.1.12:5000'  # Flask-SocketIO server URI
+    previous_total_accumulated_angle: float = 0.0  # To store the previous total accumulated angle
 
     sio = socketio.Client()  # Initialize the Socket.IO client
 
