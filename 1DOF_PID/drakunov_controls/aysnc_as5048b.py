@@ -112,16 +112,20 @@ class Encoder_as5048b:
 
         Note: This method should be called repeatedly in a loop to continuously update the angular velocity.
         """
-        current_angle = self.read_angle()  # Get the current angle from the encoder
+        current_angle = self.read_angle()  # Get the current angle from the encoder in degrees
         current_time = time.time()  # Get the current time
 
-        # Calculate the shortest path difference between angles
-        angle_difference = (current_angle - self.previous_angle + 180) % 360 - 180
+        # Convert angle from degrees to radians for calculation
+        current_angle_radians = math.radians(current_angle)
+        previous_angle_radians = math.radians(self.previous_angle)
+
+        # Calculate the shortest path difference between angles in radians
+        angle_difference = (current_angle_radians - previous_angle_radians + math.pi) % (2 * math.pi) - math.pi
 
         time_difference = current_time - self.previous_time  # Calculate the time difference
 
         if time_difference > 0:
-            self.angular_velocity = math.radians(angle_difference) / time_difference
+            self.angular_velocity = angle_difference / time_difference
         else:
             self.angular_velocity = 0
 
