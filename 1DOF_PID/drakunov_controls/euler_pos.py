@@ -322,7 +322,7 @@ async def main():
             encoder.loop(), #This runs the external encoder code
         )
     except KeyboardInterrupt:
-         odrive1.estop()
+        odrive1.estop()
     finally:
         odrive1.estop()
 
