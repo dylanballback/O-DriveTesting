@@ -1,106 +1,7 @@
 import pyodrivecan
 import asyncio
 from datetime import datetime, timedelta
-import aysnc_as5048b
 import time
-
-
-#------------------------ Controller Parameters from each Trial --------------------------------------------
-
-#Function to setup Custom Controller parameters Table in the  Database
-def controller_param_table_init(database,  controller_param_table_name):
-    """
-    Initializes a table in the database for storing custom controller parameters for each trial.
-
-    Parameters:
-    - database: The database instance where the table will be created.
-    - controller_param_table_name: The name of the table to be created.
-    """
-
-    #Define the table column name and SQL data type
-    table_columns_type = [
-        ("J_zz", "REAL"),
-        ("K", "REAL"),
-        ("Kp", "REAL"),
-        ("Kd", "REAL"),
-        ("target_deg", "REAL"),
-        ("notes", "TEXT")
-    ]
-
-    #Create table
-    database.create_user_defined_table(controller_param_table_name, table_columns_type)
-
-
-def upload_controller_parameters(database, controller_param_table_name, controller_params_data):
-     """
-    Uploads the controller parameters data to the specified database table.
-
-    Parameters:
-    - database: The database instance to interact with.
-    - controller_param_table_name: The name of the table where data will be inserted.
-    - controller_params_data: The data (parameters) to be uploaded.
-    """
-     #Define the columns of the PID Parameters table
-     columns = ["trial_id", "J_zz", "K", "Kp", "Kd", "target_deg", "notes"]
-
-     values = controller_params_data
-
-     database.insert_into_user_defined_table(controller_param_table_name, columns, values)
-
-
-#------------------------ Controller Data from each cycle --------------------------------------------
-
-def controller_data_table_init(database, controller_data_table_name):
-    """
-    Initializes a table in the database to store data from each controller cycle.
-
-    Parameters:
-    - database: The database instance where the table will be created.
-    - controller_data_table_name: The name of the table to create.
-
-
-    
-        #Prepare data for websocket
-        websocket_data = {
-            "angle_setpoint" : desired_attitude_deg,
-            "current_angle" : current_angle,
-            "angle_error" : angle_error,
-            "current_angular_velocity" : current_angular_velocity,
-            "omega_desired" : omega_desired,
-            "controller_torque_output" : controller_torque_output,
-            "controller_torque_output_clamped" : controller_torque_output_clamped,
-        }
-    """    
-    table_columns_type = [
-        ("current_time", "REAL"),
-        ("current_angle", "REAL"),
-        ("angle_error", "REAL"),
-        ("current_omega", "REAL"),
-        ("omega_desired", "REAL"),
-        ("u_raw", "REAL"),
-        ("u_clamped", "REAL")
-    ]
-
-    #Create table
-    database.create_user_defined_table(controller_data_table_name, table_columns_type)
-
-
-def upload_controller_data(database, controller_data_table_name, controller_data):
-    """
-    Uploads controller cycle data to the specified database table.
-
-    Parameters:
-    - database: The database instance to interact with.
-    - controller_data_table_name: The name of the table where data will be inserted.
-    - controller_data: The data to be uploaded.
-    """
-    #Define the columns of the PID Parameters table
-    columns = ["trial_id", "current_time", "current_angle", "angle_error", "current_omega", "omega_desired", "u_raw", "u_clamped"]
-
-    values = controller_data
-
-    database.insert_into_user_defined_table(controller_data_table_name, columns, values)
-    
 
 
 
@@ -118,52 +19,6 @@ def clamp(x, lower, upper):
     - The clamped value.
     """
     return lower if x < lower else upper if x > upper else x
-
-
-
-def control_law_single_axis(J_zz, K, omega_z):
-    """
-    Calculates the control input (torque) for rotation about the z-axis based on the current and desired angular velocity.
-
-    Parameters:
-    - J_zz: Moment of inertia about the z-axis.
-    - K: Control gain for the z-axis.
-    - omega_z: Current angular velocity about the z-axis.
-    - calculated_omega_desired: Desired angular velocity about the z-axis.
-
-    Returns:
-    - u_z: Control input (torque) about the z-axis in Nm.
-    """
-    u_z = -J_zz * K * omega_z
-    return u_z
-
-
-
-def calculate_w_angle_desired(angle_error, angle_error_prev, dt, Kp, Kd, current_angular_velocity):
-    """
-    Calculates the desired angular velocity based on angle error using a PD control strategy.
-
-    Parameters:
-    - angle_error: Current angle error.
-    - angle_error_prev: Previous angle error.
-    - dt: Time step between the current and previous error.
-    - Kp: Proportional gain.
-    - Kd: Derivative gain on the current angular velocity.
-
-    Returns:
-    - omega_desired: Desired angular velocity.
-    """
-    # angle errror
-    e = angle_error  
-    
-    # Calculate the derivative of the error
-    e_prev = angle_error_prev  
-    de_dt = (e - e_prev) / dt
-    
-    # Apply PD control law
-    omega_desired = (Kp * e) + (Kd * de_dt)
-  
-    return omega_desired
 
 
 
@@ -274,7 +129,9 @@ async def main():
     try:
         #add each odrive to the async loop so they will run.
         await asyncio.gather(
+            odrive0.loop(),
             odrive1.loop(),
+            odrive2.loop(),
             controller(odrive0, odrive1, odrive2), 
         )
     except KeyboardInterrupt:
