@@ -99,11 +99,19 @@ async def main():
     parser.add_argument("--save-config", action='store_true', help="Save the configuration to NVM and reboot ODrive.")
     args = parser.parse_args()
 
+    """
     #This is for OPENMutt front motors are on can0 while back motors are on can1
     node_ids_channels = {
         'can0': list(range(0, 6)),
         'can1': list(range(6, 12))
     }
+    """
+     #This is for CUBESAT everything is on one canBus 'can0'
+    node_ids_channels = {
+        'can0': list(range(0, 2))
+    }
+
+
 
     with open(args.endpoints_json, 'r') as f:
         endpoint_data = json.load(f)
