@@ -7,7 +7,7 @@
     "axis0.config.motor.motor_type": 0,
     "axis0.config.motor.torque_constant": 0.02506060606060606,
     "axis0.config.motor.pole_pairs": 7,
-    "axis0.config.motor.current_soft_max": 20,
+    "axis0.config.motor.current_soft_max": 25,
     "axis0.config.motor.current_hard_max": 36,
     "axis0.config.motor.calibration_current": 10,
     "axis0.config.motor.resistance_calib_max_voltage": 2,
