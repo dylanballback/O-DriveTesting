@@ -42,14 +42,18 @@ async def controller(odrive0, odrive1, odrive2):
     - omega_desired: Desired angular velocity in radians per second.
     """
     odrive0.clear_errors(identify=False)
+    await asyncio.sleep(0.2)
     odrive1.clear_errors(identify=False)
+    await asyncio.sleep(0.2)
     odrive2.clear_errors(identify=False)
+    await asyncio.sleep(0.2)
     #await asyncio.sleep(0.2)
     #odrive1.setAxisState("closed_loop_control")
     await asyncio.sleep(0.2)
     odrive0.set_torque(0)
     odrive1.set_torque(0)
     odrive2.set_torque(0)
+    await asyncio.sleep(0.2)
 
     last_time = time.time()  # Capture the current time
     last_angle = 0 
@@ -75,8 +79,11 @@ async def controller(odrive0, odrive1, odrive2):
 
         #Send controller output torque to motor
         odrive0.set_torque(0.1)
+        await asyncio.sleep(0.1)
         odrive1.set_torque(0)
+        await asyncio.sleep(0.1)
         odrive2.set_torque(0)
+        await asyncio.sleep(0.1)
 
         last_time = current_time  # Update last_time for the next iteration
 
