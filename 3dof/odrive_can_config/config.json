@@ -5,10 +5,10 @@
     "config.brake_resistor0.enable": true,
     "config.brake_resistor0.resistance": 2,
     "axis0.config.motor.motor_type": 0,
-    "axis0.config.motor.torque_constant": 0.07191304347826087,
+    "axis0.config.motor.torque_constant": 0.02506060606060606,
     "axis0.config.motor.pole_pairs": 7,
-    "axis0.config.motor.current_soft_max": 15,
-    "axis0.config.motor.current_hard_max": 29.5,
+    "axis0.config.motor.current_soft_max": 20,
+    "axis0.config.motor.current_hard_max": 36,
     "axis0.config.motor.calibration_current": 10,
     "axis0.config.motor.resistance_calib_max_voltage": 2,
     "axis0.config.calibration_lockin.current": 10,
@@ -25,5 +25,6 @@
     "can.config.protocol": 1,
     "config.enable_uart_a": false,
     "axis0.config.load_encoder": 13,
-    "axis0.config.commutation_encoder": 13
+    "axis0.config.commutation_encoder": 13,
+    "axis0.controller.config.vel_limit": 90
 }
